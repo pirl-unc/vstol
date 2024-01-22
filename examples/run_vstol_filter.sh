@@ -1,0 +1,15 @@
+vstol filter \
+  --tsv-file ../test/data/hg002_merged_variants.tsv \
+  --case-sample-id HG002 \
+  --output-passed-tsv-file outputs/hg002_merged_variants_passed.tsv \
+  --output-rejected-tsv-file outputs/hg002_merged_variants_rejected.tsv \
+  --filter 'case any filter == PASS' \
+  --filter 'case any precise == true' \
+  --filter 'case all alternate_allele_read_count >= 3' \
+  --filter 'case all chromosome_1 in ["chr1","chr2","chr3"]' \
+  --filter 'case all chromosome_2 in ["chr1","chr2","chr3"]' \
+  --excluded-regions-tsv-file ../test/data/hg38_ucsc_gap_table.tsv \
+  --excluded-regions-padding 100000 \
+  --excluded-variants-tsv-file ../test/data/hg002_pbsv.tsv \
+  --excluded-variants-padding 1000 \
+  --num-threads 1

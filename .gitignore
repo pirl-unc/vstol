@@ -1,0 +1,14 @@
+.idea/
+dist/
+data/
+build/
+__pycache__/
+*.pyc
+.coverage*
+*.DS_Store
+.pytest_cache/
+**/.DS_Store
+.coverage
+playground/
+target/
+Cargo.lock
