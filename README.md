@@ -4,6 +4,8 @@ converts VCF files of small and structural variants to TSV files and facilitates
 list operations (anntoate, diff, filter, intersect, merge, overlap etc) on a 
 variants list.
 
+[![build](https://github.com/pirl-unc/vstol/actions/workflows/main.yml/badge.svg)](https://github.com/pirl-unc/vstol/actions/workflows/main.yml)
+
 ## 01. Installation
 
 ```

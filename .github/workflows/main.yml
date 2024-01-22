@@ -41,9 +41,15 @@ jobs:
         conda install coveralls
         conda install pytest
         conda install pytest-cov
+        pip install pyensembl
   
         # Install vstol
         pip install . --verbose
+
+    - name: Download ensembl data
+      shell: bash -l {0}
+      run: |
+        pyensembl install --release 95 --species human
 
     - name: Run linter
       shell: bash -l {0}
