@@ -1,5 +1,5 @@
 # VSTOL
-VSTOL (**V**ariant **S**election, **T**abulation, and **O**perations **L**ibrary) 
+VSTOL (**V**ariant **S**tandardization, **T**abulation, and **O**perations **L**ibrary) 
 converts VCF files of small and structural variants to TSV files and facilitates 
 list operations (anntoate, diff, filter, intersect, merge, overlap etc) on a 
 variants list.

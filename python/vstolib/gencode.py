@@ -345,7 +345,8 @@ class Gencode(Annotator):
             'gene_id': [],
             'transcript_id': [],
             'utr_start': [],
-            'utr_end': []
+            'utr_end': [],
+            'utr_type': []
         }
         with open(self.gtf_file, 'r') as f:
             lines = f.readlines()
@@ -372,6 +373,10 @@ class Gencode(Annotator):
                     data['transcript_id'].append(curr_transcript_id)
                     data['utr_start'].append(curr_utr_start)
                     data['utr_end'].append(curr_utr_end)
+                    if int(curr_metadata_dict['exon_number']) == 1:
+                        data['utr_type'].append(GenomicRegionTypes.FIVE_PRIME_UTR)
+                    else:
+                        data['utr_type'].append(GenomicRegionTypes.THREE_PRIME_UTR)
         self.df_utrs = pd.DataFrame(data)
         logger.info('Loaded %i UTRs in total.' % len(self.df_utrs))
 
@@ -406,13 +411,23 @@ class Gencode(Annotator):
             variant_call_annotations.append(variant_call_annotation)
         else:
             for _, row in df_genes_matched.iterrows():
-                df_exons_matched = self.df_exons[
-                    self.df_exons['gene_id'] == row['gene_id']
+                df_utrs_matched = self.df_utrs[
+                    (self.df_utrs['gene_id'] == row['gene_id']) &
+                    (self.df_utrs['utr_start'] <= position) &
+                    (self.df_utrs['utr_end'] >= position)
                 ]
-                if len(df_exons_matched) > 0:
-                    region = GenomicRegionTypes.EXONIC
+                if len(df_utrs_matched) > 0:
+                    region = df_utrs_matched['utr_type'].values[0]
                 else:
-                    region = GenomicRegionTypes.INTRONIC
+                    df_exons_matched = self.df_exons[
+                        (self.df_exons['gene_id'] == row['gene_id']) &
+                        (self.df_exons['start'] <= position) &
+                        (self.df_exons['end'] >= position)
+                    ]
+                    if len(df_exons_matched) > 0:
+                        region = GenomicRegionTypes.EXONIC
+                    else:
+                        region = GenomicRegionTypes.INTRONIC
                 variant_call_annotation = VariantCallAnnotation(
                     annotator=Annotators.GENCODE,
                     annotator_version=self.version,

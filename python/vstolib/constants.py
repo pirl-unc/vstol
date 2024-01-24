@@ -245,7 +245,7 @@ class VariantCallingMethods:
             'DP': int,
             'AD': str,
             'SAC': str,
-            'NOTFULLYSPANNED': bool
+            'NotFullySpanned': bool
         }
         SNIFFLES2 = {
             'ID': str,
