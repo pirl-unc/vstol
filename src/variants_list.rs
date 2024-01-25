@@ -296,23 +296,29 @@ impl VariantsList {
         query_variant_types_map: &HashMap<&str, String>) -> VariantsList {
         // Step 1. Split variants by (chromosome_1, chromosome_2, super variant_type)
         let mut variant_calls_map: HashMap<(String, String, String), Vec<VariantCall>> = HashMap::new();
-        let mut variants_list_idx: isize = 1;
+        let mut variants_list_id: isize = 0;
         for variants_list in variants_lists.iter() {
             for variant in variants_list.variants.iter() {
                 for variant_call in variant.variant_calls.iter() {
+                    let mut variant_call_ = variant_call.clone();
+
+                    // Denote which variants list this VariantCall is from
+                    variant_call_.add_attribute("variants_list_id".to_string(), variants_list_id.to_string());
+
                     // Get the query variant type
-                    let query_variant_type: String = query_variant_types_map.get(variant_call.variant_type.as_str()).unwrap().to_string();
+                    let query_variant_type: String = query_variant_types_map.get(variant_call_.variant_type.as_str()).unwrap().to_string();
                     let key = (
-                        variant_call.chromosome_1.clone(),
-                        variant_call.chromosome_2.clone(),
+                        variant_call_.chromosome_1.clone(),
+                        variant_call_.chromosome_2.clone(),
                         query_variant_type.clone(),
                     );
                     variant_calls_map
                         .entry(key)
                         .or_insert(Vec::new())
-                        .push(variant_call.clone());
+                        .push(variant_call_);
                 }
             }
+            variants_list_id += 1;
         }
 
         // Step 2. Assign variant IDs
@@ -351,7 +357,12 @@ impl VariantsList {
                             let distance_1: isize = (variant_calls_temp[i].position_1 - variant_calls_temp[j].position_1).abs();
                             let distance_2: isize = (variant_calls_temp[i].position_2 - variant_calls_temp[j].position_2).abs();
                             if (distance_1 <= max_neighbor_distance_) && (distance_2 <= max_neighbor_distance_) {
-                                matched_variant_call_ids.push(variant_calls_temp[j].id.clone());
+                                if let (Some(vl_id_1), Some(vl_id_2)) = (variant_calls_temp[i].attributes.get("variants_list_id"), variant_calls_temp[j].attributes.get("variants_list_id")) {
+                                    if vl_id_1 != vl_id_2 {
+                                        // These VariantCall objects are from different VariantsList objects
+                                        matched_variant_call_ids.push(variant_calls_temp[j].id.clone());
+                                    }
+                                }
                             } else {
                                 if distance_1 > max_neighbor_distance_ {
                                     break;
@@ -439,22 +450,29 @@ impl VariantsList {
         query_variant_types_map: &HashMap<&str, String>) -> VariantsList {
         // Step 1. Split variants by (chromosome_1, chromosome_2, super variant_type)
         let mut variant_calls_map: HashMap<(String, String, String), Vec<VariantCall>> = HashMap::new();
+        let mut variants_list_id: isize = 0;
         for variants_list in variants_lists.iter() {
             for variant in variants_list.variants.iter() {
                 for variant_call in variant.variant_calls.iter() {
+                    let mut variant_call_ = variant_call.clone();
+
+                    // Denote which variants list this VariantCall is from
+                    variant_call_.add_attribute("variants_list_id".to_string(), variants_list_id.to_string());
+
                     // Get the query variant type
-                    let query_variant_type: String = query_variant_types_map.get(variant_call.variant_type.as_str()).unwrap().to_string();
+                    let query_variant_type: String = query_variant_types_map.get(variant_call_.variant_type.as_str()).unwrap().to_string();
                     let key = (
-                        variant_call.chromosome_1.clone(),
-                        variant_call.chromosome_2.clone(),
+                        variant_call_.chromosome_1.clone(),
+                        variant_call_.chromosome_2.clone(),
                         query_variant_type.clone()
                     );
                     variant_calls_map
                         .entry(key)
                         .or_insert(Vec::new())
-                        .push(variant_call.clone());
+                        .push(variant_call_);
                 }
             }
+            variants_list_id += 1;
         }
 
         // Step 2. Assign variant IDs
@@ -495,7 +513,12 @@ impl VariantsList {
                             let distance_1: isize = (variant_calls_temp[i].position_1 - variant_calls_temp[j].position_1).abs();
                             let distance_2: isize = (variant_calls_temp[i].position_2 - variant_calls_temp[j].position_2).abs();
                             if (distance_1 <= max_neighbor_distance_) && (distance_2 <= max_neighbor_distance_) {
-                                variant_ids_map.insert(variant_calls_temp[j].id.clone(), variant_id.clone());
+                                if let (Some(vl_id_1), Some(vl_id_2)) = (variant_calls_temp[i].attributes.get("variants_list_id"), variant_calls_temp[j].attributes.get("variants_list_id")) {
+                                    if vl_id_1 != vl_id_2 {
+                                        // These VariantCall objects are from different VariantsList objects
+                                        variant_ids_map.insert(variant_calls_temp[j].id.clone(), variant_id.clone());
+                                    }
+                                }
                             } else {
                                 if distance_1 > max_neighbor_distance_ {
                                     break;

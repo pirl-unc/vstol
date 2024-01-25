@@ -133,8 +133,6 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
         max_neighbor_distance=args.max_neighbor_distance
     )
     logger.info("Finished diffing variants")
-    logger.info('%i variants and %i variant calls in diffed (private) variants list' %
-                (len(variants_list.variant_ids), len(variants_list.variant_call_ids)))
 
     # Step 3. Write to a TSV file
     df_variants_list = variants_list.to_dataframe()
