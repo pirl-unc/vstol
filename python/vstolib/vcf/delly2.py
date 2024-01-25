@@ -174,7 +174,7 @@ def parse_delly2_somatic_callset(
                 source_id=source_id,
                 sample_id=sample_id,
                 nucleic_acid=NucleicAcidTypes.DNA,
-                variant_calling_method=VariantCallingMethods.DEEPVARIANT,
+                variant_calling_method=VariantCallingMethods.DELLY2_SOMATIC,
                 sequencing_platform=sequencing_platform,
                 chromosome_1=chromosome_1,
                 position_1=position_1,
