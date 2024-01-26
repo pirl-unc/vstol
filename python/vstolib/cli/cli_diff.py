@@ -112,30 +112,26 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
                     num_threads
                     max_neighbor_distance
     """
-    # Step 1. Load variants lists
-    logger.info("Started reading all TSV files")
+    # Step 1. Load the target variants list
+    logger.info("Started reading the target variants list TSV file")
     target_variants_list = VariantsList.read_tsv_file(tsv_file=args.target_tsv_file)
-    pool = mp.Pool(processes=args.num_threads)
-    async_results = []
-    for tsv_file in args.query_tsv_files:
-        async_results.append(pool.apply_async(VariantsList.read_tsv_file, args=(tsv_file,True,False)))
-    pool.close()
-    pool.join()
-    query_variants_lists = [async_result.get() for async_result in async_results]
-    logger.info("Finished reading all TSV files")
+    logger.info("Finished reading the target variants list TSV file")
 
-    # Step 2. Diff variants lists
-    logger.info("Started diffing variants")
-    variants_list = diff(
-        target_variants_list=target_variants_list,
-        query_variants_lists=query_variants_lists,
-        num_threads=args.num_threads,
-        max_neighbor_distance=args.max_neighbor_distance
-    )
-    logger.info("Finished diffing variants")
+    # Step 2. Diff each query variants list one at a time
+    logger.info("Started diffing")
+    for tsv_file in args.query_tsv_files:
+        logger.info("Loading %s" % tsv_file)
+        query_variants_list = VariantsList.read_tsv_file(tsv_file=tsv_file)
+        target_variants_list = diff(
+            target_variants_list=target_variants_list,
+            query_variants_lists=[query_variants_list],
+            num_threads=args.num_threads,
+            max_neighbor_distance=args.max_neighbor_distance
+        )
+    logger.info("Finished diffing")
 
     # Step 3. Write to a TSV file
-    df_variants_list = variants_list.to_dataframe()
+    df_variants_list = target_variants_list.to_dataframe()
     df_variants_list.sort_values(['variant_id'], inplace=True)
     df_variants_list.to_csv(
         args.output_tsv_file,
