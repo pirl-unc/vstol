@@ -513,12 +513,7 @@ impl VariantsList {
                             let distance_1: isize = (variant_calls_temp[i].position_1 - variant_calls_temp[j].position_1).abs();
                             let distance_2: isize = (variant_calls_temp[i].position_2 - variant_calls_temp[j].position_2).abs();
                             if (distance_1 <= max_neighbor_distance_) && (distance_2 <= max_neighbor_distance_) {
-                                if let (Some(vl_id_1), Some(vl_id_2)) = (variant_calls_temp[i].attributes.get("variants_list_id"), variant_calls_temp[j].attributes.get("variants_list_id")) {
-                                    if vl_id_1 != vl_id_2 {
-                                        // These VariantCall objects are from different VariantsList objects
-                                        variant_ids_map.insert(variant_calls_temp[j].id.clone(), variant_id.clone());
-                                    }
-                                }
+                                variant_ids_map.insert(variant_calls_temp[j].id.clone(), variant_id.clone());
                             } else {
                                 if distance_1 > max_neighbor_distance_ {
                                     break;
