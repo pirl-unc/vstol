@@ -203,7 +203,7 @@ impl VariantsList {
     /// * `num_threads`             -   number of threads.
     ///
     /// # Returns
-    /// * `nearby_variants_map`     -   HashMap where key is variant ID and
+    /// * `nearby_variants_map`     -   HashMap where key is variant call ID and
     ///                                 value is a vector of GenomicRange IDs.
     pub fn overlap(
         &self,
@@ -242,11 +242,13 @@ impl VariantsList {
                             for genomic_range in &genomic_ranges {
                                 let start_1 = variant_call.position_1 - padding;
                                 let end_1 = variant_call.position_1 + padding;
-                                let start_2 = variant_call.position_2- padding;
+                                let start_2 = variant_call.position_2 - padding;
                                 let end_2 = variant_call.position_2 + padding;
-                                if genomic_range.overlaps(variant_call.chromosome_1.to_string(), start_1, end_1) {
+                                let overlaps_1 = genomic_range.overlaps(variant_call.chromosome_1.to_string(), start_1, end_1);
+                                let overlaps_2 = genomic_range.overlaps(variant_call.chromosome_2.to_string(), start_2, end_2);
+                                if overlaps_1 || overlaps_2 {
                                     result
-                                        .entry(variant.id.clone())
+                                        .entry(variant_call.id.clone())
                                         .or_insert(Vec::new())
                                         .push(genomic_range.id().clone());
                                 }

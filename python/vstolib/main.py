@@ -25,6 +25,8 @@ from .constants import VariantCallingMethods, VariantCallTags
 from .default import *
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
+from .utilities import is_repeated_sequence
+from .variant import Variant
 from .variants_list import VariantsList
 from .variant_filter import VariantFilter
 from .vcf.cutesv import parse_cutesv_callset
@@ -93,9 +95,11 @@ def diff(
 
 def filter(
         variants_list: VariantsList,
+        reference_genome_fasta_file: str = None,
         variant_filters: List[VariantFilter] = None,
         excluded_variants_list: VariantsList = None,
         excluded_regions_list: GenomicRangesList = None,
+        homopolymer_length: int = FILTER_HOMOPOLYMER_LENGTH,
         excluded_variants_padding: int = FILTER_EXCLUDED_VARIANT_PADDING,
         excluded_regions_padding: int = FILTER_EXCLUDED_REGION_PADDING,
         num_threads: int = NUM_THREADS
@@ -105,9 +109,11 @@ def filter(
 
     Parameters:
         variants_list               :   VariantsList object.
+        reference_genome_fasta_file :   Reference genome FASTA file.
         variant_filters             :   List of VariantFilter objects.
         excluded_variants_list      :   VariantsList object of variants to exclude.
         excluded_regions_list       :   GenomicRangesList object of regions to exclude.
+        homopolymer_length          :   Homopolymer length.
         excluded_variants_padding   :   Number of bases to pad each variant's positions 1 and 2.
         excluded_regions_padding    :   Number of bases to pad each region to exclude.
         num_threads                 :   Number of threads.
@@ -154,6 +160,21 @@ def filter(
         for variant_id, query_variants in nearby_variants:
             rejected_variant_ids_dict[variant_id].append(VariantCallTags.NEARBY_EXCLUDED_VARIANT)
         logger.info('%i variants are near excluded variants.' % len(nearby_variants))
+
+    # Step 4. Filter out variants in homopolymer regions
+    if reference_genome_fasta_file is not None:
+        flanking_sequences = variants_list.find_breakpoint_flanking_sequences(
+            reference_genome_fasta_file=reference_genome_fasta_file,
+            num_threads=num_threads,
+            length=homopolymer_length
+        )
+        homopolymer_variant_ids = set()
+        for flanking_sequence in flanking_sequences:
+            if is_repeated_sequence(sequence=flanking_sequence[3]) or \
+                    is_repeated_sequence(sequence=flanking_sequence[4]):
+                homopolymer_variant_ids.add(flanking_sequence[0])
+                rejected_variant_ids_dict[flanking_sequence[0]].append(VariantCallTags.HOMOPOLYMER_REGION)
+        logger.info('%i variants are in homopolymer regions.' % len(homopolymer_variant_ids))
 
     # Step 4. Create a passed VariantsList and a rejected VariantsList
     variants_list_passed = VariantsList()
@@ -242,18 +263,22 @@ def overlap(
         VariantsList
     """
     # Step 1. Identify overlapping variants
-    overlapping_variants = variants_list.overlap(
+    overlapping_variant_call_ids = variants_list.overlap(
         genomic_ranges_list=genomic_ranges_list,
         num_threads=num_threads,
         padding=padding
     )
-    overlapping_variant_ids = [overlapping_variant[0] for overlapping_variant in overlapping_variants]
+    overlapping_variant_call_ids = [i[0] for i in overlapping_variant_call_ids]
 
     # Step 2. Prepare variants list to output
     variants_list_overlapping = VariantsList()
     for variant in variants_list.variants:
-        if variant.id in overlapping_variant_ids:
-            variants_list_overlapping.add_variant(variant=variant)
+        variant_ = Variant(id=variant.id)
+        for variant_call in variant.variant_calls:
+            if variant_call.id in overlapping_variant_call_ids:
+                variant_.add_variant_call(variant_call=variant_call)
+        if variant_.num_variant_calls > 0:
+            variants_list_overlapping.add_variant(variant=variant_)
 
     logger.info('%i variants and %i variant calls overlap' %
                 (len(variants_list_overlapping.variant_ids),

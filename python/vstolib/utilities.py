@@ -69,6 +69,15 @@ def is_integer(x) -> bool:
         return False
 
 
+def is_repeated_sequence(sequence: str) -> bool:
+    sequence = sequence.upper()
+    first_char = sequence[0]
+    for char in sequence[1:]:
+        if char != first_char:
+            return False
+    return True
+
+
 def overlaps(
         df: pd.DataFrame,
         chrom: str,

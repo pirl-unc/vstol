@@ -358,6 +358,7 @@ class VariantCallingMethods:
 class VariantCallTags:
     PASSED = 'passed'
     FAILED_FILTER = 'failed_filter'
+    HOMOPOLYMER_REGION = 'homopolymer_region'
     NEARBY_EXCLUDED_VARIANT = 'nearby_excluded_variant'
     NEARBY_EXCLUDED_REGION = 'nearby_excluded_region'
 

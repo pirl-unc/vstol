@@ -49,6 +49,9 @@ FILTER_EXCLUDED_REGION_PADDING = 100000
 # of a variant to be excluded.
 FILTER_EXCLUDED_VARIANT_PADDING = 1000
 
+# Homopolymer length.
+FILTER_HOMOPOLYMER_LENGTH = 20
+
 
 """intersect"""
 # Maximum neighbor distance (bases).

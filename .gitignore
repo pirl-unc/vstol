@@ -11,3 +11,5 @@ __pycache__/
 playground/
 target/
 Cargo.lock
+examples/hg38.fa
+examples/hg38.fa.fai

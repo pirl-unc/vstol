@@ -116,7 +116,14 @@ def write_vcf_file(
     # Step 1. Write header
     with open(vcf_file, 'w') as f:
         f.write('##fileformat=VCFv4.2\n')
+        f.write('##INFO=<ID=PRECISE,Number=0,Type=Flag,Description="Variant with precise breakpoints">\n')
+        f.write('##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Variant with imprecise breakpoints">\n')
+        f.write('##INFO=<ID=LENGTH,Number=1,Type=Integer,Description="Length of variant">\n')
+        f.write('##INFO=<ID=VARIANT_TYPE,Number=1,Type=String,Description="Variant type">\n')
+        f.write('##INFO=<ID=END,Number=1,Type=Integer,Description="End position of structural variant">\n')
+        f.write('##INFO=<ID=CHR2,Number=1,Type=String,Description="Mate chromsome for BND SVs">\n')
+        f.write('##INFO=<ID=RNAMES,Number=.,Type=String,Description="Names of supporting reads (if enabled with --output-rnames)">\n')
+        f.write('##INFO=<ID=METHODS,Number=.,Type=String,Description="Variant calling methods">\n')
+        f.write('##INFO=<ID=VAF,Number=1,Type=Float,Description="Variant allele frequency">\n')
         f.write('##FORMAT=<ID=DR,Number=1,Type=Integer,Description="Number of reference reads">\n')
         f.write('##FORMAT=<ID=DV,Number=1,Type=Integer,Description="Number of variant reads">\n')
-        f.write('##FORMAT=<ID=VC,Number=R,Type=String,Description="Variant calling methods">\n')
-

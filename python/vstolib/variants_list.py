@@ -18,8 +18,11 @@ The purpose of this python3 script is to implement the VariantsList dataclass.
 
 import json
 import pandas as pd
+import pysam
+import multiprocessing as mp
 from collections import defaultdict, OrderedDict
 from dataclasses import dataclass, field
+from functools import partial
 from vstolib import vstolibrs
 from typing import Dict, List, Tuple, Type
 from .genomic_range import GenomicRange
@@ -93,27 +96,48 @@ class VariantsList:
         Returns:
             VariantsList
         """
-        # Step 1. Serialize VariantsList objects
-        variants_lists_serialized = [
-            json.dumps(self.to_dict()),
-            json.dumps(variants_list.to_dict())
-        ]
-
-        # Step 2. Intersect VariantsList objects
-        json_str = vstolibrs.intersect_variants_lists(
-            variants_lists_serialized,
-            num_threads,
-            max_neighbor_distance
+        # Step 1. Identify intersecting variant call IDs
+        variants_list_intersecting = VariantsList.intersect(
+            variants_lists=[self, variants_list],
+            max_neighbor_distance=max_neighbor_distance,
+            num_threads=num_threads
         )
-
-        # Step 3. Load serialized VariantsList
-        variants_list_intersecting = VariantsList.load_serialized_json(json_str=json_str)
         variant_call_ids_to_remove = set()
         for variant in variants_list_intersecting.variants:
             for variant_call in variant.variant_calls:
                 variant_call_ids_to_remove.add(variant_call.id)
 
-        # Step 4. Prepare private VariantsList to output
+        # Step 2. List up all breakpoints in the query variants list
+        genomic_ranges_list = GenomicRangesList()
+        for variant in variants_list.variants:
+            for variant_call in variant.variant_calls:
+                genomic_range_1 = GenomicRange(
+                    chromosome=variant_call.chromosome_1,
+                    start=variant_call.position_1,
+                    end=variant_call.position_1
+                )
+                genomic_range_2 = GenomicRange(
+                    chromosome=variant_call.chromosome_2,
+                    start=variant_call.position_2,
+                    end=variant_call.position_2
+                )
+                genomic_ranges_list.add_genomic_range(
+                    genomic_range=genomic_range_1
+                )
+                genomic_ranges_list.add_genomic_range(
+                    genomic_range=genomic_range_2
+                )
+
+        # Step 2. Identify overlaps with the breakpoints
+        overlapping_variant_call_ids = variants_list.overlap(
+            genomic_ranges_list=genomic_ranges_list,
+            padding=max_neighbor_distance,
+            num_threads=num_threads
+        )
+        for variant_call_id, _ in overlapping_variant_call_ids:
+            variant_call_ids_to_remove.add(variant_call_id)
+
+        # Step 3. Prepare private VariantsList to output
         variants_list_diff = VariantsList()
         for variant in self.variants:
             variant_ = Variant(id=variant.id)
@@ -151,6 +175,32 @@ class VariantsList:
 
         # Step 4. Deserialize filtered VariantsList object
         return VariantsList.load_serialized_json(json_str=json_str)
+
+    def find_breakpoint_flanking_sequences(
+            self,
+            reference_genome_fasta_file: str,
+            num_threads: int,
+            length: int,
+    ) -> List[Tuple[str,str,int,str,str]]:
+        """
+        Find flanking sequences of every breakpoint.
+
+        Parameters:
+            reference_genome_fasta_file :   Reference genome FASTA file.
+            num_threads                 :   Number of threads.
+            length                      :   Flanking sequence length.
+
+        Returns:
+            List[Tuple[variant_id,variant_call_id,position,left_sequence,right_sequence]]
+        """
+        pool = mp.Pool(processes=num_threads)
+        func = partial(VariantsList.find_breakpoint_flanking_sequences_worker, reference_genome_fasta_file, length)
+        flanking_sequences_lists = pool.map(func, self.variants)
+        pool.close()
+        flanking_sequences = []
+        for flanking_sequences_list in flanking_sequences_lists:
+            flanking_sequences.extend(flanking_sequences_list)
+        return flanking_sequences
 
     def find_nearby_variants(
             self,
@@ -210,7 +260,7 @@ class VariantsList:
             num_threads                 :   Number of threads.
 
         Returns:
-            List[Tuple[variant_id,List[GenomicRange]]]
+            List[Tuple[variant_call_id,List[GenomicRange]]]
         """
         # Step 1. Serialize VariantsList object
         variants_list_serialized = json.dumps(self.to_dict())
@@ -228,12 +278,12 @@ class VariantsList:
 
         # Step 4. Get Variant and GenomicRange objects
         nearby_variants = []
-        for variant_id, genomic_range_ids in nearby_variant_ids.items():
+        for variant_call_id, genomic_range_ids in nearby_variant_ids.items():
             genomic_ranges = []
             for genomic_range_id in genomic_range_ids:
                 genomic_range = genomic_ranges_list.get_genomic_range(genomic_range_id)
                 genomic_ranges.append(genomic_range)
-            nearby_variants.append((variant_id, genomic_ranges))
+            nearby_variants.append((variant_call_id, genomic_ranges))
         return nearby_variants
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -302,6 +352,28 @@ class VariantsList:
             'variants': [variant.to_dict() for variant in self.variants]
         }
         return data
+
+    @staticmethod
+    def find_breakpoint_flanking_sequences_worker(
+            reference_genome_fasta_file: str,
+            length: int,
+            variant: Variant
+    ) -> List[Tuple[str,str,int,str,str]]:
+        fasta = pysam.FastaFile(reference_genome_fasta_file)
+        flanking_sequences = []
+        for variant_call in variant.variant_calls:
+            left_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - length, variant_call.position_1)
+            right_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - 1, variant_call.position_1 + length - 1)
+            left_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - length, variant_call.position_2)
+            right_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - 1, variant_call.position_2 + length - 1)
+            flanking_sequences.append(
+                (variant.id, variant_call.id, variant_call.position_1, left_1, right_1)
+            )
+            flanking_sequences.append(
+                (variant.id, variant_call.id, variant_call.position_2, left_2, right_2)
+            )
+        return flanking_sequences
+
 
     @staticmethod
     def intersect(variants_lists: List['VariantsList'],

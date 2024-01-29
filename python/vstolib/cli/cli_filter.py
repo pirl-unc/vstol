@@ -98,6 +98,14 @@ def add_cli_filter_arg_parser(
              'Please refer to the Exacto documentation on how the filter semantics work.'
     )
     parser_optional.add_argument(
+        "--reference-genome-fasta-file", '-z',
+        dest="reference_genome_fasta_file",
+        type=str,
+        required=False,
+        help="Reference genome FASTA file. If you specify this file, "
+             "variant calls in homopolymer regions will be filtered out."
+    )
+    parser_optional.add_argument(
         "--excluded-regions-tsv-file", '-e',
         dest="excluded_regions_tsv_file",
         type=str,
@@ -140,6 +148,16 @@ def add_cli_filter_arg_parser(
              % FILTER_EXCLUDED_VARIANT_PADDING
     )
     parser_optional.add_argument(
+        "--homopolymer-length", '-l',
+        dest="homopolymer_length",
+        type=int,
+        required=False,
+        default=FILTER_HOMOPOLYMER_LENGTH,
+        help="Variant calls with a homopolymer of this length in either breakpoint will be filtered out."
+             "(default: %i)."
+             % FILTER_HOMOPOLYMER_LENGTH
+    )
+    parser_optional.add_argument(
         "--num-threads", '-t',
         dest="num_threads",
         type=int,
@@ -163,10 +181,12 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
                     output_rejected_tsv_file
                     control_sample_id
                     filter
+                    reference_genome_fasta_file
                     excluded_regions_tsv_file
                     excluded_regions_padding
                     excluded_variants_tsv_file
                     excluded_variants_padding
+                    homopolymer_length
                     num_threads
     """
     # Step 1. Load variants list
@@ -212,10 +232,12 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
     variants_list_passed, variants_list_rejected = filter(
         variants_list=variants_list,
         variant_filters=variant_filters,
+        reference_genome_fasta_file=args.reference_genome_fasta_file,
         excluded_variants_list=excluded_variants_list,
         excluded_regions_list=excluded_regions_list,
         excluded_regions_padding=args.excluded_regions_padding,
         excluded_variants_padding=args.excluded_variants_padding,
+        homopolymer_length=args.homopolymer_length,
         num_threads=args.num_threads
     )
 
