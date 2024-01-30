@@ -36,18 +36,15 @@ ANNOVAR_PROTOCOL_OPERATION = {
 
 
 """diff"""
-DIFF_MAX_NEIGHBOR_DISTANCE = 10
+DIFF_MAX_NEIGHBOR_DISTANCE = 1000
+DIFF_MATCH_ALL_BREAKPOINTS = False
+DIFF_MATCH_VARIANT_TYPES = False
 
 
 """filter"""
 # Padding for an excluded region.
 # The pad is applied to upstream and downstream of a gapped genomic region.
 FILTER_EXCLUDED_REGION_PADDING = 100000
-
-# Padding for an excluded variant.
-# The pad is applied to upstream and downstream of the two breakpoints
-# of a variant to be excluded.
-FILTER_EXCLUDED_VARIANT_PADDING = 1000
 
 # Homopolymer length.
 FILTER_HOMOPOLYMER_LENGTH = 20
@@ -61,6 +58,8 @@ INTERSECT_MAX_NEIGHBOR_DISTANCE = 10
 """merge"""
 # Maximum neighbor distance (bases).
 MERGE_MAX_NEIGHBOR_DISTANCE = 10
+MERGE_MATCH_ALL_BREAKPOINTS = True
+MERGE_MATCH_VARIANT_TYPES = True
 
 
 """overlap"""

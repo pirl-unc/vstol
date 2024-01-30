@@ -96,6 +96,28 @@ def add_cli_diff_arg_parser(
              "this distance (inclusive) will be identified as the same variant."
              % DIFF_MAX_NEIGHBOR_DISTANCE
     )
+    parser_optional.add_argument(
+        "--match-all-breakpoints", '-b',
+        dest="match_all_breakpoints",
+        type=bool,
+        required=False,
+        default=DIFF_MATCH_ALL_BREAKPOINTS,
+        help="If true, two VariantCall objects are considered an intersect "
+             "if both pairs of breakpoints match (start1==start2 AND end1==end2). "
+             "If false, two VariantCall objects are considered an intersect "
+             "if one of the breakpoint pairs matches (start1==start2 OR end1==end2). Default: %r."
+             % DIFF_MATCH_ALL_BREAKPOINTS
+    )
+    parser_optional.add_argument(
+        "--match-variant-types", '-m',
+        dest="match_variant_types",
+        type=bool,
+        required=False,
+        default=DIFF_MATCH_VARIANT_TYPES,
+        help="If true, two VariantCall objects are considered an intersect "
+             "if the (super) variant types are the same (default: %r)."
+             % DIFF_MATCH_VARIANT_TYPES
+    )
     parser.set_defaults(which='diff')
     return sub_parsers
 
@@ -111,6 +133,8 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     num_threads
                     max_neighbor_distance
+                    match_all_breakpoints
+                    match_variant_types
     """
     # Step 1. Load the target variants list
     logger.info("Started reading the target variants list TSV file")
@@ -126,7 +150,9 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
             target_variants_list=target_variants_list,
             query_variants_lists=[query_variants_list],
             num_threads=args.num_threads,
-            max_neighbor_distance=args.max_neighbor_distance
+            max_neighbor_distance=args.max_neighbor_distance,
+            match_all_breakpoints=args.match_all_breakpoints,
+            match_variant_types=args.match_variant_types
         )
     logger.info("Finished diffing")
 

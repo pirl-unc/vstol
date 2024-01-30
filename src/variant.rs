@@ -34,18 +34,6 @@ impl Variant {
     }
 
     pub fn add_variant_call(&mut self, variant_call: VariantCall) {
-        // Check if chromosome_1 and chromosome_2 match existing VariantCall objects
-        if self.variant_calls.len() > 0 {
-            if self.variant_calls[0].chromosome_1 != variant_call.chromosome_1 {
-                eprintln!("chromosome_1 must match chromosome_1 of an existing VariantCall object in this Variant object.");
-                process::exit(exitcode::DATAERR);
-            }
-            if self.variant_calls[0].chromosome_2 != variant_call.chromosome_2 {
-                eprintln!("chromosome_2 must match chromosome_2 of an existing VariantCall object in this Variant object.");
-                process::exit(exitcode::DATAERR);
-            }
-        }
-
         // Find an index position to insert the new VariantCall object
         let insert_idx = self.variant_calls.binary_search_by(|item| item.position_1.cmp(&variant_call.position_1));
         match insert_idx {

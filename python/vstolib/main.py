@@ -66,15 +66,23 @@ def diff(
         query_variants_lists: List[VariantsList],
         max_neighbor_distance: int = DIFF_MAX_NEIGHBOR_DISTANCE,
         num_threads: int = NUM_THREADS,
+        match_all_breakpoints: bool = DIFF_MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = DIFF_MATCH_VARIANT_TYPES
 ) -> VariantsList:
     """
     Diff variants lists.
 
     Parameters:
-        target_variants_list:       VariantsList object.
-        query_variants_lists:       List of VariantsList objects.
-        max_neighbor_distance:      Maximum neighbor distance.
-        num_threads:                Number of threads
+        target_variants_list    :   VariantsList object.
+        query_variants_lists    :   List of VariantsList objects.
+        max_neighbor_distance   :   Maximum neighbor distance.
+        num_threads             :   Number of threads.
+        match_all_breakpoints   :   If True, for two VariantCall objects
+                                    to be considered an intersect, both
+                                    pairs of breakpoints must match.
+        match_variant_types     :   If True, for two VariantCall objects
+                                    to be considered an intersect, the
+                                    variant types must match.
 
     Returns:
         VariantsList (with VariantCalls private to target_variants_list)
@@ -84,7 +92,9 @@ def diff(
         variants_list_diff = variants_list_diff.diff(
             variants_list=variants_list,
             num_threads=num_threads,
-            max_neighbor_distance=max_neighbor_distance
+            max_neighbor_distance=max_neighbor_distance,
+            match_all_breakpoints=match_all_breakpoints,
+            match_variant_types=match_variant_types
         )
     logger.info('%i variants and %i variant calls in the target VariantsList before diff.' %
                 (len(target_variants_list.variants), len(target_variants_list.variant_call_ids)))
@@ -95,27 +105,15 @@ def diff(
 
 def filter(
         variants_list: VariantsList,
-        reference_genome_fasta_file: str = None,
         variant_filters: List[VariantFilter] = None,
-        excluded_variants_list: VariantsList = None,
-        excluded_regions_list: GenomicRangesList = None,
-        homopolymer_length: int = FILTER_HOMOPOLYMER_LENGTH,
-        excluded_variants_padding: int = FILTER_EXCLUDED_VARIANT_PADDING,
-        excluded_regions_padding: int = FILTER_EXCLUDED_REGION_PADDING,
         num_threads: int = NUM_THREADS
 ) -> Tuple[VariantsList, VariantsList]:
     """
-    Filters a VariantsList object.
+    Filter out VariantCall objects.
 
     Parameters:
         variants_list               :   VariantsList object.
-        reference_genome_fasta_file :   Reference genome FASTA file.
         variant_filters             :   List of VariantFilter objects.
-        excluded_variants_list      :   VariantsList object of variants to exclude.
-        excluded_regions_list       :   GenomicRangesList object of regions to exclude.
-        homopolymer_length          :   Homopolymer length.
-        excluded_variants_padding   :   Number of bases to pad each variant's positions 1 and 2.
-        excluded_regions_padding    :   Number of bases to pad each region to exclude.
         num_threads                 :   Number of threads.
 
     Returns:
@@ -124,71 +122,29 @@ def filter(
     logger.info('%i variants and %i variant calls in the original list before filtering.' %
                 (len(variants_list.variants), len(variants_list.variant_call_ids)))
 
+    rejected_variant_call_ids_dict = defaultdict(list)
+
     # Step 1. Filter out variants based on VariantFilter
     # key   = variant ID
     # value = reasons why the variant was rejected
-    rejected_variant_ids_dict = defaultdict(list)
-    if variant_filters is not None:
-        passed_variants_list = variants_list.filter(
-            variant_filters=variant_filters,
-            num_threads=num_threads,
-        )
-        passed_variants_ids = set(passed_variants_list.variant_ids)
-        for variant_id in variants_list.variant_ids:
-            if variant_id not in passed_variants_ids:
-                rejected_variant_ids_dict[variant_id].append(VariantCallTags.FAILED_FILTER)
-        logger.info('%i variants satisfy all variant filters.' % len(list(passed_variants_ids)))
+    passed_variants_list = variants_list.filter(
+        variant_filters=variant_filters,
+        num_threads=num_threads,
+    )
+    passed_variants_ids = set(passed_variants_list.variant_ids)
 
-    # Step 2. Filter out variants overlapping the excluded regions
-    if excluded_regions_list is not None:
-        overlapping_variants = variants_list.overlap(
-            genomic_ranges_list=excluded_regions_list,
-            padding=excluded_regions_padding,
-            num_threads=num_threads
-        )
-        for variant_id, genomic_ranges in overlapping_variants:
-            rejected_variant_ids_dict[variant_id].append(VariantCallTags.NEARBY_EXCLUDED_REGION)
-        logger.info('%i variants are near excluded regions.' % len(overlapping_variants))
-
-    # Step 3. Filter out variants near the excluded variants
-    if excluded_variants_list is not None:
-        nearby_variants = variants_list.find_nearby_variants(
-            query_variants_list=excluded_variants_list,
-            max_neighbor_distance=excluded_variants_padding,
-            num_threads=num_threads
-        )
-        for variant_id, query_variants in nearby_variants:
-            rejected_variant_ids_dict[variant_id].append(VariantCallTags.NEARBY_EXCLUDED_VARIANT)
-        logger.info('%i variants are near excluded variants.' % len(nearby_variants))
-
-    # Step 4. Filter out variants in homopolymer regions
-    if reference_genome_fasta_file is not None:
-        flanking_sequences = variants_list.find_breakpoint_flanking_sequences(
-            reference_genome_fasta_file=reference_genome_fasta_file,
-            num_threads=num_threads,
-            length=homopolymer_length
-        )
-        homopolymer_variant_ids = set()
-        for flanking_sequence in flanking_sequences:
-            if is_repeated_sequence(sequence=flanking_sequence[3]) or \
-                    is_repeated_sequence(sequence=flanking_sequence[4]):
-                homopolymer_variant_ids.add(flanking_sequence[0])
-                rejected_variant_ids_dict[flanking_sequence[0]].append(VariantCallTags.HOMOPOLYMER_REGION)
-        logger.info('%i variants are in homopolymer regions.' % len(homopolymer_variant_ids))
-
-    # Step 4. Create a passed VariantsList and a rejected VariantsList
+    # Step 2. Create a passed VariantsList and a rejected VariantsList
     variants_list_passed = VariantsList()
     variants_list_rejected = VariantsList()
     for variant in variants_list.variants:
-        if variant.id in rejected_variant_ids_dict.keys():
-            for i in range(0, variant.num_variant_calls):
-                for reason in rejected_variant_ids_dict[variant.id]:
-                    variant.variant_calls[i].tags.add(reason)
-            variants_list_rejected.add_variant(variant=variant)
-        else:
+        if variant.id in passed_variants_ids:
             for i in range(0, variant.num_variant_calls):
                 variant.variant_calls[i].tags.add(VariantCallTags.PASSED)
             variants_list_passed.add_variant(variant=variant)
+        else:
+            for i in range(0, variant.num_variant_calls):
+                variant.variant_calls[i].tags.add(VariantCallTags.FAILED_FILTER)
+            variants_list_rejected.add_variant(variant=variant)
 
     logger.info('%i variants and %i variant calls in the passed VariantsList after filtering.' %
                 (len(variants_list_passed.variants), len(variants_list_passed.variant_call_ids)))
@@ -198,10 +154,145 @@ def filter(
     return variants_list_passed, variants_list_rejected
 
 
+def filter_excluded_regions(
+        variants_list: VariantsList,
+        excluded_regions_list: GenomicRangesList = None,
+        excluded_regions_padding: int = FILTER_EXCLUDED_REGION_PADDING,
+        num_threads: int = NUM_THREADS
+) -> Tuple[VariantsList, VariantsList]:
+    """
+    Filter out VariantCalls in excluded regions.
+
+    Parameters:
+        variants_list               :   VariantsList object.
+        excluded_regions_list       :   GenomicRangesList object of regions to exclude.
+        excluded_regions_padding    :   Number of bases to pad each region to exclude.
+        num_threads                 :   Number of threads.
+
+    Returns:
+        Tuple[variants_list_passed,variants_list_rejected]
+    """
+    logger.info('%i variants and %i variant calls in the original list before filtering.' %
+                (len(variants_list.variants), len(variants_list.variant_call_ids)))
+
+    # Step 1. Filter out VariantCall objects overlapping the excluded regions
+    rejected_variant_call_ids = set()
+    overlapping_variant_call_ids = variants_list.overlap(
+        genomic_ranges_list=excluded_regions_list,
+        padding=excluded_regions_padding,
+        num_threads=num_threads
+    )
+    for variant_call_id, genomic_ranges in overlapping_variant_call_ids:
+        rejected_variant_call_ids.add(variant_call_id)
+    logger.info('%i variant calls are near excluded regions.' % len(overlapping_variant_call_ids))
+
+    # Step 2. Create a passed VariantsList and a rejected VariantsList
+    variants_list_passed = VariantsList()
+    variants_list_rejected = VariantsList()
+    for variant in variants_list.variants:
+        variant_calls_passed = []
+        variant_calls_rejected = []
+        for variant_call in variant.variant_calls:
+            if variant_call.id in rejected_variant_call_ids:
+                variant_call.tags.add(VariantCallTags.NEARBY_EXCLUDED_REGION)
+                variant_calls_rejected.append(variant_call)
+            else:
+                variant_call.tags.add(VariantCallTags.PASSED)
+                variant_calls_passed.append(variant_call)
+
+        variant_passed = Variant(id=variant.id)
+        variant_rejected = Variant(id=variant.id)
+        for variant_call in variant_calls_passed:
+            variant_passed.add_variant_call(variant_call=variant_call)
+        for variant_call in variant_calls_rejected:
+            variant_rejected.add_variant_call(variant_call=variant_call)
+
+        if variant_passed.num_variant_calls > 0:
+            variants_list_passed.add_variant(variant=variant_passed)
+        if variant_rejected.num_variant_calls > 0:
+            variants_list_rejected.add_variant(variant=variant_rejected)
+
+    logger.info('%i variants and %i variant calls in the passed VariantsList after filtering.' %
+                (len(variants_list_passed.variants), len(variants_list_passed.variant_call_ids)))
+    logger.info('%i variants and %i variant calls in the rejected VariantsList after filtering.' %
+                (len(variants_list_rejected.variants), len(variants_list_rejected.variant_call_ids)))
+
+    return variants_list_passed, variants_list_rejected
+
+
+def filter_homopolymeric_variants(
+        variants_list: VariantsList,
+        reference_genome_fasta_file: str,
+        homopolymer_length: int = FILTER_HOMOPOLYMER_LENGTH,
+        num_threads: int = NUM_THREADS
+) -> Tuple[VariantsList, VariantsList]:
+    """
+    Filter out homopolymeric VariantCall objects.
+
+    Parameters:
+        variants_list                   :   VariantsList object.
+        reference_genome_fasta_file     :   Reference genome FASTA file.
+        homopolymer_length              :   Homopolymer length.
+        num_threads                     :   Number of threads.
+
+    Returns:
+        Tuple[variants_list_passed,variants_list_rejected]
+    """
+    logger.info('%i variants and %i variant calls in the original list before filtering.' %
+                (len(variants_list.variants), len(variants_list.variant_call_ids)))
+
+    # Step 1. Filter out variants in homopolymer regions
+    flanking_sequences = variants_list.find_breakpoint_flanking_sequences(
+        reference_genome_fasta_file=reference_genome_fasta_file,
+        num_threads=num_threads,
+        length=homopolymer_length
+    )
+    rejected_variant_call_ids = set()
+    for variant_id, variant_call_id, position, left_seq, right_right in flanking_sequences:
+        if is_repeated_sequence(sequence=left_seq) or is_repeated_sequence(sequence=right_right):
+            rejected_variant_call_ids.add(variant_call_id)
+    logger.info('%i variant calls are homopolymeric variant calls.' % len(rejected_variant_call_ids))
+
+    # Step 2. Create a passed VariantsList and a rejected VariantsList
+    variants_list_passed = VariantsList()
+    variants_list_rejected = VariantsList()
+    for variant in variants_list.variants:
+        variant_calls_passed = []
+        variant_calls_rejected = []
+        for variant_call in variant.variant_calls:
+            if variant_call.id in rejected_variant_call_ids:
+                variant_call.tags.add(VariantCallTags.HOMOPOLYMER_REGION)
+                variant_calls_rejected.append(variant_call)
+            else:
+                variant_call.tags.add(VariantCallTags.PASSED)
+                variant_calls_passed.append(variant_call)
+
+        variant_passed = Variant(id=variant.id)
+        variant_rejected = Variant(id=variant.id)
+        for variant_call in variant_calls_passed:
+            variant_passed.add_variant_call(variant_call=variant_call)
+        for variant_call in variant_calls_rejected:
+            variant_rejected.add_variant_call(variant_call=variant_call)
+
+        if variant_passed.num_variant_calls > 0:
+            variants_list_passed.add_variant(variant=variant_passed)
+        if variant_rejected.num_variant_calls > 0:
+            variants_list_rejected.add_variant(variant=variant_rejected)
+
+    logger.info('%i variants and %i variant calls in the passed VariantsList after identifying homopolymeric variant calls.' %
+                (len(variants_list_passed.variants), len(variants_list_passed.variant_call_ids)))
+    logger.info('%i variants and %i variant calls in the rejected VariantsList after identifying homopolymeric variant calls.' %
+                (len(variants_list_rejected.variants), len(variants_list_rejected.variant_call_ids)))
+
+    return variants_list_passed, variants_list_rejected
+
+
 def intersect(
         variants_lists: List[VariantsList],
         num_threads: int = NUM_THREADS,
         max_neighbor_distance: int = INTERSECT_MAX_NEIGHBOR_DISTANCE,
+        match_all_breakpoints: bool = MERGE_MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MERGE_MATCH_VARIANT_TYPES
 ) -> VariantsList:
     """
     Return intersecting VariantsList.
@@ -210,6 +301,10 @@ def intersect(
         variants_lists          :   List of VariantsList objects.
         num_threads             :   Number of threads.
         max_neighbor_distance   :   Maximum neighbor distance.
+        match_all_breakpoints       :   If True, for two VariantCall objects to be considered
+                                        intersecting, all breakpoints must match or be near each other.
+        match_variant_types         :   If True, for two VariantCall objects to be considered
+                                        intersecting, their variant types must match.
 
     Returns:
         VariantsList
@@ -217,7 +312,9 @@ def intersect(
     return VariantsList.intersect(
         variants_lists=variants_lists,
         num_threads=num_threads,
-        max_neighbor_distance=max_neighbor_distance
+        max_neighbor_distance=max_neighbor_distance,
+        match_all_breakpoints=match_all_breakpoints,
+        match_variant_types=match_variant_types
     )
 
 
@@ -225,6 +322,8 @@ def merge(
         variants_lists: List[VariantsList],
         num_threads: int = NUM_THREADS,
         max_neighbor_distance: int = MERGE_MAX_NEIGHBOR_DISTANCE,
+        match_all_breakpoints: bool = MERGE_MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MERGE_MATCH_VARIANT_TYPES
 ) -> VariantsList:
     """
     Merge VariantsList objects into one.
@@ -233,6 +332,10 @@ def merge(
         variants_lists              :   List of VariantsList objects.
         num_threads                 :   Number of threads.
         max_neighbor_distance       :   Maximum neighbor distance.
+        match_all_breakpoints       :   If True, for two VariantCall objects to be considered
+                                        intersecting, all breakpoints must match or be near each other.
+        match_variant_types         :   If True, for two VariantCall objects to be considered
+                                        intersecting, their variant types must match.
 
     Returns:
         VariantsList
@@ -240,7 +343,9 @@ def merge(
     return VariantsList.merge(
         variants_lists=variants_lists,
         num_threads=num_threads,
-        max_neighbor_distance=max_neighbor_distance
+        max_neighbor_distance=max_neighbor_distance,
+        match_all_breakpoints=match_all_breakpoints,
+        match_variant_types=match_variant_types
     )
 
 

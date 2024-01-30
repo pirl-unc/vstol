@@ -148,54 +148,19 @@ fn filter_variants_list(
     Ok(serialized)
 }
 
-/// This function identifies nearby Variant objects.
+/// This function identifies overlapping VariantCall objects.
 ///
 /// # Arguments
-/// * `target_variants_list_str`    -   serialized VariantsList object.
-/// * `query_variants_list_str`     -   serialized VariantsList object.
-/// * `num_threads`                 -   number of threads.
-/// * `max_neighbor_distance`       -   maximum neighbor distance.
+/// * `variants_list_str`               -   serialized VariantsList object.
+/// * `genomic_ranges_list_str`         -   serialized GenomicRangesList object.
+/// * `num_threads`                     -   number of threads.
+/// * `padding`                         -   padding to apply to GenomicRange start and end.
 ///
 /// # Returns
-/// * `nearby_variants_map`         -   HashMap where key is Variant.id and
-///                                     value is a vector of query Variant.id
+/// * `overlapping_variant_call_ids`    -   HashMap where key is VariantCall.id and
+///                                         value is a vector of GenomicRange.id
 #[pyfunction]
-fn find_nearby_variants(
-    py: Python,
-    target_variants_list_str: String,
-    query_variants_list_str: String,
-    num_threads: usize,
-    max_neighbor_distance: isize) -> Py<PyAny> {
-    // Step 1. Deserialize VariantsList objects
-    let mut target_variants_list: VariantsList = deserialize_variants_list(&target_variants_list_str);
-    let mut query_variants_list: VariantsList = deserialize_variants_list(&query_variants_list_str);
-
-    // Step 2. Find nearby variants
-    let nearby_variants_map: HashMap<String, Vec<String>> = target_variants_list.find_nearby_variants(
-        query_variants_list,
-        max_neighbor_distance,
-        num_threads,
-        &constants::VARIANT_TYPES_MAP
-    );
-
-    return Python::with_gil(|py| {
-        nearby_variants_map.to_object(py)
-    });
-}
-
-/// This function identifies overlapping Variant objects.
-///
-/// # Arguments
-/// * `variants_list_str`           -   serialized VariantsList object.
-/// * `genomic_ranges_list_str`     -   serialized GenomicRangesList object.
-/// * `num_threads`                 -   number of threads.
-/// * `padding`                     -   padding to apply to GenomicRange start and end.
-///
-/// # Returns
-/// * `nearby_variants_map`         -   HashMap where key is Variant.id and
-///                                     value is a vector of GenomicRange.id
-#[pyfunction]
-fn find_overlapping_variants(
+fn find_overlapping_variant_calls(
     py: Python,
     variants_list_str: String,
     genomic_ranges_list_str: String,
@@ -207,25 +172,30 @@ fn find_overlapping_variants(
     // Step 2. Deserialize GenomicRangesList objects
     let genomic_ranges_list: GenomicRangesList = deserialize_genomic_ranges_list(&genomic_ranges_list_str);
 
-    // Step 3. Find nearby Variant objects
-    let nearby_variants_map: HashMap<String, Vec<String>> = variants_list.overlap(
+    // Step 3. Find overlapping VariantCall IDs
+    let overlapping_variant_call_ids: HashMap<String, Vec<String>> = variants_list.overlap(
         genomic_ranges_list,
         num_threads,
         padding
     );
 
     return Python::with_gil(|py| {
-        nearby_variants_map.to_object(py)
+        overlapping_variant_call_ids.to_object(py)
     });
 }
 
-/// This function identifies intersecting variants given
+/// This function identifies intersecting (or nearby) variant calls given
 /// a vector of serialized VariantsList objects.
 ///
 /// # Arguments
 /// * `py_list`                 -   list of serialized VariantsList objects.
 /// * `num_threads`             -   number of threads.
 /// * `max_neighbor_distance`   -   maximum neighbor distance.
+/// * `match_all_breakpoints`   -   If true, both pairs of breakpoints of two variant calls
+///                                 must be near each other (start1 == start2 && end1 == end2).
+///                                 If false, only one pair of breakpoints of two variant calls
+///                                 must be near each other (start1 == start2 || end1 == end2).
+/// * `match_variant_types`     -   If true, variant types (super types) must match.
 ///
 /// # Returns
 /// * A serialized VariantsList object.
@@ -233,15 +203,19 @@ fn find_overlapping_variants(
 fn intersect_variants_lists(
     py: Python, py_list: &PyList,
     num_threads: usize,
-    max_neighbor_distance: isize) -> PyResult<String> {
+    max_neighbor_distance: isize,
+    match_all_breakpoints: bool,
+    match_variant_types: bool) -> PyResult<String> {
     // Step 1. Deserialize VariantsList objects
     let mut variants_lists: Vec<VariantsList> = deserialize_variants_lists(py_list);
 
-    // Step 2. Identify intersecting variants in VariantsList objects
+    // Step 2. Identify intersecting (or nearby) variant calls in VariantsList objects
     let intersecting_variants_list: VariantsList = VariantsList::intersect(
         variants_lists,
         num_threads,
         max_neighbor_distance,
+        match_all_breakpoints,
+        match_variant_types,
         &constants::VARIANT_TYPES_MAP
     );
 
@@ -264,7 +238,9 @@ fn intersect_variants_lists(
 fn merge_variants_lists(
     py: Python, py_list: &PyList,
     num_threads: usize,
-    max_neighbor_distance: isize) -> PyResult<String> {
+    max_neighbor_distance: isize,
+    match_all_breakpoints: bool,
+    match_variant_types: bool) -> PyResult<String> {
     // Step 1. Deserialize VariantsList objects
     let mut variants_lists: Vec<VariantsList> = deserialize_variants_lists(py_list);
 
@@ -273,6 +249,8 @@ fn merge_variants_lists(
         variants_lists,
         num_threads,
         max_neighbor_distance,
+        match_all_breakpoints,
+        match_variant_types,
         &constants::VARIANT_TYPES_MAP
     );
 
@@ -285,8 +263,7 @@ fn merge_variants_lists(
 #[pymodule]
 fn vstolibrs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(filter_variants_list, m)?);
-    m.add_function(wrap_pyfunction!(find_nearby_variants, m)?);
-    m.add_function(wrap_pyfunction!(find_overlapping_variants, m)?);
+    m.add_function(wrap_pyfunction!(find_overlapping_variant_calls, m)?);
     m.add_function(wrap_pyfunction!(intersect_variants_lists, m)?);
     m.add_function(wrap_pyfunction!(merge_variants_lists, m)?);
     Ok(())

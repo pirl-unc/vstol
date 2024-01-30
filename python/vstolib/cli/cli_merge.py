@@ -87,6 +87,26 @@ def add_cli_merge_arg_parser(
              "this distance (inclusive) will be merged into one variant."
              % MERGE_MAX_NEIGHBOR_DISTANCE
     )
+    parser_optional.add_argument(
+        "--match-all-breakpoints", '-m',
+        dest="match_all_breakpoints",
+        type=int,
+        required=False,
+        default=MERGE_MATCH_ALL_BREAKPOINTS,
+        help="If true, for two VariantCall objects to be considered "
+             "intersecting, all breakpoints must match or be near each other (default: %r)."
+             % MERGE_MAX_NEIGHBOR_DISTANCE
+    )
+    parser_optional.add_argument(
+        "--match-variant-types", '-a',
+        dest="match_variant_types",
+        type=int,
+        required=False,
+        default=MERGE_MATCH_VARIANT_TYPES,
+        help="If true, for two VariantCall objects to be considered "
+             "intersecting, the variant types must be the same (default: %r)."
+             % MERGE_MATCH_VARIANT_TYPES
+    )
     parser.set_defaults(which='merge')
     return sub_parsers
 
@@ -101,6 +121,8 @@ def run_cli_merge_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     num_threads
                     max_neighbor_distance
+                    match_all_breakpoints
+                    match_all_breakpoints
     """
     # Step 1. Load variants lists
     logger.info("Started reading all TSV files")
@@ -118,7 +140,9 @@ def run_cli_merge_from_parsed_args(args: argparse.Namespace):
     variants_list = merge(
         variants_lists=variants_lists,
         num_threads=args.num_threads,
-        max_neighbor_distance=args.max_neighbor_distance
+        max_neighbor_distance=args.max_neighbor_distance,
+        match_all_breakpoints=args.match_all_breakpoints,
+        match_variant_types=args.match_variant_types
     )
     logger.info("Finished merging all variants into one list")
     logger.info('%i variants and %i variant calls in merged variants list' %

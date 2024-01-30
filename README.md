@@ -17,6 +17,7 @@ pip install . --verbose
 - pandas>=2.0.3
 - numpy>=1.22.3
 - maturin>=0.14,<0.15
+- pysam
 - rust
 
 ## 03. Usage

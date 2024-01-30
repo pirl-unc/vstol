@@ -11,6 +11,14 @@
 // limitations under the License.
 
 
+use std::collections::{HashMap, HashSet};
+
+
+pub fn calculate_max(values: Vec<f64>) -> f64 {
+    let max = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    return max;
+}
+
 pub fn calculate_mean(values: Vec<f64>) -> f64 {
     let sum: f64 = values.iter().sum();
     let average = sum as f64 / values.len() as f64;
@@ -37,12 +45,46 @@ pub fn calculate_median(values: Vec<f64>) -> f64 {
     return median;
 }
 
-pub fn calculate_max(values: Vec<f64>) -> f64 {
-    let max = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-    return max;
-}
-
 pub fn calculate_min(values: Vec<f64>) -> f64 {
     let min = values.iter().cloned().fold(f64::INFINITY, f64::min);
     return min;
+}
+
+pub fn find_clusters(pairs: Vec<(String, String)>) -> Vec<HashSet<String>> {
+    let mut adjacency_map: HashMap<String, HashSet<String>> = HashMap::new();
+    for (element_1, element_2) in pairs.iter() {
+        adjacency_map
+            .entry(element_1.clone())
+            .or_insert_with(HashSet::new)
+            .insert(element_2.clone());
+        adjacency_map
+            .entry(element_2.clone())
+            .or_insert_with(HashSet::new)
+            .insert(element_1.clone());
+    }
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut clusters: Vec<HashSet<String>> = Vec::new();
+    fn dfs(element: String,
+           cluster: &mut HashSet<String>,
+           visited: &mut HashSet<String>,
+           adjacency_map: &HashMap<String,
+           HashSet<String>>) {
+        visited.insert(element.clone());
+        cluster.insert(element.clone());
+        if let Some(neighbors) = adjacency_map.get(&element) {
+            for neighbor in neighbors {
+                if !visited.contains(neighbor) {
+                    dfs(neighbor.clone(), cluster, visited, adjacency_map);
+                }
+            }
+        }
+    }
+    for element in adjacency_map.keys() {
+        if visited.contains(element) == false {
+            let mut cluster = HashSet::new();
+            dfs(element.clone(), &mut cluster, &mut visited, &adjacency_map);
+            clusters.push(cluster);
+        }
+    }
+    return clusters;
 }

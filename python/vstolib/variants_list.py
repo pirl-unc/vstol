@@ -83,15 +83,21 @@ class VariantsList:
             self,
             variants_list: 'VariantsList',
             num_threads:int,
-            max_neighbor_distance: int
+            max_neighbor_distance: int,
+            match_all_breakpoints: bool,
+            match_variant_types: bool
     ) -> 'VariantsList':
         """
         Diff another variants list.
 
         Parameters:
             variants_list:              VariantsList object.
-            num_threads:                Number of threads.
-            max_neighbor_distance:      Maximum neighbor distance.
+            num_threads:                :   Number of threads.
+            max_neighbor_distance:          Maximum neighbor distance.
+            match_all_breakpoints       :   If True, for two VariantCall objects to be considered
+                                            intersecting, all breakpoints must match or be near each other.
+            match_variant_types         :   If True, for two VariantCall objects to be considered
+                                            intersecting, their variant types must match.
 
         Returns:
             VariantsList
@@ -100,49 +106,21 @@ class VariantsList:
         variants_list_intersecting = VariantsList.intersect(
             variants_lists=[self, variants_list],
             max_neighbor_distance=max_neighbor_distance,
-            num_threads=num_threads
+            num_threads=num_threads,
+            match_all_breakpoints=match_all_breakpoints,
+            match_variant_types=match_variant_types
         )
-        variant_call_ids_to_remove = set()
+        rejected_variant_call_ids = set()
         for variant in variants_list_intersecting.variants:
             for variant_call in variant.variant_calls:
-                variant_call_ids_to_remove.add(variant_call.id)
+                rejected_variant_call_ids.add(variant_call.id)
 
-        # Step 2. List up all breakpoints in the query variants list
-        genomic_ranges_list = GenomicRangesList()
-        for variant in variants_list.variants:
-            for variant_call in variant.variant_calls:
-                genomic_range_1 = GenomicRange(
-                    chromosome=variant_call.chromosome_1,
-                    start=variant_call.position_1,
-                    end=variant_call.position_1
-                )
-                genomic_range_2 = GenomicRange(
-                    chromosome=variant_call.chromosome_2,
-                    start=variant_call.position_2,
-                    end=variant_call.position_2
-                )
-                genomic_ranges_list.add_genomic_range(
-                    genomic_range=genomic_range_1
-                )
-                genomic_ranges_list.add_genomic_range(
-                    genomic_range=genomic_range_2
-                )
-
-        # Step 2. Identify overlaps with the breakpoints
-        overlapping_variant_call_ids = variants_list.overlap(
-            genomic_ranges_list=genomic_ranges_list,
-            padding=max_neighbor_distance,
-            num_threads=num_threads
-        )
-        for variant_call_id, _ in overlapping_variant_call_ids:
-            variant_call_ids_to_remove.add(variant_call_id)
-
-        # Step 3. Prepare private VariantsList to output
+        # Step 2. Prepare private VariantsList to output
         variants_list_diff = VariantsList()
         for variant in self.variants:
             variant_ = Variant(id=variant.id)
             for variant_call in variant.variant_calls:
-                if variant_call.id not in variant_call_ids_to_remove:
+                if variant_call.id not in rejected_variant_call_ids:
                     variant_.add_variant_call(variant_call)
             if variant_.num_variant_calls > 0:
                 variants_list_diff.add_variant(variant=variant_)
@@ -202,46 +180,6 @@ class VariantsList:
             flanking_sequences.extend(flanking_sequences_list)
         return flanking_sequences
 
-    def find_nearby_variants(
-            self,
-            query_variants_list: 'VariantsList',
-            num_threads: int,
-            max_neighbor_distance: int
-    ) -> List[Tuple[str, List[Variant]]]:
-        """
-        Find nearby variants.
-
-        Parameters:
-            query_variants_list     :   Query VariantsList object.
-            num_threads             :   Number of threads.
-            max_neighbor_distance   :   Maximum neighbor distance.
-
-        Returns:
-            List[Tuple[variant_id,List[Variant]]]
-        """
-        # Step 1. Serialize VariantsList object
-        target_variants_list_serialized = json.dumps(self.to_dict())
-
-        # Step 2. Serialize VariantsList object
-        query_variants_list_serialized = json.dumps(query_variants_list.to_dict())
-
-        # Step 3. Find nearby variants
-        nearby_variants_dict = vstolibrs.find_nearby_variants(
-            target_variants_list_serialized,
-            query_variants_list_serialized,
-            num_threads,
-            max_neighbor_distance
-        )
-
-        # Step 4. Prepare returning data structure
-        nearby_variants = []
-        for key, value in nearby_variants_dict.items():
-            query_variants = []
-            for query_variant_id in value:
-                query_variants.append(query_variants_list.get_variant(query_variant_id))
-            nearby_variants.append((key, query_variants))
-        return nearby_variants
-
     def get_variant(self, variant_id: str) -> Variant:
         return self.variants[self._variants_dict[variant_id]]
 
@@ -269,7 +207,7 @@ class VariantsList:
         genomic_ranges_list_serialized = json.dumps(genomic_ranges_list.to_dict())
 
         # Step 3. Identify Variant objects that overlap GenomicRange objects
-        nearby_variant_ids = vstolibrs.find_overlapping_variants(
+        nearby_variant_call_ids = vstolibrs.find_overlapping_variant_calls(
             variants_list_serialized,
             genomic_ranges_list_serialized,
             num_threads,
@@ -277,14 +215,14 @@ class VariantsList:
         )
 
         # Step 4. Get Variant and GenomicRange objects
-        nearby_variants = []
-        for variant_call_id, genomic_range_ids in nearby_variant_ids.items():
+        overlapping_variant_call_ids = []
+        for variant_call_id, genomic_range_ids in nearby_variant_call_ids.items():
             genomic_ranges = []
             for genomic_range_id in genomic_range_ids:
                 genomic_range = genomic_ranges_list.get_genomic_range(genomic_range_id)
                 genomic_ranges.append(genomic_range)
-            nearby_variants.append((variant_call_id, genomic_ranges))
-        return nearby_variants
+            overlapping_variant_call_ids.append((variant_call_id, genomic_ranges))
+        return overlapping_variant_call_ids
 
     def to_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame(self.to_dataframe_row())
@@ -374,11 +312,12 @@ class VariantsList:
             )
         return flanking_sequences
 
-
     @staticmethod
     def intersect(variants_lists: List['VariantsList'],
                   num_threads: int,
-                  max_neighbor_distance: int) -> 'VariantsList':
+                  max_neighbor_distance: int,
+                  match_all_breakpoints: bool,
+                  match_variant_types: bool) -> 'VariantsList':
         """
         Return an intersecting VariantsList.
 
@@ -396,6 +335,10 @@ class VariantsList:
                                                 appended to the Variant. If such VariantCall
                                                 is not identified, then a new Variant is constructed
                                                 and added to self.variants.
+            match_all_breakpoints           :   If True, for two VariantCall objects to be considered
+                                                intersecting, all breakpoints must match or be near each other.
+            match_variant_types             :   If True, for two VariantCall objects to be considered
+                                                intersecting, their variant types must match.
 
         Returns:
             VariantList
@@ -409,7 +352,9 @@ class VariantsList:
         json_str = vstolibrs.intersect_variants_lists(
             variants_lists_serialized,
             num_threads,
-            max_neighbor_distance
+            max_neighbor_distance,
+            match_all_breakpoints,
+            match_variant_types
         )
 
         return VariantsList.load_serialized_json(json_str=json_str)
@@ -644,7 +589,9 @@ class VariantsList:
     @staticmethod
     def merge(variants_lists: List['VariantsList'],
               num_threads: int,
-              max_neighbor_distance: int) -> 'VariantsList':
+              max_neighbor_distance: int,
+              match_all_breakpoints: bool,
+              match_variant_types: bool) -> 'VariantsList':
         """
         Merge a list of VariantsList objects and return a VariantsList object.
 
@@ -662,6 +609,10 @@ class VariantsList:
                                                 appended to the Variant. If such VariantCall
                                                 is not identified, then a new Variant is constructed
                                                 and added to self.variants.
+            match_all_breakpoints           :   If True, for two VariantCall objects to be considered
+                                                intersecting, all breakpoints must match or be near each other.
+            match_variant_types             :   If True, for two VariantCall objects to be considered
+                                                intersecting, their variant types must match.
 
         Returns:
             VariantList
@@ -675,7 +626,9 @@ class VariantsList:
         json_str = vstolibrs.merge_variants_lists(
             variants_lists_serialized,
             num_threads,
-            max_neighbor_distance
+            max_neighbor_distance,
+            match_all_breakpoints,
+            match_variant_types
         )
 
         return VariantsList.load_serialized_json(json_str=json_str)

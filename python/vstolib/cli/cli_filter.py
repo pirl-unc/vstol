@@ -18,11 +18,13 @@ and run 'filter' command.
 
 
 import argparse
-from ..genomic_ranges_list import GenomicRangesList
-from ..constants import VariantFilterSampleTypes
+from collections import defaultdict
+from ..constants import VariantFilterSampleTypes, VariantCallTags
 from ..default import *
+from ..genomic_ranges_list import GenomicRangesList
 from ..logging import get_logger
-from ..main import filter
+from ..main import filter, filter_excluded_regions, filter_homopolymeric_variants
+from ..variant import Variant
 from ..variant_filter import VariantFilter
 from ..variants_list import VariantsList
 
@@ -119,33 +121,9 @@ def add_cli_filter_arg_parser(
         dest="excluded_regions_padding",
         type=int,
         required=False,
-        default=FILTER_EXCLUDED_VARIANT_PADDING,
+        default=FILTER_EXCLUDED_REGION_PADDING,
         help="Number of bases to pad each region in '--excluded-regions-tsv-files' (default: %i)."
-             % FILTER_EXCLUDED_VARIANT_PADDING
-    )
-    parser_optional.add_argument(
-        "--excluded-variants-tsv-file", '-v',
-        dest="excluded_variants_tsv_file",
-        type=str,
-        required=False,
-        help="TSV file of variants to exclude. Variants with any variant calls "
-             "where breakpoints are near the variants in this file will be "
-             "removed. Expected headers: 'variant_id', 'variant_call_id', "
-             "'sample_id', 'chromosome_1', 'position_1', 'chromosome_2', "
-             "'position_2', 'variant_type', 'reference_allele', "
-             "'alternate_allele'. This parameter can be used to filter out "
-             "control-specific (e.g. germline) variants for identification of "
-             "case-specific (e.g. somatic) variants."
-    )
-    parser_optional.add_argument(
-        "--excluded-variants-padding", '-a',
-        dest="excluded_variants_padding",
-        type=int,
-        required=False,
-        default=FILTER_EXCLUDED_VARIANT_PADDING,
-        help="Number of bases to pad the breakpoints of variants in '--excluded-variants-tsv-file' "
-             "(default: %i)."
-             % FILTER_EXCLUDED_VARIANT_PADDING
+             % FILTER_EXCLUDED_REGION_PADDING
     )
     parser_optional.add_argument(
         "--homopolymer-length", '-l',
@@ -214,14 +192,7 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
             variant_filters.append(variant_filter)
     logger.info('Loaded %i variant filters.' % len(variant_filters))
 
-    # Step 3. Load excluded variants list
-    if args.excluded_variants_tsv_file is not None:
-        logger.info('Loading excluded VariantsList')
-        excluded_variants_list = VariantsList.read_tsv_file(tsv_file=args.excluded_variants_tsv_file)
-    else:
-        excluded_variants_list = None
-
-    # Step 4. Load excluded regions list
+    # Step 3. Load excluded regions list
     if args.excluded_regions_tsv_file is not None:
         excluded_regions_list = GenomicRangesList.read_tsv_file(tsv_file=args.excluded_regions_tsv_file)
         logger.info('Loaded %i excluded regions.' % excluded_regions_list.num_genomic_regions)
@@ -229,19 +200,66 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
         excluded_regions_list = None
 
     # Step 4. Apply variant filters
-    variants_list_passed, variants_list_rejected = filter(
+    _, variants_list_filters_rejected = filter(
         variants_list=variants_list,
         variant_filters=variant_filters,
-        reference_genome_fasta_file=args.reference_genome_fasta_file,
-        excluded_variants_list=excluded_variants_list,
+        num_threads=args.num_threads
+    )
+
+    # Step 5. Filter out variant calls in excluded regions
+    _, variants_list_excluded_regions_rejected = filter_excluded_regions(
+        variants_list=variants_list,
         excluded_regions_list=excluded_regions_list,
         excluded_regions_padding=args.excluded_regions_padding,
-        excluded_variants_padding=args.excluded_variants_padding,
+        num_threads=args.num_threads
+    )
+
+    # Step 6. Filter out homopolymeric variant calls
+    _, variants_list_homopolymer_rejected = filter_homopolymeric_variants(
+        variants_list=variants_list,
+        reference_genome_fasta_file=args.reference_genome_fasta_file,
         homopolymer_length=args.homopolymer_length,
         num_threads=args.num_threads
     )
 
-    # Step 5. Write to TSV files
+    # Step 7. Consolidate the tags for rejected variant calls
+    rejected_variant_call_ids_dict = defaultdict(list)
+    for variant in variants_list_filters_rejected.variants:
+        for variant_call in variant.variant_calls:
+            rejected_variant_call_ids_dict[variant_call.id].append(VariantCallTags.FAILED_FILTER)
+    for variant in variants_list_excluded_regions_rejected.variants:
+        for variant_call in variant.variant_calls:
+            rejected_variant_call_ids_dict[variant_call.id].append(VariantCallTags.NEARBY_EXCLUDED_REGION)
+    for variant in variants_list_homopolymer_rejected.variants:
+        for variant_call in variant.variant_calls:
+            rejected_variant_call_ids_dict[variant_call.id].append(VariantCallTags.HOMOPOLYMER_REGION)
+
+    # Step 8. Consolidate the passed and rejected variants lists
+    variants_list_passed = VariantsList()
+    variants_list_rejected = VariantsList()
+    for variant in variants_list.variants:
+        variant_calls_passed = []
+        variant_calls_rejected = []
+        for variant_call in variant.variant_calls:
+            if variant_call.id in rejected_variant_call_ids_dict.keys():
+                for tag in rejected_variant_call_ids_dict[variant_call.id]:
+                    variant_call.tags.add(tag)
+                variant_calls_rejected.append(variant_call)
+            else:
+                variant_call.tags.add(VariantCallTags.PASSED)
+                variant_calls_passed.append(variant_call)
+        variant_passed = Variant(id=variant.id)
+        variant_rejected = Variant(id=variant.id)
+        for variant_call in variant_calls_passed:
+            variant_passed.add_variant_call(variant_call=variant_call)
+        for variant_call in variant_calls_rejected:
+            variant_rejected.add_variant_call(variant_call=variant_call)
+        if variant_passed.num_variant_calls > 0:
+            variants_list_passed.add_variant(variant=variant_passed)
+        if variant_rejected.num_variant_calls > 0:
+            variants_list_rejected.add_variant(variant=variant_rejected)
+
+    # Step 9. Write to TSV files
     logger.info('Started writing passed and rejected variants lists')
     variants_list_passed.to_dataframe().to_csv(args.output_passed_tsv_file, sep='\t', index=False)
     variants_list_rejected.to_dataframe().to_csv(args.output_rejected_tsv_file, sep='\t', index=False)

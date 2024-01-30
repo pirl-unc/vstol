@@ -12,6 +12,4 @@ vstol filter \
   --homopolymer-length 20 \
   --excluded-regions-tsv-file ../test/data/hg38_ucsc_gap_table.tsv \
   --excluded-regions-padding 100000 \
-  --excluded-variants-tsv-file ../test/data/hg002_pbsv.tsv \
-  --excluded-variants-padding 1000 \
   --num-threads 1

@@ -168,11 +168,6 @@ class Variant:
         """
         Add a VariantCall object.
         """
-        if len(self.variant_calls) > 0:
-            if variant_call.chromosome_1 != self.variant_calls[0].chromosome_1 or \
-                    variant_call.chromosome_2 != self.variant_calls[0].chromosome_2:
-                raise Exception('VariantCall chromosome_1 and chromosome_2 must be the same as '
-                                'existing VariantCall objects in this Variant object.')
         insort(self.variant_calls, variant_call)
 
     def to_dataframe_row(self) -> Dict:
