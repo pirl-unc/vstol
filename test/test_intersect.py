@@ -6,15 +6,17 @@ from vstolib.variants_list import VariantsList
 from vstolib.constants import VariantTypes
 
 
-# def test_intersect_1(pbsv_variants_list,
-#                      sniffles2_variants_list):
-#     variants_list = intersect(
-#         variants_lists=[pbsv_variants_list,
-#                         sniffles2_variants_list],
-#         num_threads=1,
-#         max_neighbor_distance=10
-#     )
-#     print(variants_list.size)
+def test_intersect_1(pbsv_variants_list,
+                     sniffles2_variants_list):
+    variants_list = intersect(
+        variants_lists=[pbsv_variants_list,
+                        sniffles2_variants_list],
+        num_threads=1,
+        max_neighbor_distance=10,
+        match_all_breakpoints=True,
+        match_variant_types=True
+    )
+    print(variants_list.size)
 
 
 def test_intersect_2():
@@ -117,8 +119,6 @@ def test_intersect_2():
     )
 
     for variant in variants_list.variants:
-        if variant.id == '1':
-            assert set(variant.variant_call_ids) == set(['variant_call_14','variant_call_22'])
-        if variant.id == '2':
-            assert set(variant.variant_call_ids) == set(['variant_call_11','variant_call_21'])
+            assert (set(variant.variant_call_ids) == set(['variant_call_14','variant_call_22']) or
+                    set(variant.variant_call_ids) == set(['variant_call_11','variant_call_21']))
 

@@ -53,6 +53,9 @@ FILTER_HOMOPOLYMER_LENGTH = 20
 """intersect"""
 # Maximum neighbor distance (bases).
 INTERSECT_MAX_NEIGHBOR_DISTANCE = 10
+INTERSECT_MATCH_ALL_BREAKPOINTS = True
+INTERSECT_MATCH_VARIANT_TYPES = True
+
 
 
 """merge"""

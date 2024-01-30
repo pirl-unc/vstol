@@ -88,6 +88,28 @@ def add_cli_intersect_arg_parser(
              "this distance (inclusive) will be identified as the same variant."
              % INTERSECT_MAX_NEIGHBOR_DISTANCE
     )
+    parser_optional.add_argument(
+        "--match-all-breakpoints", '-b',
+        dest="match_all_breakpoints",
+        type=bool,
+        required=False,
+        default=INTERSECT_MATCH_ALL_BREAKPOINTS,
+        help="If true, two VariantCall objects are considered an intersect "
+             "if both pairs of breakpoints match (start1==start2 AND end1==end2). "
+             "If false, two VariantCall objects are considered an intersect "
+             "if one of the breakpoint pairs matches (start1==start2 OR end1==end2). Default: %r."
+             % INTERSECT_MATCH_ALL_BREAKPOINTS
+    )
+    parser_optional.add_argument(
+        "--match-variant-types", '-m',
+        dest="match_variant_types",
+        type=bool,
+        required=False,
+        default=INTERSECT_MATCH_VARIANT_TYPES,
+        help="If true, two VariantCall objects are considered an intersect "
+             "if the (super) variant types are the same (default: %r)."
+             % INTERSECT_MATCH_VARIANT_TYPES
+    )
     parser.set_defaults(which='intersect')
     return sub_parsers
 
@@ -102,6 +124,8 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     num_threads
                     max_neighbor_distance
+                    match_all_breakpoints
+                    match_variant_types
     """
     # Step 1. Load variants lists
     logger.info("Started reading all TSV files")
@@ -119,7 +143,9 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
     variants_list = intersect(
         variants_lists=variants_lists,
         num_threads=args.num_threads,
-        max_neighbor_distance=args.max_neighbor_distance
+        max_neighbor_distance=args.max_neighbor_distance,
+        match_all_breakpoints=args.match_all_breakpoints,
+        match_variant_types=args.match_variant_types
     )
     logger.info("Finished intersecting all variants")
     logger.info('%i variants and %i variant calls in intersecting variants list' %
