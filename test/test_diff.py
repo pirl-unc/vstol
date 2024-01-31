@@ -5,7 +5,7 @@ from vstolib.variants_list import VariantsList
 from vstolib.constants import VariantTypes
 
 
-def test_diff_sniffles2_variants_list(
+def test_diff_1(
         sniffles2_variants_list,
         cutesv_variants_list,
         pbsv_variants_list,
@@ -24,7 +24,7 @@ def test_diff_sniffles2_variants_list(
     )
 
 
-def test_diff_bnd():
+def test_diff_2():
     variant_call_11 = VariantCall(
         id='variant_call_11',
         sample_id='sample1',
@@ -128,3 +128,51 @@ def test_diff_bnd():
     assert 'variant_call_12' in variants_list.variant_call_ids
     assert 'variant_call_13' in variants_list.variant_call_ids
     assert 'variant_call_14' not in variants_list.variant_call_ids
+
+
+def test_diff_3():
+    variant_call_11 = VariantCall(
+        id='variant_call_11',
+        sample_id='sample1',
+        chromosome_1='chr1',
+        position_1=100,
+        chromosome_2='chr5',
+        position_2=500,
+        variant_type=VariantTypes.TRANSLOCATION,
+        reference_allele='T',
+        alternate_allele=''
+    )
+
+    variant_call_21 = VariantCall(
+        id='variant_call_21',
+        sample_id='sample2',
+        chromosome_1='chr1',
+        position_1=101,
+        chromosome_2='chr1',
+        position_2=101,
+        variant_type=VariantTypes.INSERTION,
+        reference_allele='C',
+        alternate_allele='CTACTACTGGT'
+    )
+
+    variant_11 = Variant(id='variant_11')
+    variant_21 = Variant(id='variant_21')
+    variant_11.add_variant_call(variant_call=variant_call_11)
+    variant_21.add_variant_call(variant_call=variant_call_21)
+
+    variants_list_1 = VariantsList()
+    variants_list_2 = VariantsList()
+    variants_list_1.add_variant(variant=variant_11)
+    variants_list_2.add_variant(variant=variant_21)
+
+    variants_list = diff(
+        target_variants_list=variants_list_1,
+        query_variants_lists=[variants_list_2],
+        max_neighbor_distance=1000,
+        num_threads=1,
+        match_all_breakpoints=False,
+        match_variant_types=False
+    )
+
+    assert 'variant_call_11' not in variants_list.variant_call_ids
+

@@ -5,6 +5,8 @@ vstol diff \
   --query-tsv-file ../test/data/hg002_cutesv.tsv \
   --num-threads 1 \
   --max-neighbor-distance 10 \
+  --match-all-breakpoints no \
+  --match-variant-types no \
   --output-tsv-file outputs/hg002_sniffles2_private.tsv
 
 vstol diff \
@@ -14,4 +16,6 @@ vstol diff \
   --query-tsv-file ../test/data/hg002_cutesv.tsv \
   --num-threads 1 \
   --max-neighbor-distance 10 \
+  --match-all-breakpoints no \
+  --match-variant-types no \
   --output-tsv-file outputs/hg002_merged_variants_private.tsv

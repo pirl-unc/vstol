@@ -139,6 +139,7 @@ def retrieve_from_dict(
                            default_value=default_value,
                            type=type)
 
+
 def retrieve_from_list(
         lst: list,
         index: int,
@@ -164,3 +165,13 @@ def retrieve_from_list(
     return get_typed_value(value=value,
                            default_value=default_value,
                            type=type)
+
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise Exception('Boolean value expected.')
+

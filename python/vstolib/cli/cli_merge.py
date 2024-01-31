@@ -26,6 +26,7 @@ from ..constants import *
 from ..default import *
 from ..logging import get_logger
 from ..main import merge
+from ..utilities import str2bool
 from ..variants_list import VariantsList
 
 
@@ -88,23 +89,27 @@ def add_cli_merge_arg_parser(
              % MERGE_MAX_NEIGHBOR_DISTANCE
     )
     parser_optional.add_argument(
-        "--match-all-breakpoints", '-m',
+        "--match-all-breakpoints", '-b',
         dest="match_all_breakpoints",
-        type=bool,
+        type=str2bool,
         required=False,
         default=MERGE_MATCH_ALL_BREAKPOINTS,
-        help="If true, for two VariantCall objects to be considered "
-             "intersecting, all breakpoints must match or be near each other (default: %r)."
+        help="If 'yes', two VariantCall objects are considered an intersect "
+             "if both pairs of breakpoints match (start1==start2 AND end1==end2). "
+             "If 'no', two VariantCall objects are considered an intersect "
+             "if one of the breakpoint pairs matches (start1==start2 OR end1==end2). Default: %s"
              % MERGE_MATCH_ALL_BREAKPOINTS
     )
     parser_optional.add_argument(
-        "--match-variant-types", '-a',
+        "--match-variant-types", '-m',
         dest="match_variant_types",
-        type=bool,
+        type=str2bool,
         required=False,
         default=MERGE_MATCH_VARIANT_TYPES,
-        help="If true, for two VariantCall objects to be considered "
-             "intersecting, the variant types must be the same (default: %r)."
+        help="If 'yes', two VariantCall objects are considered an intersect "
+             "if the (super) variant types are the same. "
+             "If 'no', two VariantCall objects are considered an intersect "
+             "even if the (super) variant types are different (default: %s)."
              % MERGE_MATCH_VARIANT_TYPES
     )
     parser.set_defaults(which='merge')
