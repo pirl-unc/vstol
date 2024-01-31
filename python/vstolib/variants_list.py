@@ -300,10 +300,14 @@ class VariantsList:
         fasta = pysam.FastaFile(reference_genome_fasta_file)
         flanking_sequences = []
         for variant_call in variant.variant_calls:
-            left_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - length, variant_call.position_1)
-            right_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - 1, variant_call.position_1 + length - 1)
-            left_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - length, variant_call.position_2)
-            right_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - 1, variant_call.position_2 + length - 1)
+            left_1 = right_1 = left_2 = right_2 = ''
+            try:
+                left_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - length, variant_call.position_1)
+                right_1 = fasta.fetch(variant_call.chromosome_1, variant_call.position_1 - 1, variant_call.position_1 + length - 1)
+                left_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - length, variant_call.position_2)
+                right_2 = fasta.fetch(variant_call.chromosome_2, variant_call.position_2 - 1, variant_call.position_2 + length - 1)
+            except:
+                pass
             flanking_sequences.append(
                 (variant.id, variant_call.id, variant_call.position_1, left_1, right_1)
             )

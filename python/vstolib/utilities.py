@@ -70,6 +70,8 @@ def is_integer(x) -> bool:
 
 
 def is_repeated_sequence(sequence: str) -> bool:
+    if sequence == '':
+        return False
     sequence = sequence.upper()
     first_char = sequence[0]
     for char in sequence[1:]:

@@ -248,8 +248,10 @@ def filter_homopolymeric_variants(
         length=homopolymer_length
     )
     rejected_variant_call_ids = set()
-    for variant_id, variant_call_id, position, left_seq, right_right in flanking_sequences:
-        if is_repeated_sequence(sequence=left_seq) or is_repeated_sequence(sequence=right_right):
+    for variant_id, variant_call_id, position, left_seq, right_seq in flanking_sequences:
+        if len(left_seq) == homopolymer_length and is_repeated_sequence(sequence=left_seq):
+            rejected_variant_call_ids.add(variant_call_id)
+        if len(right_seq) == homopolymer_length and is_repeated_sequence(sequence=right_seq):
             rejected_variant_call_ids.add(variant_call_id)
     logger.info('%i variant calls are homopolymeric variant calls.' % len(rejected_variant_call_ids))
 
