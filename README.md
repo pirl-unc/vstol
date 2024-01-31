@@ -31,6 +31,7 @@ vstol [-h] [--version] {annotate,diff,filter,intersect,merge,overlap,vcf2tsv}
 | Command | Description                                                                                                                 |
 | ------- |-----------------------------------------------------------------------------------------------------------------------------|
 | annotate | Annotate variant calls using [pyensembl](https://github.com/openvax/pyensembl) or [gencode](https://www.gencodegenes.org/). |
+| collapse | Collapse a variants list into unique variants. |
 | diff | Identify variant calls specific to a list.                                                                                  |
 | filter | Filter variant calls (can be used to identify somatic variants).                                                            |
 | intersect | Identify intersecting variant calls.                                                                                        |

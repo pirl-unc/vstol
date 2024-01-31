@@ -27,6 +27,13 @@ class Annotators:
     ]
 
 
+class CollapseStrategies:
+    MAX_ALTERNATE_ALLELE_READ_COUNT = 'max_alternate_allele_read_count'
+    ALL = [
+        MAX_ALTERNATE_ALLELE_READ_COUNT
+    ]
+
+
 class GenomicRegionTypes:
     EXONIC = 'exonic'
     INTRONIC = 'intronic'

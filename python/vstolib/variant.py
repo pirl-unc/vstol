@@ -187,4 +187,3 @@ class Variant:
             'variant_calls': [variant_call.to_dict() for variant_call in self.variant_calls]
         }
         return data
-

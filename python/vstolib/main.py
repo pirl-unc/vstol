@@ -19,9 +19,9 @@ The purpose of this python3 script is to implement main APIs.
 import copy
 import pandas as pd
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 from .annotator import Annotator
-from .constants import VariantCallingMethods, VariantCallTags
+from .constants import CollapseStrategies, VariantCallingMethods, VariantCallTags
 from .default import *
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
@@ -59,6 +59,50 @@ def annotate(
         VariantsList
     """
     return annotator.annotate(variants_list=variants_list)
+
+
+def collapse(
+        variants_list: VariantsList,
+        sample_id: str,
+        strategy: str = Literal[CollapseStrategies.MAX_ALTERNATE_ALLELE_READ_COUNT]
+) -> VariantsList:
+    """
+    Collapses (summarizes) a VariantsList such that each Variant has 1
+    VariantCall.
+
+    Args:
+        variants_list   :   VariantsList object.
+        sample_id       :   Sample ID to retain.
+        strategy        :   Strategy (options: 'max_alternate_allele_read_count').
+
+    Returns:
+        VariantsList
+    """
+    if strategy == CollapseStrategies.MAX_ALTERNATE_ALLELE_READ_COUNT:
+        variants_list_collapsed = VariantsList()
+        for variant in variants_list.variants:
+            target_idx = -1
+            min_reads = -1
+            matches_sample_id = False
+            for i in range(0, len(variant.variant_calls)):
+                variant_call = variant.variant_calls[i]
+                if variant_call.sample_id == sample_id:
+                    matches_sample_id = True
+                    if variant_call.alternate_allele_read_count > min_reads:
+                        target_idx = i
+                        min_reads = variant_call.alternate_allele_read_count
+            if matches_sample_id:
+                if target_idx == -1:
+                    target_idx = 0
+                variant_ = Variant(id=variant.id)
+                variant_.add_variant_call(variant_call=variant.variant_calls[target_idx])
+                variants_list_collapsed.add_variant(variant=variant_)
+    else:
+        raise Exception('Unknown collapse strategy: %s' % strategy)
+    logger.info("%i variants and %i variant calls in the collapsed VariantsList"
+                % (variants_list_collapsed.size,
+                   len(variants_list_collapsed.variant_call_ids)))
+    return variants_list_collapsed
 
 
 def diff(
