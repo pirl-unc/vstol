@@ -90,17 +90,17 @@ def add_cli_merge_arg_parser(
     parser_optional.add_argument(
         "--match-all-breakpoints", '-m',
         dest="match_all_breakpoints",
-        type=int,
+        type=bool,
         required=False,
         default=MERGE_MATCH_ALL_BREAKPOINTS,
         help="If true, for two VariantCall objects to be considered "
              "intersecting, all breakpoints must match or be near each other (default: %r)."
-             % MERGE_MAX_NEIGHBOR_DISTANCE
+             % MERGE_MATCH_ALL_BREAKPOINTS
     )
     parser_optional.add_argument(
         "--match-variant-types", '-a',
         dest="match_variant_types",
-        type=int,
+        type=bool,
         required=False,
         default=MERGE_MATCH_VARIANT_TYPES,
         help="If true, for two VariantCall objects to be considered "
