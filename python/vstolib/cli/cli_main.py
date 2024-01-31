@@ -63,6 +63,7 @@ def run():
     sub_parsers = add_cli_intersect_arg_parser(sub_parsers=sub_parsers)    # intersect
     sub_parsers = add_cli_merge_arg_parser(sub_parsers=sub_parsers)        # merge
     sub_parsers = add_cli_overlap_arg_parser(sub_parsers=sub_parsers)      # overlap
+    sub_parsers = add_cli_tsv2vcf_arg_parser(sub_parsers=sub_parsers)      # tsv2vcf
     sub_parsers = add_cli_vcf2tsv_arg_parser(sub_parsers=sub_parsers)      # vcf2tsv
     args = arg_parser.parse_args()
 
@@ -81,6 +82,8 @@ def run():
         run_cli_merge_from_parsed_args(args=args)
     elif args.which == 'overlap':
         run_cli_overlap_from_parsed_args(args=args)
+    elif args.which == 'tsv2vcf':
+        run_cli_tsv2vcf_from_parsed_args(args=args)
     elif args.which == 'vcf2tsv':
         run_cli_vcf2tsv_from_parsed_args(args=args)
     else:

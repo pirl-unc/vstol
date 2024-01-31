@@ -103,27 +103,85 @@ def get_attribute_types(variant_calling_method: str) -> Dict:
 
 
 def write_vcf_file(
-        vcf_file: str,
-        variants_list: 'VariantsList'
+        variants_list: 'VariantsList',
+        output_vcf_file: str
 ):
     """
     Write a VariantsList object as a VCF file.
 
     Parameters:
-        vcf_file        :   VCF file.
-        variants_list   :   VariantsList.
+        variants_list       :   VariantsList object.
+        output_vcf_file     :   Output VCF file.
     """
-    # Step 1. Write header
-    with open(vcf_file, 'w') as f:
+    # Step 1. Check whether the VariantsList is ready to be written as a VCF file
+    # Make sure there is only one VariantCall object per Variant and that there
+    # is only one sample ID.
+    sample_ids = set()
+    for variant in variants_list.variants:
+        if variant.num_variant_calls != 1:
+            raise Exception('Please make sure all variants have exactly one '
+                            'variant call. Variant %s has %i variant calls.'
+                            % (variant.id, variant.num_variant_calls))
+        for variant_call in variant.variant_calls:
+            sample_ids.add(variant_call.sample_id)
+    if len(sample_ids) != 1:
+        raise Exception('Please make sure there is only one sample ID. '
+                        'Supplied variants list has %i sample IDs.'
+                        % (len(sample_ids)))
+    sample_id = list(sample_ids)[0]
+
+    # Step 2. Write VCF
+    with open(output_vcf_file, 'w') as f:
         f.write('##fileformat=VCFv4.2\n')
         f.write('##INFO=<ID=PRECISE,Number=0,Type=Flag,Description="Variant with precise breakpoints">\n')
         f.write('##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Variant with imprecise breakpoints">\n')
-        f.write('##INFO=<ID=LENGTH,Number=1,Type=Integer,Description="Length of variant">\n')
-        f.write('##INFO=<ID=VARIANT_TYPE,Number=1,Type=String,Description="Variant type">\n')
-        f.write('##INFO=<ID=END,Number=1,Type=Integer,Description="End position of structural variant">\n')
+        f.write('##INFO=<ID=SIZE,Number=1,Type=Integer,Description="Variant size">\n')
+        f.write('##INFO=<ID=TYPE,Number=1,Type=String,Description="Variant type">\n')
         f.write('##INFO=<ID=CHR2,Number=1,Type=String,Description="Mate chromsome for BND SVs">\n')
-        f.write('##INFO=<ID=RNAMES,Number=.,Type=String,Description="Names of supporting reads (if enabled with --output-rnames)">\n')
-        f.write('##INFO=<ID=METHODS,Number=.,Type=String,Description="Variant calling methods">\n')
-        f.write('##INFO=<ID=VAF,Number=1,Type=Float,Description="Variant allele frequency">\n')
+        f.write('##INFO=<ID=END,Number=1,Type=Integer,Description="End position of structural variant">\n')
+        f.write('##INFO=<ID=RNAMES,Number=.,Type=String,Description="Names of supporting reads">\n')
+        f.write('##INFO=<ID=METHOD,Number=.,Type=String,Description="Variant calling method">\n')
         f.write('##FORMAT=<ID=DR,Number=1,Type=Integer,Description="Number of reference reads">\n')
         f.write('##FORMAT=<ID=DV,Number=1,Type=Integer,Description="Number of variant reads">\n')
+        f.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant allele frequency">\n')
+        f.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' % sample_id)
+        for variant in variants_list.variants:
+            variant_call = variant.variant_calls[0]
+            curr_chrom = variant_call.chromosome_1
+            curr_pos = str(variant_call.position_1)
+            curr_id = variant_call.id
+            curr_ref = variant_call.reference_allele
+            curr_alt = variant_call.alternate_allele
+            curr_qual = '.' if variant_call.quality_score == -1 else str(variant_call.quality_score)
+            curr_filter = variant_call.filter
+            info = []
+            if variant_call.precise:
+                info.append('PRECISE')
+            else:
+                info.append('IMPREICSE')
+            if variant_call.variant_size != -1:
+                info.append('SIZE=%i' % variant_call.variant_size)
+            info.append('TYPE=%s' % variant_call.variant_type)
+            info.append('CHR2=%s' % variant_call.chromosome_2)
+            info.append('END=%i' % variant_call.position_2)
+            if len(variant_call.alternate_allele_read_ids) > 0:
+                info.append('RNAMES=%s' % ','.join(list(variant_call.alternate_allele_read_ids)))
+            info.append('METHOD=%s' % variant_call.variant_calling_method)
+            curr_info = ';'.join(info)
+            format = 'DR:DV:VAF'
+            dr = '.' if variant_call.reference_allele_read_count == -1 else variant_call.reference_allele_read_count
+            dv = '.' if variant_call.alternate_allele_read_count == -1 else variant_call.alternate_allele_read_count
+            vaf = '.' if variant_call.alternate_allele_fraction == -1.0 else variant_call.alternate_allele_fraction
+            curr_value = '%s:%s:%s' % (str(dr), str(dv), str(vaf))
+            f.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n'
+                    % (curr_chrom,
+                       curr_pos,
+                       curr_id,
+                       curr_ref,
+                       curr_alt,
+                       curr_qual,
+                       curr_filter,
+                       curr_info,
+                       format,
+                       curr_value))
+
