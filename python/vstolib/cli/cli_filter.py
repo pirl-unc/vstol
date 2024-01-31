@@ -18,6 +18,7 @@ and run 'filter' command.
 
 
 import argparse
+import copy
 from collections import defaultdict
 from ..constants import VariantFilterSampleTypes, VariantCallTags
 from ..default import *

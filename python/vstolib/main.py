@@ -21,7 +21,7 @@ import pandas as pd
 from collections import defaultdict
 from typing import List, Literal, Tuple
 from .annotator import Annotator
-from .constants import CollapseStrategies, VariantCallingMethods, VariantCallTags
+from .constants import CollapseStrategies, VariantCallingMethods
 from .default import *
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
@@ -166,8 +166,6 @@ def filter(
     logger.info('%i variants and %i variant calls in the original list before filtering.' %
                 (len(variants_list.variants), len(variants_list.variant_call_ids)))
 
-    rejected_variant_call_ids_dict = defaultdict(list)
-
     # Step 1. Filter out variants based on VariantFilter
     # key   = variant ID
     # value = reasons why the variant was rejected
@@ -182,12 +180,8 @@ def filter(
     variants_list_rejected = VariantsList()
     for variant in variants_list.variants:
         if variant.id in passed_variants_ids:
-            for i in range(0, variant.num_variant_calls):
-                variant.variant_calls[i].tags.add(VariantCallTags.PASSED)
             variants_list_passed.add_variant(variant=variant)
         else:
-            for i in range(0, variant.num_variant_calls):
-                variant.variant_calls[i].tags.add(VariantCallTags.FAILED_FILTER)
             variants_list_rejected.add_variant(variant=variant)
 
     logger.info('%i variants and %i variant calls in the passed VariantsList after filtering.' %
@@ -238,10 +232,8 @@ def filter_excluded_regions(
         variant_calls_rejected = []
         for variant_call in variant.variant_calls:
             if variant_call.id in rejected_variant_call_ids:
-                variant_call.tags.add(VariantCallTags.NEARBY_EXCLUDED_REGION)
                 variant_calls_rejected.append(variant_call)
             else:
-                variant_call.tags.add(VariantCallTags.PASSED)
                 variant_calls_passed.append(variant_call)
 
         variant_passed = Variant(id=variant.id)
@@ -307,10 +299,8 @@ def filter_homopolymeric_variants(
         variant_calls_rejected = []
         for variant_call in variant.variant_calls:
             if variant_call.id in rejected_variant_call_ids:
-                variant_call.tags.add(VariantCallTags.HOMOPOLYMER_REGION)
                 variant_calls_rejected.append(variant_call)
             else:
-                variant_call.tags.add(VariantCallTags.PASSED)
                 variant_calls_passed.append(variant_call)
 
         variant_passed = Variant(id=variant.id)

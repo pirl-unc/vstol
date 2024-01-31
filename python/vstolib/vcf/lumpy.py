@@ -50,6 +50,7 @@ def parse_lumpy_somatic_callset(
     sample_ids = df_vcf.columns.values.tolist()[9:]
     curr_variant_call_idx = 1
     curr_variant_idx = 1
+    bnd_lookup = set()
     for row in df_vcf.to_dict('records'):
         for sample_id in sample_ids:
             # Step 1. Initialize values
@@ -158,6 +159,15 @@ def parse_lumpy_somatic_callset(
                 total_read_count > 0 and \
                 alternate_allele_fraction == -1.0:
                 alternate_allele_fraction = float(alternate_allele_read_count) / float(total_read_count)
+
+            # Check if a duplicate row exists in the VCF
+            if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
+                bnd_id = '%s:%i-%s:%i' % (chromosome_2, position_2, chromosome_1, position_1)
+                if bnd_id in bnd_lookup:
+                    continue
+                else:
+                    new_bnd_id = '%s:%i-%s:%i' % (chromosome_1, position_1, chromosome_2, position_2)
+                    bnd_lookup.add(new_bnd_id)
 
             # Append variant call to variants list
             variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
