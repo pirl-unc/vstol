@@ -197,7 +197,10 @@ impl VariantsList {
                     let mut variant_call_ = variant_call.clone();
 
                     // Denote which variants list this VariantCall is from
-                    variant_call_.add_attribute("variants_list_id".to_string(), variants_list_id.to_string());
+                    variant_call_.add_attribute(
+                        "temp_variants_list_id".to_string(),
+                        variants_list_id.to_string()
+                    );
 
                     // Append chromosome_1
                     variant_calls_map
@@ -242,7 +245,10 @@ impl VariantsList {
                         if (distance > max_neighbor_distance) {
                             break;
                         }
-                        if let (Some(vl_id_1), Some(vl_id_2)) = (variant_call_1.attributes.get("variants_list_id"), variant_call_2.attributes.get("variants_list_id")) {
+                        if let (Some(vl_id_1), Some(vl_id_2)) = (
+                            variant_call_1.attributes.get("temp_variants_list_id"),
+                            variant_call_2.attributes.get("temp_variants_list_id")
+                        ) {
                             // The VariantCall objects are from the same list
                             if vl_id_1 == vl_id_2 {
                                 continue;
@@ -376,8 +382,15 @@ impl VariantsList {
                 for variant_call in variant.variant_calls.iter() {
                     let mut variant_call_ = variant_call.clone();
 
-                    // Denote which variants list this VariantCall is from
-                    variant_call_.add_attribute("variants_list_id".to_string(), variants_list_id.to_string());
+                    // Save VariantsList ID and Variant ID
+                    variant_call_.add_attribute(
+                        "temp_variants_list_id".to_string(),
+                        variants_list_id.to_string()
+                    );
+                    variant_call_.add_attribute(
+                        "temp_variant_id".to_string(),
+                        variant.id.to_string()
+                    );
 
                     // Append chromosome_1
                     variant_calls_map
@@ -422,10 +435,16 @@ impl VariantsList {
                         if (distance > max_neighbor_distance) {
                             break;
                         }
-                        if let (Some(vl_id_1), Some(vl_id_2)) = (variant_call_1.attributes.get("variants_list_id"), variant_call_2.attributes.get("variants_list_id")) {
+                        if let (Some(vl_id_1), Some(vl_id_2), Some(v_id_1), Some(v_id_2)) = (
+                            variant_call_1.attributes.get("temp_variants_list_id"),
+                            variant_call_2.attributes.get("temp_variants_list_id"),
+                            variant_call_1.attributes.get("temp_variant_id"),
+                            variant_call_2.attributes.get("temp_variant_id")
+                        ) {
                             // The VariantCall objects are from the same list
-                            if vl_id_1 == vl_id_2 {
-                                continue;
+                            // and were originally in the same Variant
+                            if (vl_id_1 == vl_id_2) && (v_id_1 == v_id_2) && (variant_call_1.id != variant_call_2.id) {
+                                variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
                             }
                         }
                         if (match_variant_types == false) || ((match_variant_types == true) && (variant_type_1 == variant_type_2)) {

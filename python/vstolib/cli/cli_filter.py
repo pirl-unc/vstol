@@ -18,7 +18,6 @@ and run 'filter' command.
 
 
 import argparse
-import copy
 from collections import defaultdict
 from ..constants import VariantFilterSampleTypes, VariantCallTags
 from ..default import *
@@ -201,27 +200,36 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
         excluded_regions_list = None
 
     # Step 4. Apply variant filters
-    _, variants_list_filters_rejected = filter(
-        variants_list=variants_list,
-        variant_filters=variant_filters,
-        num_threads=args.num_threads
-    )
+    if args.filter is not None:
+        _, variants_list_filters_rejected = filter(
+            variants_list=variants_list,
+            variant_filters=variant_filters,
+            num_threads=args.num_threads
+        )
+    else:
+        variants_list_filters_rejected = VariantsList()
 
     # Step 5. Filter out variant calls in excluded regions
-    _, variants_list_excluded_regions_rejected = filter_excluded_regions(
-        variants_list=variants_list,
-        excluded_regions_list=excluded_regions_list,
-        excluded_regions_padding=args.excluded_regions_padding,
-        num_threads=args.num_threads
-    )
+    if excluded_regions_list is not None:
+        _, variants_list_excluded_regions_rejected = filter_excluded_regions(
+            variants_list=variants_list,
+            excluded_regions_list=excluded_regions_list,
+            excluded_regions_padding=args.excluded_regions_padding,
+            num_threads=args.num_threads
+        )
+    else:
+        variants_list_excluded_regions_rejected = VariantsList()
 
     # Step 6. Filter out homopolymeric variant calls
-    _, variants_list_homopolymer_rejected = filter_homopolymeric_variants(
-        variants_list=variants_list,
-        reference_genome_fasta_file=args.reference_genome_fasta_file,
-        homopolymer_length=args.homopolymer_length,
-        num_threads=args.num_threads
-    )
+    if args.reference_genome_fasta_file is not None:
+        _, variants_list_homopolymer_rejected = filter_homopolymeric_variants(
+            variants_list=variants_list,
+            reference_genome_fasta_file=args.reference_genome_fasta_file,
+            homopolymer_length=args.homopolymer_length,
+            num_threads=args.num_threads
+        )
+    else:
+        variants_list_homopolymer_rejected = VariantsList()
 
     # Step 7. Consolidate the tags for rejected variant calls
     rejected_variant_call_ids_dict = defaultdict(list)
