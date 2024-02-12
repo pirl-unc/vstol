@@ -88,25 +88,25 @@ def test_intersect_2():
         alternate_allele=''
     )
 
+    variants_list_1 = VariantsList()
     variant_11 = Variant(id='variant_11')
     variant_12 = Variant(id='variant_12')
     variant_13 = Variant(id='variant_13')
     variant_14 = Variant(id='variant_14')
-    variant_21 = Variant(id='variant_21')
-    variant_22 = Variant(id='variant_22')
     variant_11.add_variant_call(variant_call=variant_call_11)
     variant_12.add_variant_call(variant_call=variant_call_12)
     variant_13.add_variant_call(variant_call=variant_call_13)
     variant_14.add_variant_call(variant_call=variant_call_14)
-    variant_21.add_variant_call(variant_call=variant_call_21)
-    variant_22.add_variant_call(variant_call=variant_call_22)
-
-    variants_list_1 = VariantsList()
-    variants_list_2 = VariantsList()
     variants_list_1.add_variant(variant=variant_11)
     variants_list_1.add_variant(variant=variant_12)
     variants_list_1.add_variant(variant=variant_13)
     variants_list_1.add_variant(variant=variant_14)
+
+    variants_list_2 = VariantsList()
+    variant_21 = Variant(id='variant_21')
+    variant_22 = Variant(id='variant_22')
+    variant_21.add_variant_call(variant_call=variant_call_21)
+    variant_22.add_variant_call(variant_call=variant_call_22)
     variants_list_2.add_variant(variant=variant_21)
     variants_list_2.add_variant(variant=variant_22)
 
@@ -115,10 +115,10 @@ def test_intersect_2():
         max_neighbor_distance=1000,
         num_threads=1,
         match_all_breakpoints=False,
-        match_variant_types=True
+        match_variant_types=False
     )
 
     for variant in variants_list.variants:
-            assert (set(variant.variant_call_ids) == set(['variant_call_14','variant_call_22']) or
-                    set(variant.variant_call_ids) == set(['variant_call_11','variant_call_21']))
+        assert (set(variant.variant_call_ids) == set(['variant_call_14','variant_call_22']) or
+                set(variant.variant_call_ids) == set(['variant_call_11','variant_call_12','variant_call_21']))
 

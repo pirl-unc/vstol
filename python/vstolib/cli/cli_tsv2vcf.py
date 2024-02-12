@@ -64,7 +64,7 @@ def add_cli_tsv2vcf_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--strategy", '-s',
+        "--strategy",
         dest="strategy",
         type=str,
         required=False,

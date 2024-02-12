@@ -78,7 +78,7 @@ def add_cli_filter_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        '--control-sample-id', '-n',
+        '--control-sample-id',
         dest='control_sample_id',
         type=str,
         action='append',
@@ -88,7 +88,7 @@ def add_cli_filter_arg_parser(
              "(e.g. --control-sample-id control_01 --control-sample-id control_02)."
     )
     parser_optional.add_argument(
-        '--filter', '-f',
+        '--filter',
         dest='filter',
         type=str,
         action='append',
@@ -100,7 +100,7 @@ def add_cli_filter_arg_parser(
              'Please refer to the Exacto documentation on how the filter semantics work.'
     )
     parser_optional.add_argument(
-        "--reference-genome-fasta-file", '-z',
+        "--reference-genome-fasta-file",
         dest="reference_genome_fasta_file",
         type=str,
         required=False,
@@ -108,7 +108,7 @@ def add_cli_filter_arg_parser(
              "variant calls in homopolymer regions will be filtered out."
     )
     parser_optional.add_argument(
-        "--excluded-regions-tsv-file", '-e',
+        "--excluded-regions-tsv-file",
         dest="excluded_regions_tsv_file",
         type=str,
         required=False,
@@ -117,7 +117,7 @@ def add_cli_filter_arg_parser(
              "Expected headers: 'chromosome', 'start', 'end'."
     )
     parser_optional.add_argument(
-        "--excluded-regions-padding", '-g',
+        "--excluded-regions-padding",
         dest="excluded_regions_padding",
         type=int,
         required=False,
@@ -126,7 +126,7 @@ def add_cli_filter_arg_parser(
              % FILTER_EXCLUDED_REGION_PADDING
     )
     parser_optional.add_argument(
-        "--homopolymer-length", '-l',
+        "--homopolymer-length",
         dest="homopolymer_length",
         type=int,
         required=False,
@@ -136,7 +136,7 @@ def add_cli_filter_arg_parser(
              % FILTER_HOMOPOLYMER_LENGTH
     )
     parser_optional.add_argument(
-        "--num-threads", '-t',
+        "--num-threads",
         dest="num_threads",
         type=int,
         default=NUM_THREADS,

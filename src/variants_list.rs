@@ -11,8 +11,10 @@
 // limitations under the License.
 
 
+extern crate log;
 extern crate rayon;
 extern crate serde;
+use log::info;
 use rayon::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::{HashMap, HashSet};
@@ -161,194 +163,6 @@ impl VariantsList {
         return overlap_regions_map;
     }
 
-    /// This function returns a VariantsList object comprised of Variant objects
-    /// that have intersecting VariantCall objects across all supplied
-    /// VariantsList objects.
-    ///
-    /// # Arguments
-    /// * `variants_lists`              -   Vector of VariantsList objects.
-    /// * `num_threads`                 -   Number of threads.
-    /// * `max_neighbor_distance`       -   Maximum neighbor distance.
-    /// * `match_all_breakpoints`       -   If true, both pairs of breakpoints of two variant calls
-    ///                                     must be near each other (start1 == start2 && end1 == end2).
-    ///                                     If false, only one pair of breakpoints of two variant calls
-    ///                                     must be near each other (start1 == start2 || end1 == end2).
-    /// * `match_variant_types`         -   If true, variant types (super types) must match.
-    /// * `variant_types_map`           -   HashMap where key is variant type and
-    ///                                     value is a super set of the variant type.
-    ///
-    /// # Returns
-    /// * `intersecting_variants_list`  -   Intersecting VariantsList object.
-    pub fn intersect(
-        variants_lists: Vec<VariantsList>,
-        num_threads: usize,
-        max_neighbor_distance: isize,
-        match_all_breakpoints: bool,
-        match_variant_types: bool,
-        variant_types_map: &HashMap<&str, String>) -> VariantsList {
-        // Step 1. Split variant calls by breakpoint chromosome
-        // key      = chromosome
-        // value    = Vec<(position,VariantCall)>
-        let mut variant_calls_map: HashMap<String, Vec<(isize,VariantCall)>> = HashMap::new();
-        let mut variants_list_id: isize = 0;
-        for variants_list in variants_lists.iter() {
-            for variant in variants_list.variants.iter() {
-                for variant_call in variant.variant_calls.iter() {
-                    let mut variant_call_ = variant_call.clone();
-
-                    // Denote which variants list this VariantCall is from
-                    variant_call_.add_attribute(
-                        "temp_variants_list_id".to_string(),
-                        variants_list_id.to_string()
-                    );
-
-                    // Append chromosome_1
-                    variant_calls_map
-                        .entry(variant_call_.chromosome_1.clone())
-                        .or_insert(Vec::new())
-                        .push((variant_call_.position_1, variant_call_.clone()));
-
-                    // Append chromosome_2
-                    variant_calls_map
-                        .entry(variant_call_.chromosome_2.clone())
-                        .or_insert(Vec::new())
-                        .push((variant_call_.position_2, variant_call_.clone()));
-                }
-            }
-            variants_list_id += 1;
-        }
-
-        // Step 2. Identify nearby variant calls
-        let thread_pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(num_threads)
-            .build()
-            .unwrap();
-        let results: Vec<(String,String)> = thread_pool.install(|| {
-            variant_calls_map.par_iter().flat_map(|(key, values)| {
-                // Clone values
-                let mut variant_call_positions: Vec<(isize,VariantCall)> = values.to_vec();
-
-                // Sort variant call positions by position
-                variant_call_positions.sort_by_key(|&(position,_)| position);
-
-                // Check if breakpoints intersect
-                let mut variant_call_id_pairs: Vec<(String,String)> = Vec::new(); // (VariantCall.id, VariantCall.id)
-                for i in 0..variant_call_positions.len() {
-                    let position_1: isize = variant_call_positions[i].0;
-                    let variant_call_1: VariantCall = variant_call_positions[i].1.clone();
-                    let variant_type_1: String = variant_types_map.get(variant_call_1.variant_type.as_str()).unwrap().to_string();
-                    for j in (i + 1)..variant_call_positions.len() {
-                        let position_2: isize = variant_call_positions[j].0;
-                        let variant_call_2: VariantCall = variant_call_positions[j].1.clone();
-                        let variant_type_2: String = variant_types_map.get(variant_call_2.variant_type.as_str()).unwrap().to_string();
-                        let distance: isize = (position_1 - position_2).abs();
-                        if (distance > max_neighbor_distance) {
-                            break;
-                        }
-                        if let (Some(vl_id_1), Some(vl_id_2)) = (
-                            variant_call_1.attributes.get("temp_variants_list_id"),
-                            variant_call_2.attributes.get("temp_variants_list_id")
-                        ) {
-                            // The VariantCall objects are from the same list
-                            if vl_id_1 == vl_id_2 {
-                                continue;
-                            }
-                        }
-                        if (match_variant_types == false) || ((match_variant_types == true) && (variant_type_1 == variant_type_2)) {
-                            // Maximum neighbor distance must be 0 for SNVs and MNVs
-                            let mut max_neighbor_distance_: isize = max_neighbor_distance;
-                            if (variant_call_1.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT) ||
-                                (variant_call_1.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT) {
-                                // variant_call_1 and variant_call_2 are both SNV or MNV
-                                max_neighbor_distance_ = 0;
-                            }
-
-                            let distance_11: isize = (variant_call_1.position_1 - variant_call_2.position_1).abs();
-                            let distance_22: isize = (variant_call_1.position_2 - variant_call_2.position_2).abs();
-                            let distance_12: isize = (variant_call_1.position_1 - variant_call_2.position_2).abs();
-                            let distance_21: isize = (variant_call_1.position_2 - variant_call_2.position_1).abs();
-                            if (match_all_breakpoints == true) {
-                                if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) &&
-                                    (variant_call_1.chromosome_2 == variant_call_2.chromosome_2) &&
-                                    (distance_11 <= max_neighbor_distance_) &&
-                                    (distance_22 <= max_neighbor_distance_)) ||
-                                   ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) &&
-                                    (variant_call_1.chromosome_2 == variant_call_2.chromosome_1) &&
-                                    (distance_12 <= max_neighbor_distance_) &&
-                                    (distance_21 <= max_neighbor_distance_)) {
-                                    variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
-                                }
-                            } else {
-                                if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) && (distance_11 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_2 == variant_call_2.chromosome_2) && (distance_22 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) && (distance_12 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_2 == variant_call_2.chromosome_1) && (distance_21 <= max_neighbor_distance_)) {
-                                    variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
-                                }
-                            }
-                        }
-                    }
-                }
-                variant_call_id_pairs
-            })
-            .collect()
-        });
-
-        // Step 3. Collect all nearby VariantCall pairs into one vector
-        let mut pairs: Vec<(String, String)> = Vec::new();
-        for &(ref variant_call_id_1, ref variant_call_id_2) in &results {
-            pairs.push((variant_call_id_1.clone(), variant_call_id_2.clone()));
-        }
-
-        // Step 4. By transitive property, identify clusters
-        let clusters = find_clusters(pairs);
-
-        // Step 5. Assign Variant ID to each VariantCall
-        let mut variant_ids_map: HashMap<String, String> = HashMap::new(); // key = VariantCall.id, value = Variant.id
-        let mut variant_id = 1;
-        for variant_call_ids in clusters.iter() {
-            for variant_call_id in variant_call_ids.iter() {
-                variant_ids_map.insert(variant_call_id.clone(), variant_id.to_string());
-            }
-            variant_id += 1;
-        }
-
-        // Step 6. Merge VariantCall objects into common Variant objects
-        let mut variants_map: HashMap<String, Variant> = HashMap::new();
-        for variants_list in variants_lists.iter() {
-            for variant in variants_list.variants.iter() {
-                for variant_call in variant.variant_calls.iter() {
-                    if variant_ids_map.contains_key(&variant_call.id) {
-                        // Retrieve variant ID
-                        let variant_id = variant_ids_map
-                            .get(&variant_call.id)
-                            .map(|s| s.to_string())
-                            .unwrap_or_else(|| String::new());
-
-                        // Fetch the corresponding Variant
-                        if variants_map.contains_key(&variant_id) {
-                            variants_map.entry(variant_id.clone()).and_modify(|v| {
-                                v.add_variant_call(variant_call.clone());
-                            });
-                        } else {
-                            let mut new_variant = Variant::new(variant_id.clone());
-                            new_variant.add_variant_call(variant_call.clone());
-                            variants_map.insert(new_variant.id.clone(), new_variant);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Step 7. Create a merged VariantsList object
-        let mut variants_list_merged = VariantsList::new();
-        for (_variant_id, variant) in variants_map.iter() {
-            variants_list_merged.add_variant(variant.clone());
-        }
-
-        return variants_list_merged;
-    }
-
     /// This function merges a vector of VariantsList objects into one.
     ///
     /// # Arguments
@@ -360,6 +174,7 @@ impl VariantsList {
     ///                                     If false, only one pair of breakpoints of two variant calls
     ///                                     must be near each other (start1 == start2 || end1 == end2).
     /// * `match_variant_types`         -   If true, variant types (super types) must match.
+    /// * `intersect_only`              -   If true, private variant calls are excluded (i.e. should be true for intersect).
     /// * `variant_types_map`           -   HashMap where key is variant type and
     ///                                     value is a super set of the variant type.
     ///
@@ -371,10 +186,17 @@ impl VariantsList {
         max_neighbor_distance: isize,
         match_all_breakpoints: bool,
         match_variant_types: bool,
+        intersect_only: bool,
         variant_types_map: &HashMap<&str, String>) -> VariantsList {
+        let thread_pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build()
+            .unwrap();
+
         // Step 1. Split variant calls by breakpoint chromosome
         // key      = chromosome
         // value    = Vec<(position,VariantCall)>
+        info!("Started splitting VariantCall objects by breakpoint chromosome");
         let mut variant_calls_map: HashMap<String, Vec<(isize,VariantCall)>> = HashMap::new();
         let mut variants_list_id: isize = 0;
         for variants_list in variants_lists.iter() {
@@ -394,47 +216,52 @@ impl VariantsList {
 
                     // Append chromosome_1
                     variant_calls_map
-                        .entry(variant_call_.chromosome_1.clone())
+                        .entry(variant_call_.chromosome_1.to_string())
                         .or_insert(Vec::new())
                         .push((variant_call_.position_1, variant_call_.clone()));
 
                     // Append chromosome_2
                     variant_calls_map
-                        .entry(variant_call_.chromosome_2.clone())
+                        .entry(variant_call_.chromosome_2.to_string())
                         .or_insert(Vec::new())
                         .push((variant_call_.position_2, variant_call_.clone()));
                 }
             }
             variants_list_id += 1;
         }
+        info!("Finished splitting VariantCall objects by breakpoint chromosome");
 
-        // Step 2. Identify nearby variant calls
-        let thread_pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(num_threads)
-            .build()
-            .unwrap();
-        let results: Vec<(String,String)> = thread_pool.install(|| {
-            variant_calls_map.par_iter().flat_map(|(key, values)| {
-                // Clone values
-                let mut variant_call_positions: Vec<(isize,VariantCall)> = values.to_vec();
-
-                // Sort variant call positions by position
+        // Step 2. Sort variant_records_map by position
+        info!("Started sorting VariantCall objects");
+        thread_pool.install(|| {
+            variant_calls_map.par_iter_mut().for_each(|(_key, variant_call_positions)| {
                 variant_call_positions.sort_by_key(|&(position,_)| position);
+            });
+        });
+        info!("Finished sorting VariantCall objects");
 
+        // Step 3. Identify nearby variant calls
+        info!("Started identifying nearby VariantCall objects");
+        let results: HashSet<(String,String)> = thread_pool.install(|| {
+            variant_calls_map.par_iter().flat_map(|(chromosome, variant_call_positions)| {
                 // Check if breakpoints intersect
-                let mut variant_call_id_pairs: Vec<(String,String)> = Vec::new(); // (VariantCall.id, VariantCall.id)
+                let mut pairs: HashSet<(String,String)> = HashSet::new(); // (VariantCall.id, VariantCall.id)
                 for i in 0..variant_call_positions.len() {
                     let position_1: isize = variant_call_positions[i].0;
-                    let variant_call_1: VariantCall = variant_call_positions[i].1.clone();
-                    let variant_type_1: String = variant_types_map.get(variant_call_1.variant_type.as_str()).unwrap().to_string();
+                    let variant_call_1: &VariantCall = &variant_call_positions[i].1;
+                    let variant_type_1: &str = variant_types_map.get(variant_call_1.variant_type.as_str()).unwrap().as_str();
                     for j in (i + 1)..variant_call_positions.len() {
                         let position_2: isize = variant_call_positions[j].0;
-                        let variant_call_2: VariantCall = variant_call_positions[j].1.clone();
-                        let variant_type_2: String = variant_types_map.get(variant_call_2.variant_type.as_str()).unwrap().to_string();
+                        let variant_call_2: &VariantCall = &variant_call_positions[j].1;
+                        let variant_type_2: &str = variant_types_map.get(variant_call_2.variant_type.as_str()).unwrap().as_str();
                         let distance: isize = (position_1 - position_2).abs();
                         if (distance > max_neighbor_distance) {
                             break;
                         }
+                        if variant_call_1.id == variant_call_2.id {
+                            continue;
+                        }
+                        let mut cluster: bool = false;
                         if let (Some(vl_id_1), Some(vl_id_2), Some(v_id_1), Some(v_id_2)) = (
                             variant_call_1.attributes.get("temp_variants_list_id"),
                             variant_call_2.attributes.get("temp_variants_list_id"),
@@ -444,76 +271,89 @@ impl VariantsList {
                             // The VariantCall objects are from the same list
                             // and were originally in the same Variant
                             if (vl_id_1 == vl_id_2) && (v_id_1 == v_id_2) && (variant_call_1.id != variant_call_2.id) {
-                                variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
-                            }
-                        }
-                        if (match_variant_types == false) || ((match_variant_types == true) && (variant_type_1 == variant_type_2)) {
-                            // Maximum neighbor distance must be 0 for SNVs and MNVs
-                            let mut max_neighbor_distance_: isize = max_neighbor_distance;
-                            if (variant_call_1.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT) ||
-                                (variant_call_1.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT) {
-                                // variant_call_1 and variant_call_2 are both SNV or MNV
-                                max_neighbor_distance_ = 0;
+                                cluster = true;
                             }
 
-                            let distance_11: isize = (variant_call_1.position_1 - variant_call_2.position_1).abs();
-                            let distance_22: isize = (variant_call_1.position_2 - variant_call_2.position_2).abs();
-                            let distance_12: isize = (variant_call_1.position_1 - variant_call_2.position_2).abs();
-                            let distance_21: isize = (variant_call_1.position_2 - variant_call_2.position_1).abs();
-                            if (match_all_breakpoints == true) {
-                                if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) &&
-                                    (variant_call_1.chromosome_2 == variant_call_2.chromosome_2) &&
-                                    (distance_11 <= max_neighbor_distance_) &&
-                                    (distance_22 <= max_neighbor_distance_)) ||
-                                   ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) &&
-                                    (variant_call_1.chromosome_2 == variant_call_2.chromosome_1) &&
-                                    (distance_12 <= max_neighbor_distance_) &&
-                                    (distance_21 <= max_neighbor_distance_)) {
-                                    variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
+                            // The VariantCall objects are from different lists
+                            if (vl_id_1 != vl_id_2) {
+                                if (match_variant_types == false) || ((match_variant_types == true) && (variant_type_1 == variant_type_2)) {
+                                    // Maximum neighbor distance must be 0 for SNVs and MNVs
+                                    let mut max_neighbor_distance_: isize = max_neighbor_distance;
+                                    if (variant_call_1.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT) ||
+                                        (variant_call_1.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT) {
+                                        // variant_call_1 and variant_call_2 are both SNV or MNV
+                                        max_neighbor_distance_ = 0;
+                                    }
+
+                                    let distance_11: isize = (variant_call_1.position_1 - variant_call_2.position_1).abs();
+                                    let distance_22: isize = (variant_call_1.position_2 - variant_call_2.position_2).abs();
+                                    let distance_12: isize = (variant_call_1.position_1 - variant_call_2.position_2).abs();
+                                    let distance_21: isize = (variant_call_1.position_2 - variant_call_2.position_1).abs();
+                                    if (match_all_breakpoints == true) {
+                                        if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) &&
+                                            (variant_call_1.chromosome_2 == variant_call_2.chromosome_2) &&
+                                            (distance_11 <= max_neighbor_distance_) &&
+                                            (distance_22 <= max_neighbor_distance_)) ||
+                                           ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) &&
+                                            (variant_call_1.chromosome_2 == variant_call_2.chromosome_1) &&
+                                            (distance_12 <= max_neighbor_distance_) &&
+                                            (distance_21 <= max_neighbor_distance_)) {
+                                            cluster = true;
+                                        }
+                                    } else {
+                                        if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) && (distance_11 <= max_neighbor_distance_)) ||
+                                            ((variant_call_1.chromosome_2 == variant_call_2.chromosome_2) && (distance_22 <= max_neighbor_distance_)) ||
+                                            ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) && (distance_12 <= max_neighbor_distance_)) ||
+                                            ((variant_call_1.chromosome_2 == variant_call_2.chromosome_1) && (distance_21 <= max_neighbor_distance_)) {
+                                            cluster = true;
+                                        }
+                                    }
                                 }
-                            } else {
-                                if ((variant_call_1.chromosome_1 == variant_call_2.chromosome_1) && (distance_11 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_2 == variant_call_2.chromosome_2) && (distance_22 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_1 == variant_call_2.chromosome_2) && (distance_12 <= max_neighbor_distance_)) ||
-                                    ((variant_call_1.chromosome_2 == variant_call_2.chromosome_1) && (distance_21 <= max_neighbor_distance_)) {
-                                    variant_call_id_pairs.push((variant_call_1.id.clone() ,variant_call_2.id.clone()));
+                            }
+
+                            if cluster {
+                                if (pairs.contains(&(variant_call_1.id.to_string(), variant_call_2.id.to_string())) == false) &&
+                                    (pairs.contains(&(variant_call_2.id.to_string(), variant_call_1.id.to_string())) == false) {
+                                    pairs.insert((variant_call_1.id.to_string(), variant_call_2.id.to_string()));
                                 }
                             }
                         }
                     }
                 }
-                variant_call_id_pairs
+                pairs
             })
             .collect()
         });
-
-        // Step 3. Collect all nearby VariantCall pairs into one vector
-        let mut pairs: Vec<(String, String)> = Vec::new();
-        for &(ref variant_call_id_1, ref variant_call_id_2) in &results {
-            pairs.push((variant_call_id_1.clone(), variant_call_id_2.clone()));
-        }
+        info!("Finished identifying nearby VariantCall objects");
 
         // Step 4. By transitive property, identify clusters
-        let clusters = find_clusters(pairs);
+        info!("Started identifying clusters");
+        let clusters = find_clusters(results);
+        info!("Finished identifying clusters");
 
         // Step 5. Assign Variant ID to each VariantCall
-        let mut variant_ids_map: HashMap<String, String> = HashMap::new(); // key = VariantCall.id, value = Variant.id
+        // key      =   VariantCall.id
+        // value    =   Varinat.id
+        info!("Started mapping VariantCall to Variant");
+        let mut variant_ids_map: HashMap<String, String> = HashMap::new();
         let mut new_variant_id = 1;
         for variant_call_ids in clusters.iter() {
             for variant_call_id in variant_call_ids.iter() {
-                variant_ids_map.insert(variant_call_id.clone(), new_variant_id.to_string());
+                variant_ids_map.insert(variant_call_id.to_string(), new_variant_id.to_string());
             }
             new_variant_id += 1;
         }
+        info!("Finished mapping VariantCall to Variant");
 
         // Step 6. Merge VariantCall objects into common Variant objects
+        info!("Started merging VariantCall objects into common Variant objects");
         let mut variants_map: HashMap<String, Variant> = HashMap::new();
         for variants_list in variants_lists.iter() {
             for variant in variants_list.variants.iter() {
                 for variant_call in variant.variant_calls.iter() {
                     if variant_ids_map.contains_key(&variant_call.id) {
                         // Retrieve variant ID
-                        let variant_id = variant_ids_map
+                        let variant_id: String = variant_ids_map
                             .get(&variant_call.id)
                             .map(|s| s.to_string())
                             .unwrap_or_else(|| String::new());
@@ -529,22 +369,27 @@ impl VariantsList {
                             variants_map.insert(new_variant.id.clone(), new_variant);
                         }
                     } else {
-                        // Current VariantCall does not intersect with any
-                        // other VariantCall objects
-                        let mut new_variant = Variant::new(new_variant_id.to_string());
-                        new_variant.add_variant_call(variant_call.clone());
-                        variants_map.insert(new_variant.id.clone(), new_variant);
-                        new_variant_id += 1;
+                        if intersect_only == false {
+                            // Current VariantCall does not intersect with any
+                            // other VariantCall objects
+                            let mut new_variant = Variant::new(new_variant_id.to_string());
+                            new_variant.add_variant_call(variant_call.clone());
+                            variants_map.insert(new_variant.id.clone(), new_variant);
+                            new_variant_id += 1;
+                        }
                     }
                 }
             }
         }
+        info!("Finished merging VariantCall objects into common Variant objects");
 
         // Step 7. Create a merged VariantsList object
+        info!("Started merging Variant objects into a common merged VariantsList");
         let mut variants_list_merged = VariantsList::new();
         for (_variant_id, variant) in variants_map.iter() {
             variants_list_merged.add_variant(variant.clone());
         }
+        info!("Finished merging Variant objects into a common merged VariantsList");
         return variants_list_merged;
     }
 }

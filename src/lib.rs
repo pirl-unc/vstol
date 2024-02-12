@@ -11,12 +11,19 @@
 // limitations under the License.
 
 
+extern crate chrono;
+extern crate env_logger;
 extern crate exitcode;
+extern crate log;
 extern crate pyo3;
 extern crate serde_json;
+use chrono::Local;
+use env_logger::{Builder, Env};
+use log::{info, LevelFilter};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use std::collections::HashMap;
+use std::io::Write;
 mod constants;
 mod genomic_range;
 mod genomic_ranges_list;
@@ -210,12 +217,13 @@ fn intersect_variants_lists(
     let mut variants_lists: Vec<VariantsList> = deserialize_variants_lists(py_list);
 
     // Step 2. Identify intersecting (or nearby) variant calls in VariantsList objects
-    let intersecting_variants_list: VariantsList = VariantsList::intersect(
+    let intersecting_variants_list: VariantsList = VariantsList::merge(
         variants_lists,
         num_threads,
         max_neighbor_distance,
         match_all_breakpoints,
         match_variant_types,
+        true,
         &constants::VARIANT_TYPES_MAP
     );
 
@@ -251,6 +259,7 @@ fn merge_variants_lists(
         max_neighbor_distance,
         match_all_breakpoints,
         match_variant_types,
+        false,
         &constants::VARIANT_TYPES_MAP
     );
 
@@ -262,6 +271,19 @@ fn merge_variants_lists(
 
 #[pymodule]
 fn vstolibrs(_py: Python, m: &PyModule) -> PyResult<()> {
+    // Initialize the logger
+    Builder::from_env(Env::default().default_filter_or("info")).format(|buf, record| {
+        let now = Local::now();
+        writeln!(
+            buf,
+            "{} {} [{:>50}] {}",
+            now.format("%Y-%m-%d %H:%M:%S"),
+            record.level(),
+            record.target(),
+            record.args()
+        )
+    }).init();
+
     m.add_function(wrap_pyfunction!(filter_variants_list, m)?);
     m.add_function(wrap_pyfunction!(find_overlapping_variant_calls, m)?);
     m.add_function(wrap_pyfunction!(intersect_variants_lists, m)?);

@@ -79,7 +79,7 @@ def add_cli_vcf2tsv_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--case-id", '-c',
+        "--case-id",
         dest="case_id",
         type=str,
         required=False,
@@ -87,7 +87,7 @@ def add_cli_vcf2tsv_arg_parser(
              "This is the tumor (case) ID that corresponds to 'TUMOR'."
     )
     parser_optional.add_argument(
-        "--control-id", '-n',
+        "--control-id",
         dest="control_id",
         type=str,
         required=False,

@@ -50,41 +50,51 @@ pub fn calculate_min(values: Vec<f64>) -> f64 {
     return min;
 }
 
-pub fn find_clusters(pairs: Vec<(String, String)>) -> Vec<HashSet<String>> {
-    let mut adjacency_map: HashMap<String, HashSet<String>> = HashMap::new();
-    for (element_1, element_2) in pairs.iter() {
-        adjacency_map
-            .entry(element_1.clone())
-            .or_insert_with(HashSet::new)
-            .insert(element_2.clone());
-        adjacency_map
-            .entry(element_2.clone())
-            .or_insert_with(HashSet::new)
-            .insert(element_1.clone());
-    }
-    let mut visited: HashSet<String> = HashSet::new();
-    let mut clusters: Vec<HashSet<String>> = Vec::new();
-    fn dfs(element: String,
-           cluster: &mut HashSet<String>,
-           visited: &mut HashSet<String>,
-           adjacency_map: &HashMap<String,
-           HashSet<String>>) {
-        visited.insert(element.clone());
-        cluster.insert(element.clone());
-        if let Some(neighbors) = adjacency_map.get(&element) {
-            for neighbor in neighbors {
-                if !visited.contains(neighbor) {
-                    dfs(neighbor.clone(), cluster, visited, adjacency_map);
-                }
-            }
+struct UnionFind {
+    parent: HashMap<String, String>
+}
+
+impl UnionFind {
+    fn new() -> Self {
+        UnionFind {
+            parent: HashMap::new(),
         }
     }
-    for element in adjacency_map.keys() {
-        if visited.contains(element) == false {
-            let mut cluster = HashSet::new();
-            dfs(element.clone(), &mut cluster, &mut visited, &adjacency_map);
-            clusters.push(cluster);
+
+    fn find(&mut self, x: &str) -> String {
+        let parent = self.parent.entry(x.to_string()).or_insert_with(|| x.to_string()).clone();
+        if parent != x {
+            let root = self.find(&parent);
+            self.parent.insert(x.to_string(), root.clone());
+            root
+        } else {
+            x.to_string()
         }
+    }
+
+    fn union(&mut self, x: &str, y: &str) {
+        let root_x = self.find(x);
+        let root_y = self.find(y);
+        if root_x != root_y {
+            self.parent.insert(root_x, root_y);
+        }
+    }
+}
+
+pub fn find_clusters(pairs: HashSet<(String, String)>) -> Vec<Vec<String>> {
+    let mut uf = UnionFind::new();
+    for (x, y) in pairs {
+        uf.union(&x, &y);
+    }
+    let ids: Vec<String> = uf.parent.keys().cloned().collect();
+    let mut clusters_map: HashMap<String, Vec<String>> = HashMap::new();
+    for id in ids {
+        let root = uf.find(&id);
+        clusters_map.entry(root).or_insert_with(Vec::new).push(id);
+    }
+    let mut clusters: Vec<Vec<String>> = Vec::new();
+    for (root, ids) in clusters_map {
+        clusters.push(ids);
     }
     return clusters;
 }

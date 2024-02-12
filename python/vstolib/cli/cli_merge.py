@@ -71,7 +71,7 @@ def add_cli_merge_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--num-threads", '-t',
+        "--num-threads",
         dest="num_threads",
         type=int,
         default=NUM_THREADS,
@@ -79,7 +79,7 @@ def add_cli_merge_arg_parser(
         help="Number of threads (default: %i)." % NUM_THREADS
     )
     parser_optional.add_argument(
-        "--max-neighbor-distance", '-d',
+        "--max-neighbor-distance",
         dest="max_neighbor_distance",
         type=int,
         required=False,
@@ -89,7 +89,7 @@ def add_cli_merge_arg_parser(
              % MERGE_MAX_NEIGHBOR_DISTANCE
     )
     parser_optional.add_argument(
-        "--match-all-breakpoints", '-b',
+        "--match-all-breakpoints",
         dest="match_all_breakpoints",
         type=str2bool,
         required=False,
@@ -101,7 +101,7 @@ def add_cli_merge_arg_parser(
              % MERGE_MATCH_ALL_BREAKPOINTS
     )
     parser_optional.add_argument(
-        "--match-variant-types", '-m',
+        "--match-variant-types",
         dest="match_variant_types",
         type=str2bool,
         required=False,

@@ -80,7 +80,7 @@ def add_cli_diff_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--num-threads", '-t',
+        "--num-threads",
         dest="num_threads",
         type=int,
         default=NUM_THREADS,
@@ -88,7 +88,7 @@ def add_cli_diff_arg_parser(
         help="Number of threads (default: %i)." % NUM_THREADS
     )
     parser_optional.add_argument(
-        "--max-neighbor-distance", '-d',
+        "--max-neighbor-distance",
         dest="max_neighbor_distance",
         type=int,
         required=False,
@@ -98,7 +98,7 @@ def add_cli_diff_arg_parser(
              % DIFF_MAX_NEIGHBOR_DISTANCE
     )
     parser_optional.add_argument(
-        "--match-all-breakpoints", '-b',
+        "--match-all-breakpoints",
         dest="match_all_breakpoints",
         type=str2bool,
         required=False,
@@ -110,7 +110,7 @@ def add_cli_diff_arg_parser(
              % DIFF_MATCH_ALL_BREAKPOINTS
     )
     parser_optional.add_argument(
-        "--match-variant-types", '-m',
+        "--match-variant-types",
         dest="match_variant_types",
         type=str2bool,
         required=False,
@@ -121,6 +121,18 @@ def add_cli_diff_arg_parser(
              "even if the (super) variant types are different (default: %s)."
              % DIFF_MATCH_VARIANT_TYPES
     )
+    parser_required.add_argument(
+        "--query-bam-file",
+        dest="query_bam_file",
+        action='append',
+        required=False,
+        help="Query BAM file. If specified, presence of target variants "
+             "is checked in these BAM files (recommended for somatic or "
+             "case-specific variant identification). "
+             "Every BAM file must have CS and MD tags for this "
+             "command to work properly."
+    )
+
     parser.set_defaults(which='diff')
     return sub_parsers
 
@@ -138,6 +150,7 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
                     max_neighbor_distance
                     match_all_breakpoints
                     match_variant_types
+                    query_bam_file
     """
     # Step 1. Load the target variants list
     logger.info("Started reading the target variants list TSV file")

@@ -50,7 +50,7 @@ def add_cli_collapse_arg_parser(
         help="Input TSV file."
     )
     parser_required.add_argument(
-        "--sample-id", '-a',
+        "--sample-id", '-s',
         dest="sample_id",
         type=str,
         required=True,
@@ -67,7 +67,7 @@ def add_cli_collapse_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--strategy", '-s',
+        "--strategy",
         dest="strategy",
         type=str,
         required=False,

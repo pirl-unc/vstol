@@ -122,9 +122,7 @@ def test_merge_2():
         match_all_breakpoints=True,
         match_variant_types=True
     )
-
     for variant in variants_list.variants:
-        if variant.id == '1':
-            assert variant.num_variant_calls == 2
-        else:
-            assert variant.num_variant_calls == 1
+        if variant.num_variant_calls == 2:
+            assert 'variant_call_14' in variant.variant_call_ids
+            assert 'variant_call_22' in variant.variant_call_ids

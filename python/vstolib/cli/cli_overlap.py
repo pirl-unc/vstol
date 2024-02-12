@@ -76,7 +76,7 @@ def add_cli_overlap_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--num-threads", '-t',
+        "--num-threads",
         dest="num_threads",
         type=int,
         default=NUM_THREADS,
@@ -84,7 +84,7 @@ def add_cli_overlap_arg_parser(
         help="Number of threads (default: %i)." % NUM_THREADS
     )
     parser_optional.add_argument(
-        "--padding", '-p',
+        "--padding",
         dest="padding",
         type=int,
         required=False,

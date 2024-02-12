@@ -72,7 +72,7 @@ def add_cli_annotate_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--ensembl-release", '-er',
+        "--ensembl-release",
         dest="ensembl_release",
         type=int,
         required=False,
@@ -85,7 +85,7 @@ def add_cli_annotate_arg_parser(
              % Annotators.ENSEMBL
     )
     parser_optional.add_argument(
-        "--ensembl-species", '-es',
+        "--ensembl-species",
         dest="ensembl_species",
         type=str,
         required=False,
@@ -98,7 +98,7 @@ def add_cli_annotate_arg_parser(
              % Annotators.ENSEMBL
     )
     parser_optional.add_argument(
-        "--gencode-gtf-file", '-gt',
+        "--gencode-gtf-file",
         dest="gencode_gtf_file",
         type=str,
         required=False,
@@ -108,7 +108,7 @@ def add_cli_annotate_arg_parser(
              % Annotators.GENCODE
     )
     parser_optional.add_argument(
-        "--gencode-version", '-gv',
+        "--gencode-version",
         dest="gencode_version",
         type=str,
         required=False,
@@ -118,7 +118,7 @@ def add_cli_annotate_arg_parser(
              % Annotators.GENCODE
     )
     parser_optional.add_argument(
-        "--gencode-species", '-gs',
+        "--gencode-species",
         dest="gencode_species",
         type=str,
         required=False,
