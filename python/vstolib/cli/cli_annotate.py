@@ -22,6 +22,7 @@ from ..constants import *
 from ..default import *
 from ..ensembl import Ensembl
 from ..gencode import Gencode
+from ..refseq import RefSeq
 from ..main import annotate
 from ..variants_list import VariantsList
 
@@ -72,6 +73,15 @@ def add_cli_annotate_arg_parser(
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
+        "--num-threads",
+        dest="num_threads",
+        type=int,
+        default=NUM_THREADS,
+        required=False,
+        help="Number of threads (default: %i)."
+             % NUM_THREADS
+    )
+    parser_optional.add_argument(
         "--ensembl-release",
         dest="ensembl_release",
         type=int,
@@ -108,6 +118,30 @@ def add_cli_annotate_arg_parser(
              % Annotators.GENCODE
     )
     parser_optional.add_argument(
+        "--gencode-levels",
+        dest="gencode_levels",
+        nargs='+',
+        type=int,
+        required=False,
+        default=[1],
+        help="GENCODE gene levels (default: 1)."
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.GENCODE
+    )
+    parser_optional.add_argument(
+        "--gencode-types",
+        dest="gencode_types",
+        nargs='+',
+        type=str,
+        required=False,
+        default=['protein_coding'],
+        help="GENCODE gene types (default: protein_coding)."
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.GENCODE
+    )
+    parser_optional.add_argument(
         "--gencode-version",
         dest="gencode_version",
         type=str,
@@ -127,6 +161,47 @@ def add_cli_annotate_arg_parser(
              "--annotator is '%s'."
              % Annotators.GENCODE
     )
+    parser_optional.add_argument(
+        "--refseq-gtf-file",
+        dest="refseq_gtf_file",
+        type=str,
+        required=False,
+        help="RefSeq GTF file. "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.REFSEQ
+    )
+    parser_optional.add_argument(
+        "--refseq-assembly-report-txt-file",
+        dest="refseq_assembly_report_txt_file",
+        type=str,
+        required=False,
+        help="RefSeq assembly report TXT file. "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.REFSEQ
+    )
+    parser_optional.add_argument(
+        "--refseq-version",
+        dest="refseq_version",
+        type=str,
+        required=False,
+        help="RefSeq version (e.g. 'v110'). "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.REFSEQ
+    )
+    parser_optional.add_argument(
+        "--refseq-species",
+        dest="refseq_species",
+        type=str,
+        required=False,
+        help="RefSeq species (e.g. 'human'). "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.REFSEQ
+    )
+
     # parser_optional.add_argument(
     #     "--annovar-path", '-ar',
     #     dest="annovar_path",
@@ -215,8 +290,14 @@ def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
                     ensembl_release
                     ensembl_species
                     gencode_gtf_file
+                    gencode_levels
+                    gencode_types
                     gencode_version
                     gencode_species
+                    refseq_gtf_file
+                    refseq_assembly_report_txt_file
+                    refseq_version
+                    refseq_species
                     annovar_path
                     annovar_perl_path
                     annovar_humandb_path
@@ -238,15 +319,26 @@ def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
         annotator = Gencode(
             gtf_file=args.gencode_gtf_file,
             version=args.gencode_version,
-            species=args.gencode_species
+            species=args.gencode_species,
+            types=args.gencode_types,
+            levels=args.gencode_levels
         )
     else:
         raise Exception('Unknown annotation source: %s' % args.annotator)
 
+    # elif args.annotator == Annotators.REFSEQ:
+    #     annotator = RefSeq(
+    #         gtf_file=args.refseq_gtf_file,
+    #         version=args.refseq_version,
+    #         species=args.refseq_species,
+    #         assembly_report_txt_file=args.refseq_assembly_report_txt_file
+    #     )
+
     # Step 3. Annotate variants
     variants_list = annotate(
         variants_list=variants_list,
-        annotator=annotator
+        annotator=annotator,
+        num_threads=args.num_threads
     )
 
     # Step 4. Write to a TSV file

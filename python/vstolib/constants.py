@@ -19,10 +19,12 @@ The purpose of this python3 script is to define constants.
 class Annotators:
     ENSEMBL = 'ensembl'
     GENCODE = 'gencode'
+    REFSEQ = 'refseq'
     ANNOVAR = 'annovar'
     ALL = [
         ENSEMBL,
         GENCODE,
+        REFSEQ,
         ANNOVAR
     ]
 
@@ -39,12 +41,18 @@ class GenomicRegionTypes:
     INTRONIC = 'intronic'
     FIVE_PRIME_UTR = '5prime_utr'
     THREE_PRIME_UTR = '3prime_utr'
+    UNTRANSLATED_REGION = 'utr'
+    START_CODON = 'start_codon'
+    STOP_CODON = 'stop_codon'
     INTERGENIC = 'intergenic'
     ALL = [
         EXONIC,
         INTRONIC,
         FIVE_PRIME_UTR,
         THREE_PRIME_UTR,
+        UNTRANSLATED_REGION,
+        START_CODON,
+        STOP_CODON,
         INTERGENIC
     ]
 

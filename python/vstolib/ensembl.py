@@ -47,7 +47,7 @@ class Ensembl(Annotator):
     def source(self) -> str:
         return Annotators.ENSEMBL
 
-    def annotate(self, variants_list: VariantsList) -> VariantsList:
+    def annotate(self, variants_list: VariantsList, num_processes: int = 1) -> VariantsList:
         """
         Annotate a VariantsList object.
 

@@ -17,12 +17,15 @@ The purpose of this python3 script is to implement the Gencode dataclass.
 
 
 import pandas as pd
+import multiprocessing as mp
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from functools import partial
+from typing import List, Tuple, Set
 from .annotator import Annotator
 from .constants import *
 from .logging import get_logger
+from .variant import Variant
 from .variant_call import VariantCall
 from .variant_call_annotation import VariantCallAnnotation
 from .variants_list import VariantsList
@@ -36,6 +39,8 @@ class Gencode(Annotator):
     gtf_file: str
     version: str    # GENCODE GTF file version (e.g. 'v41')
     species: str    # GENCODE GTF file genome species (e.g. 'human')
+    levels: List[int] = field(default_factory=list)
+    types: List[str] = field(default_factory=list)
     df_genes: pd.DataFrame = None
     df_transcripts: pd.DataFrame = None
     df_exons: pd.DataFrame = None
@@ -113,6 +118,12 @@ class Gencode(Annotator):
                     curr_gene_name = str(curr_metadata_dict['gene_name'])
                     curr_gene_type = str(curr_metadata_dict['gene_type'])
                     curr_gene_level = int(curr_metadata_dict['level'])
+
+                    if len(self.types) > 0 and curr_gene_type not in self.types:
+                        continue
+                    if len(self.levels) > 0 and curr_gene_level not in self.levels:
+                        continue
+
                     data['gene_id'].append(curr_gene_id)
                     data['gene_id_stable'].append(curr_gene_stable_id)
                     data['source'].append(curr_gene_source)
@@ -124,7 +135,10 @@ class Gencode(Annotator):
                     data['type'].append(curr_gene_type)
                     data['level'].append(curr_gene_level)
                     data['version'].append(curr_gene_version)
-        self.df_genes = pd.DataFrame(data)
+            self.df_genes = pd.DataFrame(data)
+        self.__gene_ids = set()
+        for gene_id in self.df_genes['gene_id'].values.tolist():
+            self.__gene_ids.add(gene_id)
         logger.info('Loaded %i genes in total.' % len(self.df_genes))
 
     def __read_gtf_file_transcripts(self):
@@ -183,6 +197,14 @@ class Gencode(Annotator):
                         curr_transcript_support_level = int(curr_metadata_dict['transcript_support_level'][0])
                     except:
                         curr_transcript_support_level = ''
+                    if curr_gene_id not in self.__gene_ids:
+                        continue
+                    if len(self.types) > 0 and curr_transcript_type not in self.types:
+                        continue
+                    if len(self.levels) > 0 and curr_transcript_level not in self.levels:
+                        continue
+                    if len(self.levels) > 0 and curr_transcript_support_level not in self.levels:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['transcript_id_stable'].append(curr_transcript_stable_id)
@@ -198,6 +220,9 @@ class Gencode(Annotator):
                     data['support_level'].append(curr_transcript_support_level)
                     data['tags'].append(';'.join(curr_transcript_tags))
             self.df_transcripts = pd.DataFrame(data)
+        self.__transcript_ids = set()
+        for transcript_id in self.df_transcripts['transcript_id'].values.tolist():
+            self.__transcript_ids.add(transcript_id)
         logger.info('Loaded %i transcripts in total.' % len(self.df_transcripts))
 
     def __read_gtf_file_exons(self):
@@ -246,6 +271,10 @@ class Gencode(Annotator):
                     curr_exon_stable_id, curr_exon_version = Gencode.get_stable_ensembl_id(id=str(curr_metadata_dict['exon_id'][0]))
                     curr_exon_number = int(curr_metadata_dict['exon_number'][0])
                     curr_exon_tags = [str(tag).replace('"', '') for tag in curr_metadata_dict['tag']]
+                    if curr_gene_id not in self.__gene_ids:
+                        continue
+                    if curr_transcript_id not in self.__transcript_ids:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['exon_id'].append(curr_exon_id)
@@ -292,6 +321,10 @@ class Gencode(Annotator):
                         curr_metadata_dict[curr_metadata_elements_[0]] = curr_metadata_elements_[1].replace('"', '')
                     curr_gene_id = str(curr_metadata_dict['gene_id'])
                     curr_transcript_id = str(curr_metadata_dict['transcript_id'])
+                    if curr_gene_id not in self.__gene_ids:
+                        continue
+                    if curr_transcript_id not in self.__transcript_ids:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['start_codon_start'].append(curr_start_codon_start)
@@ -330,6 +363,10 @@ class Gencode(Annotator):
                         curr_metadata_dict[curr_metadata_elements_[0]] = curr_metadata_elements_[1].replace('"', '')
                     curr_gene_id = str(curr_metadata_dict['gene_id'])
                     curr_transcript_id = str(curr_metadata_dict['transcript_id'])
+                    if curr_gene_id not in self.__gene_ids:
+                        continue
+                    if curr_transcript_id not in self.__transcript_ids:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['stop_codon_start'].append(curr_stop_codon_start)
@@ -369,6 +406,10 @@ class Gencode(Annotator):
                         curr_metadata_dict[curr_metadata_elements_[0]] = curr_metadata_elements_[1].replace('"', '')
                     curr_gene_id = str(curr_metadata_dict['gene_id'])
                     curr_transcript_id = str(curr_metadata_dict['transcript_id'])
+                    if curr_gene_id not in self.__gene_ids:
+                        continue
+                    if curr_transcript_id not in self.__transcript_ids:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['utr_start'].append(curr_utr_start)
@@ -403,7 +444,7 @@ class Gencode(Annotator):
         ]
         if len(df_genes_matched) == 0:
             variant_call_annotation = VariantCallAnnotation(
-                annotator=Annotators.ENSEMBL,
+                annotator=Annotators.GENCODE,
                 annotator_version=self.version,
                 region=GenomicRegionTypes.INTERGENIC,
                 species=self.species
@@ -466,7 +507,20 @@ class Gencode(Annotator):
         )
         return pos_1_annotations, pos_2_annotations
 
-    def annotate(self, variants_list) -> VariantsList:
+    def annotate_variant(self, variant: Variant) -> Variant:
+        for i in range(0, variant.num_variant_calls):
+            position_1_annotations, position_2_annotations = self.annotate_variant_call(
+                variant.variant_calls[i]
+            )
+            for annotation in position_1_annotations:
+                variant.variant_calls[i].position_1_annotations.append(annotation)
+            for annotation in position_2_annotations:
+                variant.variant_calls[i].position_2_annotations.append(annotation)
+        return variant
+
+    def annotate(self,
+                 variants_list,
+                 num_processes: int = 1) -> VariantsList:
         """
         Annotate a VariantsList object.
 
@@ -476,13 +530,12 @@ class Gencode(Annotator):
         Returns:
             VariantsList
         """
-        for i in range(0, variants_list.size):
-            for j in range(0, len(variants_list.variants[i].variant_calls)):
-                position_1_annotations, position_2_annotations = self.annotate_variant_call(
-                    variants_list.variants[i].variant_calls[j]
-                )
-                for annotation in position_1_annotations:
-                    variants_list.variants[i].variant_calls[j].position_1_annotations.append(annotation)
-                for annotation in position_2_annotations:
-                    variants_list.variants[i].variant_calls[j].position_2_annotations.append(annotation)
-        return variants_list
+        pool = mp.Pool(processes=num_processes)
+        func = partial(self.annotate_variant)
+        variants = pool.map(func, variants_list.variants)
+        pool.close()
+        variants_list_annotated = VariantsList()
+        for variant in variants:
+            variants_list_annotated.add_variant(variant=variant)
+        return variants_list_annotated
+

@@ -46,7 +46,8 @@ logger = get_logger(__name__)
 
 def annotate(
         variants_list: VariantsList,
-        annotator: Annotator
+        annotator: Annotator,
+        num_threads: int
 ) -> VariantsList:
     """
     Annotate a VariantsList object.
@@ -54,11 +55,13 @@ def annotate(
     Parameters:
         variants_list   :   VariantsList.
         annotator       :   Annotator.
+        num_threads     :   Number of threads.
 
     Returns:
         VariantsList
     """
-    return annotator.annotate(variants_list=variants_list)
+    return annotator.annotate(variants_list=variants_list,
+                              num_processes=num_threads)
 
 
 def collapse(

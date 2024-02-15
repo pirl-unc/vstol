@@ -8,7 +8,8 @@ def test_annotate_sniffles2_ensembl(sniffles2_variants_list):
     ensembl = Ensembl(release=95, species='human')
     variants_list_annotated = annotate(
         variants_list=sniffles2_variants_list,
-        annotator=ensembl
+        annotator=ensembl,
+        num_threads=2
     )
     print(variants_list_annotated.size)
 
@@ -18,9 +19,12 @@ def test_annotate_sniffles2_gencode(sniffles2_variants_list):
         gtf_file=gtf_file,
         version='v41',
         species='human',
+        levels=[1],
+        types=['protein_coding']
     )
     variants_list_annotated = annotate(
         variants_list=sniffles2_variants_list,
-        annotator=gencode
+        annotator=gencode,
+        num_threads=2
     )
     print(variants_list_annotated.size)

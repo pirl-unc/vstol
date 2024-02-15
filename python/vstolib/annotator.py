@@ -27,6 +27,6 @@ logger = get_logger(__name__)
 @dataclass
 class Annotator:
 
-    def annotate(self, variants_list: VariantsList) -> VariantsList:
+    def annotate(self, variants_list: VariantsList, num_processes: int) -> VariantsList:
         raise Exception("Subclass must implement 'annotate' method")
 
