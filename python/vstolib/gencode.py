@@ -203,8 +203,6 @@ class Gencode(Annotator):
                         continue
                     if len(self.levels) > 0 and curr_transcript_level not in self.levels:
                         continue
-                    if len(self.levels) > 0 and curr_transcript_support_level not in self.levels:
-                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['transcript_id_stable'].append(curr_transcript_stable_id)
