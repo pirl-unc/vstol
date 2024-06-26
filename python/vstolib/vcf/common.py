@@ -61,7 +61,7 @@ def read_vcf_file(
         return pd.read_csv(vcf_file,
                            compression='gzip',
                            comment='#',
-                           delim_whitespace=True,
+                           sep='\s+',
                            header=None,
                            low_memory=low_memory,
                            memory_map=memory_map,
@@ -69,7 +69,7 @@ def read_vcf_file(
     else:
         return pd.read_csv(vcf_file,
                            comment='#',
-                           delim_whitespace=True,
+                           sep='\s+',
                            header=None,
                            low_memory=low_memory,
                            memory_map=memory_map,

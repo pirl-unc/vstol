@@ -201,79 +201,78 @@ def add_cli_annotate_arg_parser(
              "--annotator is '%s'."
              % Annotators.REFSEQ
     )
-
-    # parser_optional.add_argument(
-    #     "--annovar-path", '-ar',
-    #     dest="annovar_path",
-    #     type=str,
-    #     required=False,
-    #     help="ANNOVAR directory path. "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s'."
-    #          % Annotators.ANNOVAR
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-perl-path", '-ap',
-    #     dest="annovar_perl_path",
-    #     type=str,
-    #     required=False,
-    #     help="Perl path. "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s'."
-    #          % Annotators.ANNOVAR
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-db-path", '-ad',
-    #     dest="annovar_db_path",
-    #     type=str,
-    #     required=False,
-    #     help="ANNOVAR <human>db/ directory path. "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s'."
-    #          % Annotators.ANNOVAR
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-output-avinput-file", '-af',
-    #     dest="annovar_output_avinput_file",
-    #     type=str,
-    #     required=False,
-    #     help="Output ANNOVAR .avinput file. "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s'."
-    #          % Annotators.ANNOVAR
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-genome-assembly", '-aa',
-    #     dest="annovar_genome_assembly",
-    #     type=str,
-    #     required=False,
-    #     help="ANNOVAR genome assembly. "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s'."
-    #          % Annotators.ANNOVAR
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-protocol", '-at',
-    #     dest="annovar_protocol",
-    #     type=str,
-    #     required=False,
-    #     default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())),
-    #     help="ANNOVAR protocol (e.g. 'refGene,exac03'). "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s' (default: '%s')."
-    #          % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())))
-    # )
-    # parser_optional.add_argument(
-    #     "--annovar-operation", '-ao',
-    #     dest="annovar_operation",
-    #     type=str,
-    #     required=False,
-    #     default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())),
-    #     help="ANNOVAR protocol (e.g. 'g,f'). "
-    #          "This parameter must be supplied if "
-    #          "--annotator is '%s' (default: '%s')."
-    #          % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())))
-    # )
+    parser_optional.add_argument(
+        "--annovar-path",
+        dest="annovar_path",
+        type=str,
+        required=False,
+        help="ANNOVAR directory path. "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.ANNOVAR
+    )
+    parser_optional.add_argument(
+        "--annovar-perl-path",
+        dest="annovar_perl_path",
+        type=str,
+        required=False,
+        help="Perl path. "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.ANNOVAR
+    )
+    parser_optional.add_argument(
+        "--annovar-db-path",
+        dest="annovar_db_path",
+        type=str,
+        required=False,
+        help="ANNOVAR db directory path (e.g. humandb/ directory). "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.ANNOVAR
+    )
+    parser_optional.add_argument(
+        "--annovar-output-avinput-file",
+        dest="annovar_output_avinput_file",
+        type=str,
+        required=False,
+        help="Output ANNOVAR .avinput file. "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.ANNOVAR
+    )
+    parser_optional.add_argument(
+        "--annovar-genome-assembly",
+        dest="annovar_genome_assembly",
+        type=str,
+        required=False,
+        help="ANNOVAR genome assembly (e.g. 'hg38'). "
+             "This parameter must be supplied if "
+             "--annotator is '%s'."
+             % Annotators.ANNOVAR
+    )
+    parser_optional.add_argument(
+        "--annovar-protocol",
+        dest="annovar_protocol",
+        type=str,
+        required=False,
+        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())),
+        help="ANNOVAR protocol (e.g. 'refGene,exac03'). "
+             "This parameter must be supplied if "
+             "--annotator is '%s' (default: '%s')."
+             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())))
+    )
+    parser_optional.add_argument(
+        "--annovar-operation",
+        dest="annovar_operation",
+        type=str,
+        required=False,
+        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())),
+        help="ANNOVAR protocol (e.g. 'g,f'). "
+             "This parameter must be supplied if "
+             "--annotator is '%s' (default: '%s')."
+             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())))
+    )
     parser.set_defaults(which='annotate')
     return sub_parsers
 
@@ -300,7 +299,7 @@ def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
                     refseq_species
                     annovar_path
                     annovar_perl_path
-                    annovar_humandb_path
+                    annovar_db_path
                     annovar_output_avinput_file
                     annovar_genome_assembly
                     annovar_protocol
