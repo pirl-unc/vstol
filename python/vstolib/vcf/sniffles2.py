@@ -134,9 +134,8 @@ def parse_sniffles2_callset(
             # Update position_2 for 'BND'
             if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
                 alt_val = str(row['ALT']).split(":")[1]
-                alt_val = alt_val.replace("[", "")
-                alt_val = alt_val.replace("]", "")
-                alt_val = alt_val.replace("N", "")
+                for character in ["[", "]", "N", "n", "A", "a", "T", "t", "C", "c", "G", "g"]:
+                    alt_val = alt_val.replace(character, "")
                 position_2 = int(alt_val)
 
             # Update variant_size for 'BND'
