@@ -640,16 +640,16 @@ class VariantsList:
     @staticmethod
     def read_tsv_file(
             tsv_file: str,
-            low_memory: bool = True,
-            memory_map: bool = False
+            low_memory: bool = False,
+            memory_map: bool = True
     ) -> 'VariantsList':
         """
         Read a TSV file and return a VariantsList object.
 
         Parameters:
             tsv_file    :   TSV file.
-            low_memory  :   Low memory (default: True).
-            memory_map  :   Map memory (default: False).
+            low_memory  :   Low memory (default: False).
+            memory_map  :   Map memory (default: True).
 
         Returns:
             VariantsList
