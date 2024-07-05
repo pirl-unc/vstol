@@ -134,7 +134,7 @@ def run_cli_merge_from_parsed_args(args: argparse.Namespace):
     pool = mp.Pool(processes=args.num_threads)
     async_results = []
     for tsv_file in args.tsv_file:
-        async_results.append(pool.apply_async(VariantsList.read_tsv_file, args=(tsv_file,True,False)))
+        async_results.append(pool.apply_async(VariantsList.read_tsv_file, args=(tsv_file,False,True)))
     pool.close()
     pool.join()
     variants_lists = [async_result.get() for async_result in async_results]
