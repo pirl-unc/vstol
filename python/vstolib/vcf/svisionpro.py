@@ -12,7 +12,7 @@
 
 
 """
-The purpose of this python3 script is to implement a parser for Sniffles2 VCF files.
+The purpose of this python3 script is to implement a parser for SVision-pro VCF files.
 """
 
 
@@ -31,18 +31,22 @@ from ..variants_list import VariantsList
 logger = get_logger(__name__)
 
 
-def parse_sniffles2_callset(
+def parse_svisionpro_callset(
         df_vcf: pd.DataFrame,
         sequencing_platform: str,
-        source_id: str
+        source_id: str,
+        case_id: str,
+        control_id: str
 ) -> VariantsList:
     """
-    Parses a Sniffles2 DataFrame and returns a VariantsList object.
+    Parses a SVision-pro DataFrame and returns a VariantsList object.
 
     Parameters:
-        df_vcf                  :   DataFrame of rows from a Sniffles2 VCF file.
+        df_vcf                  :   DataFrame of rows from a SVision-pro VCF file.
         sequencing_platform     :   Sequencing platform.
         source_id               :   Source ID.
+        case_id                 :   Case ID.
+        control_id              :   Control ID.
 
     Returns:
         VariantsList
@@ -52,7 +56,7 @@ def parse_sniffles2_callset(
     curr_variant_call_idx = 1
     curr_variant_idx = 1
     for row in df_vcf.to_dict('records'):
-        for sample_id in sample_ids:
+        for idx, sample_id in enumerate(sample_ids):
             # Step 1. Initialize values
             chromosome_1 = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
             chromosome_2 = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
@@ -81,22 +85,17 @@ def parse_sniffles2_callset(
                 if '=' in curr_info:
                     curr_info_elements = curr_info.split('=')
                     curr_key = curr_info_elements[0]
-                    curr_type = VariantCallingMethods.AttributeTypes.SNIFFLES2[curr_key]
+                    curr_type = VariantCallingMethods.AttributeTypes.SVISIONPRO[curr_key]
                     attributes[curr_key] = get_typed_value(value=curr_info_elements[1], default_value='', type=curr_type)
                 else:
-                    if curr_info == 'PRECISE':
-                        attributes['PRECISE'] = True
-                    elif curr_info == 'IMPRECISE':
-                        attributes['PRECISE'] = False
-                    else:
-                        attributes[curr_info] = True
+                    attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
             format = str(row['FORMAT']).split(':')
             curr_sample = str(row[sample_id]).split(':')
             for curr_format in format:
                 curr_key = curr_format
-                curr_type = VariantCallingMethods.AttributeTypes.SNIFFLES2[curr_key]
+                curr_type = VariantCallingMethods.AttributeTypes.SVISIONPRO[curr_key]
                 attributes[curr_key] = retrieve_from_list(lst=curr_sample,
                                                           index=format.index(curr_format),
                                                           default_value='',
@@ -104,66 +103,48 @@ def parse_sniffles2_callset(
 
             # Step 4. Update variables
             # Update the following variables:
-            # precise
             # variant_size
             # variant_type
             # chromosome_2
             # position_2
+            # total_read_count
             # reference_allele_read_count
             # alternate_allele_read_count
             # alternate_allele_fraction
             # alternate_allele_read_ids
-            if 'PRECISE' in attributes.keys():
-                precise = attributes['PRECISE']
+            if 'END' in attributes.keys():
+                position_2 = attributes['END']
             if 'SVLEN' in attributes.keys():
                 variant_size = abs(attributes['SVLEN'])
             if 'SVTYPE' in attributes.keys():
                 variant_type = attributes['SVTYPE']
-            if 'CHR2' in attributes.keys():
-                chromosome_2 = attributes['CHR2']
-            if 'END' in attributes.keys():
-                position_2 = attributes['END']
             if 'DR' in attributes.keys():
-                reference_allele_read_count = attributes['DR']
+                reference_allele_read_count = get_typed_value(value=attributes['DR'], default_value=-1, type=int)
             if 'DV' in attributes.keys():
-                alternate_allele_read_count = attributes['DV']
-            if 'AF' in attributes.keys():
-                alternate_allele_fraction = attributes['AF']
+                alternate_allele_read_count = get_typed_value(value=attributes['DV'], default_value=-1, type=int)
+            if reference_allele_read_count != -1 and alternate_allele_read_count != -1:
+                total_read_count = reference_allele_read_count + alternate_allele_read_count
+            if alternate_allele_read_count != -1 and total_read_count != -1:
+                alternate_allele_fraction = float(alternate_allele_read_count) / float(total_read_count)
             if 'RNAMES' in attributes.keys():
                 alternate_allele_read_ids = attributes['RNAMES'].split(',')
-
-            # Update position_2 for 'BND'
-            if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
-                pattern = re.compile(r'(chr(?:\d+|X|Y|MT|M)):(\d+)')
-                matches = pattern.findall(str(row['ALT']))
-                position_2 = int(matches[0][1])
 
             # Update variant_size for 'BND'
             if (variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION) and \
                     (chromosome_1 == chromosome_2):
                 variant_size = abs(position_1 - position_2) + 1
 
-            # Update variant_sequence for 'INS'
-            if variant_type == VariantTypes.INSERTION:
-                variant_sequences.append(str(alternate_allele))
-
-            # Update the following variables if they are currently unknown but can be inferred:
-            # total_read_count
-            # alternate_allele_fraction
-            if alternate_allele_read_count >= 0 and \
-                reference_allele_read_count >= 0 and \
-                total_read_count == -1:
-                total_read_count = alternate_allele_read_count + reference_allele_read_count
-            if alternate_allele_read_count >= 0 and \
-                total_read_count > 0 and \
-                alternate_allele_fraction == -1.0:
-                alternate_allele_fraction = float(alternate_allele_read_count) / float(total_read_count)
-
-            # Append variant call to variants list
+            # Append case variant call to variants list
+            variant_id = str(curr_variant_idx)
+            variant = Variant(id=variant_id)
+            if idx == 0:
+                sample_id = case_id
+            else:
+                sample_id = control_id
             variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
                 sample_id,
                 NucleicAcidTypes.DNA,
-                VariantCallingMethods.SNIFFLES2,
+                VariantCallingMethods.SVISIONPRO,
                 curr_variant_call_idx,
                 variant_type,
                 chromosome_1,
@@ -171,14 +152,13 @@ def parse_sniffles2_callset(
                 chromosome_2,
                 position_2
             )
-            variant_id = str(curr_variant_idx)
-            variant = Variant(id=variant_id)
+            curr_variant_call_idx += 1
             variant_call = VariantCall(
                 id=variant_call_id,
                 source_id=source_id,
                 sample_id=sample_id,
                 nucleic_acid=NucleicAcidTypes.DNA,
-                variant_calling_method=VariantCallingMethods.SNIFFLES2,
+                variant_calling_method=VariantCallingMethods.SVISIONPRO,
                 sequencing_platform=sequencing_platform,
                 chromosome_1=chromosome_1,
                 position_1=position_1,
@@ -204,7 +184,6 @@ def parse_sniffles2_callset(
             if variant_id not in variants:
                 variants[variant_id] = Variant(id=variant_id)
             variants[variant_id].add_variant_call(variant_call=variant_call)
-            curr_variant_call_idx += 1
         curr_variant_idx += 1
 
     variants_list = VariantsList(variants=list(variants.values()))

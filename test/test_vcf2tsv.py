@@ -25,6 +25,14 @@ def test_vcf2tsv_pbsv(pbsv_variants_list):
     print(pbsv_variants_list.size)
 
 
+def test_vcf2tsv_savana(savana_variants_list):
+    print(savana_variants_list.size)
+
+
+def test_vcf2tsv_severus(severus_variants_list):
+    print(severus_variants_list.size)
+
+
 def test_vcf2tsv_sniffles2(sniffles2_variants_list):
     print(sniffles2_variants_list.size)
 
@@ -40,3 +48,6 @@ def test_vcf2tsv_strelka2_somatic_snvs(strelka2_somatic_snvs_variants_list):
 def test_svim_vcf2tsv(svim_variants_list):
     print(svim_variants_list.size)
 
+
+def test_svisionpro_vcf2tsv(svisionpro_variants_list):
+    print(svisionpro_variants_list.size)

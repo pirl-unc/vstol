@@ -80,6 +80,33 @@ def pbsv_variants_list():
     return variants_list
 
 @pytest.fixture
+def savana_variants_list():
+    vcf_file = get_data_path(name='sample001_savana_sv_breakpoints.vcf')
+    df_vcf = read_vcf_file(vcf_file=vcf_file)
+    variants_list = vcf2tsv(
+        df_vcf=df_vcf,
+        source_id='hg002',
+        case_id='tumor',
+        control_id='normal',
+        variant_calling_method=VariantCallingMethods.SAVANA,
+        sequencing_platform='pacbio'
+    )
+    return variants_list
+
+@pytest.fixture
+def severus_variants_list():
+    vcf_file = get_data_path(name='sample001_severus_somatic.vcf')
+    df_vcf = read_vcf_file(vcf_file=vcf_file)
+    variants_list = vcf2tsv(
+        df_vcf=df_vcf,
+        source_id='hg002',
+        case_id='tumor',
+        variant_calling_method=VariantCallingMethods.SEVERUS,
+        sequencing_platform='pacbio'
+    )
+    return variants_list
+
+@pytest.fixture
 def sniffles2_variants_list():
     vcf_file = get_data_path(name='hg002_sniffles2.vcf')
     df_vcf = read_vcf_file(vcf_file=vcf_file)
@@ -127,6 +154,20 @@ def svim_variants_list():
         df_vcf=df_vcf,
         source_id='hg002',
         variant_calling_method=VariantCallingMethods.SVIM,
+        sequencing_platform='pacbio'
+    )
+    return variants_list
+
+@pytest.fixture
+def svisionpro_variants_list():
+    vcf_file = get_data_path(name='sample001.svision_pro_v1.8.s3.vcf')
+    df_vcf = read_vcf_file(vcf_file=vcf_file)
+    variants_list = vcf2tsv(
+        df_vcf=df_vcf,
+        source_id='hg002',
+        case_id='tumor',
+        control_id='normal',
+        variant_calling_method=VariantCallingMethods.SVISIONPRO,
         sequencing_platform='pacbio'
     )
     return variants_list

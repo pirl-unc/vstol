@@ -36,9 +36,12 @@ from .vcf.delly2 import parse_delly2_somatic_callset
 from .vcf.gatk4_mutect2 import parse_gatk4_mutect2_callset
 from .vcf.lumpy import parse_lumpy_somatic_callset
 from .vcf.pbsv import parse_pbsv_callset
+from .vcf.savana import parse_savana_callset
+from .vcf.severus import parse_severus_callset
 from .vcf.sniffles2 import parse_sniffles2_callset
 from .vcf.strelka2 import parse_strelka2_somatic_callset
 from .vcf.svim import parse_svim_callset
+from .vcf.svisionpro import parse_svisionpro_callset
 
 
 logger = get_logger(__name__)
@@ -488,6 +491,21 @@ def vcf2tsv(
             sequencing_platform=sequencing_platform,
             source_id=source_id
         )
+    elif variant_calling_method == VariantCallingMethods.SAVANA:
+        variants_list = parse_savana_callset(
+            df_vcf=df_vcf,
+            sequencing_platform=sequencing_platform,
+            source_id=source_id,
+            case_id=case_id,
+            control_id=control_id
+        )
+    elif variant_calling_method == VariantCallingMethods.SEVERUS:
+        variants_list = parse_severus_callset(
+            df_vcf=df_vcf,
+            sequencing_platform=sequencing_platform,
+            source_id=source_id,
+            case_id=case_id
+        )
     elif variant_calling_method == VariantCallingMethods.SNIFFLES2:
         variants_list = parse_sniffles2_callset(
             df_vcf=df_vcf,
@@ -507,6 +525,14 @@ def vcf2tsv(
             df_vcf=df_vcf,
             sequencing_platform=sequencing_platform,
             source_id=source_id
+        )
+    elif variant_calling_method == VariantCallingMethods.SVISIONPRO:
+        variants_list = parse_svisionpro_callset(
+            df_vcf=df_vcf,
+            sequencing_platform=sequencing_platform,
+            source_id=source_id,
+            case_id=case_id,
+            control_id=control_id
         )
     elif variant_calling_method == VariantCallingMethods.DBSNP:
         variants_list = parse_dbsnp_callset(

@@ -95,9 +95,12 @@ class VariantCallingMethods:
     GATK4_MUTECT2 = 'gatk4-mutect2'
     LUMPY_SOMATIC = 'lumpy-somatic'
     PBSV = 'pbsv'
+    SAVANA = 'savana'
+    SEVERUS = 'severus'
     SNIFFLES2 = 'sniffles2'
     STRELKA2_SOMATIC = 'strelka2-somatic'
     SVIM = 'svim'
+    SVISIONPRO = 'svisionpro'
     ALL = [
         CUTESV,
         DBSNP,
@@ -106,9 +109,12 @@ class VariantCallingMethods:
         GATK4_MUTECT2,
         LUMPY_SOMATIC,
         PBSV,
+        SAVANA,
+        SEVERUS,
         SNIFFLES2,
         STRELKA2_SOMATIC,
-        SVIM
+        SVIM,
+        SVISIONPRO
     ]
 
     class AttributeTypes:
@@ -262,6 +268,54 @@ class VariantCallingMethods:
             'SAC': str,
             'NotFullySpanned': bool
         }
+        SAVANA = {
+            'ID': str,
+            'SVTYPE': str,
+            'MATEID': str,
+            'NORMAL_SUPPORT': int,
+            'TUMOUR_SUPPORT': int,
+            'SVLEN': int,
+            'BP_NOTATION': str,
+            'ORIGINATING_CLUSTER': str,
+            'END_CLUSTER': str,
+            'ORIGIN_STARTS_STD_DEV': float,
+            'ORIGIN_MAPQ_MEAN': float,
+            'ORIGIN_EVENT_SIZE_STD_DEV': float,
+            'ORIGIN_EVENT_SIZE_MEDIAN': float,
+            'ORIGIN_EVENT_SIZE_MEAN': float,
+            'END_STARTS_STD_DEV': float,
+            'END_MAPQ_MEAN': float,
+            'END_EVENT_SIZE_STD_DEV': float,
+            'END_EVENT_SIZE_MEDIAN': float,
+            'END_EVENT_SIZE_MEAN': float,
+            'TUMOUR_DP': str,
+            'NORMAL_DP': str,
+            'GT': str
+        }
+        SEVERUS = {
+            'ID': str,
+            'SVTYPE': str,
+            'SVLEN': int,
+            'CHR2': str,
+            'END': int,
+            'STRANDS': str,
+            'DETAILED_TYPE': str,
+            'INSLEN': int,
+            'MAPQ': int,
+            'PHASESETID': str,
+            'HP': int,
+            'CLUSTERID': str,
+            'INSSEQ': str,
+            'MATE_ID': str,
+            'INSIDE_VNTR': str,
+            'ALINGED_POS': str,
+            'GT': str,
+            'GQ': int,
+            'DR': int,
+            'DV': int,
+            'VAF': float,
+            'hVAF': str
+        }
         SNIFFLES2 = {
             'ID': str,
             'SVLEN': int,
@@ -367,6 +421,21 @@ class VariantCallingMethods:
             'DP': int,
             'AD': str,
             'CN': int
+        }
+        SVISIONPRO = {
+            'ID': str,
+            'END': int,
+            'IT': str,
+            'SVLEN': int,
+            'BKPS': str,
+            'BKPSIT': str,
+            'SVTYPE': str,
+            'SUPPORT': int,
+            'VAF': float,
+            'RNAMES': str,
+            'GT': str,
+            'DR': int,
+            'DV': int
         }
 
 

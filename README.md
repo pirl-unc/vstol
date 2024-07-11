@@ -51,7 +51,10 @@ The following variant callers are currently supported:
 - [GATK4 Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360035531132--How-to-Call-somatic-mutations-using-GATK4-Mutect2)
 - [LUMPY](https://github.com/arq5x/lumpy-sv)
 - [pbsv](https://github.com/PacificBiosciences/pbsv)
+- [Savana](https://github.com/cortes-ciriano-lab/savana)
+- [Severus](https://github.com/KolmogorovLab/Severus)
 - [Sniffles2](https://github.com/fritzsedlazeck/Sniffles)
 - [Strelka2](https://github.com/Illumina/strelka)
 - [SVIM](https://github.com/eldariont/svim)
+- [SVision-pro](https://github.com/songbowang125/SVision-pro)
 

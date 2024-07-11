@@ -1,0 +1,44 @@
+##fileformat=VCFv4.2
+##source=Severusv0.1.2
+##CommandLine= --target-bam hg38_tp53_tumor_long_read_dna.bam --control-bam hg38_tp53_normal_long_read_dna.bam --phasing-vcf sample001_whatshap_phased.vcf.gz --vntr-bed /Users/leework/Documents/Research/projects/project_nexus/nexus/test/data/indices/severus/human_GRCh38_no_alt_analysis_set.trf.bed --threads 2 --out-dir hg38_tumor_severus_outputs/ --min-support 3 --min-sv-size 30 --min-mapq 20 --output-read-ids --bp-cluster-size 50
+##fileDate=2024-07-11
+##contig=<ID=chr17,length=7843138>
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=INS,Description="Insertion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=BND,Description="Breakend">
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=FAIL_LOWSUPP,Description="Less number of support, but ok in other samples">
+##FILTER=<ID=FAIL_MAP_CONS,Description="Majority of variant reads have unreliable mappability">
+##FILTER=<ID=FAIL_CONN_CONS,Description="Majority of variant reads have unreliable connections">
+##FILTER=<ID=FAIL_LOWCOV_OTHER,Description="Low variant coverage in other samples">
+##INFO=<ID=PRECISE,Number=0,Type=Flag,Description="SV with precise breakpoints coordinates and length">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="SV with imprecise breakpoints coordinates and length">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Length of the SV">
+##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for END coordinate">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the SV">
+##INFO=<ID=STRANDS,Number=1,Type=String,Description="Breakpoint strandedness">
+##INFO=<ID=DETAILED_TYPE,Number=1,Type=String,Description="Detailed type of the SV">
+##INFO=<ID=INSLEN,Number=1,Type=Integer,Description="Length of the unmapped sequence between breakpoint">
+##INFO=<ID=MAPQ,Number=1,Type=Integer,Description="Median mapping quality of supporting reads">
+##INFO=<ID=PHASESETID,Number=1,Type=String,Description="Matching phaseset ID for phased SVs">
+##INFO=<ID=HP,Number=1,Type=Integer,Description="Matching haplotype ID for phased SVs">
+##INFO=<ID=CLUSTERID,Number=1,Type=String,Description="Cluster ID in breakpoint_graph">
+##INFO=<ID=INSSEQ,Number=1,Type=String,Description="Insertion sequence between breakpoints">
+##INFO=<ID=MATE_ID,Number=1,Type=String,Description="MATE ID for breakends">
+##INFO=<ID=INSIDE_VNTR,Number=1,Type=String,Description="True if an indel is inside a VNTR">
+##INFO=<ID=ALINGED_POS,Number=1,Type=String,Description="Position in the reference">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotyping quality">
+##FORMAT=<ID=DR,Number=1,Type=Integer,Description="Number of reference reads">
+##FORMAT=<ID=DV,Number=1,Type=Integer,Description="Number of variant reads">
+##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant allele frequency">
+##FORMAT=<ID=hVAF,Number=3,Type=Float,Description="Haplotype specific variant Allele frequency (H0,H1,H2)">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	hg38_tp53_tumor_long_read_dna
+chr17	7675193	severus_INS3	N	TCATACGTACGATACGATAGCTAGCTACGATGCATATAATCAGCTACAGATCACTAGCTC	60.0	PASS	PRECISE;SVTYPE=INS;SVLEN=60;MAPQ=60.0	GT:GQ:VAF:hVAF:DR:DV	0/1:360:0.50:1.00,0.00,0.00:60:60
+chr17	7676693	severus_INS4	N	ACGTACAGCTACAGCTACGACTAGCATATAGCTACAGCTACGATCACGTACATAGATAAA	60.0	PASS	IMPRECISE;SVTYPE=INS;SVLEN=60;MAPQ=60.0	GT:GQ:VAF:hVAF:DR:DV	0/1:360:0.50:1.00,0.00,0.00:60:60
+chr17	7683193	severus_DEL0	N	<DEL>	60.0	PASS	PRECISE;SVTYPE=DEL;SVLEN=100;END=7683293;STRANDS=+-;INSIDE_VNTR=TRUE;MAPQ=60.0	GT:GQ:VAF:hVAF:DR:DV	0/1:360:0.50:1.00,0.00,0.00:60:60
+chr17	7684293	severus_DEL1	N	<DEL>	60.0	PASS	PRECISE;SVTYPE=DEL;SVLEN=100;END=7684393;STRANDS=+-;MAPQ=60.0	GT:GQ:VAF:hVAF:DR:DV	0/1:360:0.50:1.00,0.00,0.00:60:60
+chr17	7685393	severus_DEL2	N	<DEL>	60.0	PASS	PRECISE;SVTYPE=DEL;SVLEN=100;END=7685493;STRANDS=+-;MAPQ=60.0	GT:GQ:VAF:hVAF:DR:DV	0/1:360:0.50:1.00,0.00,0.00:60:60

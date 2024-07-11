@@ -46,6 +46,25 @@ vstol vcf2tsv \
   --source-id hg002 \
   --output-tsv-file outputs/hg002_pbsv.tsv
 
+# savana
+vstol vcf2tsv \
+  --vcf-file ../test/data/sample001_savana_sv_breakpoints.vcf \
+  --variant-calling-method savana \
+  --sequencing-platform PACBIO \
+  --source-id sample001 \
+  --case-id tumor \
+  --control-id normal \
+  --output-tsv-file outputs/sample001_savana_sv_breakpoints.tsv
+
+# severus
+vstol vcf2tsv \
+  --vcf-file ../test/data/sample001_severus_somatic.vcf \
+  --variant-calling-method severus \
+  --sequencing-platform PACBIO \
+  --source-id sample001 \
+  --case-id tumor \
+  --output-tsv-file outputs/sample001_severus_somatic.tsv
+
 # sniffles2
 vstol vcf2tsv \
   --vcf-file ../test/data/hg002_sniffles2.vcf \
@@ -81,3 +100,13 @@ vstol vcf2tsv \
   --sequencing-platform PACBIO \
   --source-id hg002 \
   --output-tsv-file outputs/hg002_svim.tsv
+
+# svisionpro
+vstol vcf2tsv \
+  --vcf-file ../test/data/sample001.svision_pro_v1.8.s3.vcf \
+  --variant-calling-method svisionpro \
+  --sequencing-platform PACBIO \
+  --source-id sample001 \
+  --case-id tumor \
+  --control-id normal \
+  --output-tsv-file outputs/sample001.svision_pro_v1.8.s3.tsv
