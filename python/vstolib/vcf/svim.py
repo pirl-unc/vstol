@@ -17,6 +17,7 @@ The purpose of this python3 script is to implement a parser for SVIM VCF files.
 
 
 import pandas as pd
+import re
 from collections import OrderedDict
 from typing import Dict
 from ..constants import NucleicAcidTypes, VariantCallingMethods, VariantTypes
@@ -136,21 +137,12 @@ def parse_svim_callset(
             if 'READS' in attributes.keys():
                 alternate_allele_read_ids = attributes['READS'].split(',')
 
-            # Update chromosome_2 for 'BND'
+            # Update chromosome_2 and position_2 for 'BND' or 'TRA'
             if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                alt_val = alternate_allele.split(":")[0]
-                alt_val = alt_val.replace("[", "")
-                alt_val = alt_val.replace("]", "")
-                alt_val = alt_val.replace("N", "")
-                chromosome_2 = str(alt_val)
-
-            # Update position_2 for 'BND'
-            if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                alt_val = alternate_allele.split(":")[1]
-                alt_val = alt_val.replace("[", "")
-                alt_val = alt_val.replace("]", "")
-                alt_val = alt_val.replace("N", "")
-                position_2 = int(alt_val)
+                pattern = re.compile(r'(chr\S+):(\d+)')
+                matches = pattern.findall(str(row['ALT']))
+                chromosome_2 = str(matches[0][0])
+                position_2 = int(matches[0][1])
 
             # Update variant_size 'BND'
             if (variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]) and \

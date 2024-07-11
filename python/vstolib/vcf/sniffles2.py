@@ -134,7 +134,7 @@ def parse_sniffles2_callset(
 
             # Update position_2 for 'BND'
             if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
-                pattern = re.compile(r'(chr(?:\d+|X|Y|MT|M)):(\d+)')
+                pattern = re.compile(r'(chr\S+):(\d+)')
                 matches = pattern.findall(str(row['ALT']))
                 position_2 = int(matches[0][1])
 

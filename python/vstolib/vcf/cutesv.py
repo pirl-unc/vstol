@@ -17,6 +17,7 @@ The purpose of this python3 script is to implement a parser for CuteSV VCF files
 
 
 import pandas as pd
+import re
 from collections import OrderedDict
 from typing import Dict
 from ..constants import NucleicAcidTypes, VariantCallingMethods, VariantTypes
@@ -134,20 +135,12 @@ def parse_cutesv_callset(
             if 'AF' in attributes.keys():
                 alternate_allele_fraction = get_typed_value(value=attributes['AF'], default_value=-1.0, type=float)
 
-            # Update chromosome_2 for 'BND' or 'TRA'
+            # Update chromosome_2 and position_2 for 'BND' or 'TRA'
             if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                chromosome_2 = alternate_allele.split(":")[0]
-                chromosome_2 = chromosome_2.replace("[", "")
-                chromosome_2 = chromosome_2.replace("]", "")
-                chromosome_2 = chromosome_2.replace("N", "")
-
-            # Update position_2 for 'BND' or 'TRA'
-            if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                position_2 = alternate_allele.split(":")[1]
-                position_2 = position_2.replace("[", "")
-                position_2 = position_2.replace("]", "")
-                position_2 = position_2.replace("N", "")
-                position_2 = int(position_2)
+                pattern = re.compile(r'(chr\S+):(\d+)')
+                matches = pattern.findall(str(row['ALT']))
+                chromosome_2 = str(matches[0][0])
+                position_2 = int(matches[0][1])
 
             # Update variant_size for 'BND' or 'TRA'
             if (variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]) and \

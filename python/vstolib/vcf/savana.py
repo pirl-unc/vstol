@@ -149,7 +149,7 @@ def parse_savana_callset(
 
             # Update chromosome_2 and position_2 for 'BND'
             if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
-                pattern = re.compile(r'(chr(?:\d+|X|Y|MT|M)):(\d+)')
+                pattern = re.compile(r'(chr\S+):(\d+)')
                 matches = pattern.findall(str(row['ALT']))
                 chromosome_2 = str(matches[0][0])
                 position_2 = int(matches[0][1])
