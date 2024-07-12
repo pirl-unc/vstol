@@ -17,6 +17,7 @@ The purpose of this python3 script is to implement a parser for Lumpy VCF files.
 
 
 import pandas as pd
+import re
 from collections import OrderedDict
 from typing import Dict
 from ..constants import NucleicAcidTypes, VariantCallingMethods, VariantTypes
@@ -62,7 +63,7 @@ def parse_lumpy_somatic_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = True
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -86,12 +87,7 @@ def parse_lumpy_somatic_callset(
                                                            default_value='',
                                                            type=curr_type)
                 else:
-                    if curr_info == 'PRECISE':
-                        attributes['PRECISE'] = True
-                    elif curr_info == 'IMPRECISE':
-                        attributes['PRECISE'] = False
-                    else:
-                        attributes[curr_info] = True
+                    attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
             format = str(row['FORMAT']).split(':')
@@ -114,8 +110,6 @@ def parse_lumpy_somatic_callset(
             # variant_size
             # variant_sequences
             # alternate_allele_read_ids
-            if 'PRECISE' in attributes.keys():
-                precise = True
             if 'IMPRECISE' in attributes.keys():
                 precise = False
             if 'SVTYPE' in attributes.keys():
@@ -127,21 +121,12 @@ def parse_lumpy_somatic_callset(
             if 'SVLEN' in attributes.keys():
                 variant_size = abs(attributes['SVLEN'])
 
-            # Update chromosome_2 for 'BND'
+            # Update chromosome_2 and position_2 for 'BND'
             if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                alt_val = alternate_allele.split(":")[0]
-                alt_val = alt_val.replace("[", "")
-                alt_val = alt_val.replace("]", "")
-                alt_val = alt_val.replace("N", "")
-                chromosome_2 = str(alt_val)
-
-            # Update position_2 for 'BND'
-            if variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]:
-                alt_val = alternate_allele.split(":")[1]
-                alt_val = alt_val.replace("[", "")
-                alt_val = alt_val.replace("]", "")
-                alt_val = alt_val.replace("N", "")
-                position_2 = int(alt_val)
+                pattern = re.compile(r'(chr\S+):(\d+)')
+                matches = pattern.findall(str(row['ALT']))
+                chromosome_2 = str(matches[0][0])
+                position_2 = int(matches[0][1])
 
             # Update variant_size 'BND'
             if (variant_type in [VariantTypes.BREAKPOINT, VariantTypes.TRANSLOCATION]) and \
