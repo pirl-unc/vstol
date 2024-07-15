@@ -171,8 +171,6 @@ def parse_sniffles2_callset(
                 chromosome_2,
                 position_2
             )
-            variant_id = str(curr_variant_idx)
-            variant = Variant(id=variant_id)
             variant_call = VariantCall(
                 id=variant_call_id,
                 source_id=source_id,

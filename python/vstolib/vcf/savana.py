@@ -121,19 +121,19 @@ def parse_savana_callset(
             # normal_alternate_allele_read_count
             # normal_alternate_allele_fraction
             if 'SVLEN' in attributes.keys():
-                variant_size = abs(attributes['SVLEN'])
+                variant_size = abs(int(attributes['SVLEN']))
             if 'SVTYPE' in attributes.keys():
                 variant_type = attributes['SVTYPE']
             if 'TUMOUR_DP' in attributes.keys():
                 if ',' in attributes['TUMOUR_DP']: # SVTYPE=BND
-                    tumor_total_read_count = int(attributes['TUMOUR_DP'].split(',')[0])
+                    tumor_total_read_count = int(float(attributes['TUMOUR_DP'].split(',')[0]))
                 else :
-                    tumor_total_read_count = int(attributes['TUMOUR_DP'])
+                    tumor_total_read_count = int(float(attributes['TUMOUR_DP']))
             if 'NORMAL_DP' in attributes.keys():
                 if ',' in attributes['NORMAL_DP']: # SVTYPE=BND
-                    normal_total_read_count = int(attributes['NORMAL_DP'].split(',')[0])
+                    normal_total_read_count = int(float(attributes['NORMAL_DP'].split(',')[0]))
                 else :
-                    normal_total_read_count = int(attributes['NORMAL_DP'])
+                    normal_total_read_count = int(float(attributes['NORMAL_DP']))
             if 'TUMOUR_SUPPORT' in attributes.keys():
                 tumor_alternate_allele_read_count = int(attributes['TUMOUR_SUPPORT'])
             if 'NORMAL_SUPPORT' in attributes.keys():
@@ -168,8 +168,6 @@ def parse_savana_callset(
                 included_mate_ids.add(attributes['MATEID'])
 
             # Append case variant call to variants list
-            variant_id = str(curr_variant_idx)
-            variant = Variant(id=variant_id)
             case_variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
                 case_id,
                 NucleicAcidTypes.DNA,

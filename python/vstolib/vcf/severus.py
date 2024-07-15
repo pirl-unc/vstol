@@ -142,8 +142,6 @@ def parse_severus_callset(
             variant_size = abs(position_1 - position_2) + 1
 
         # Append case variant call to variants list
-        variant_id = str(curr_variant_idx)
-        variant = Variant(id=variant_id)
         variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
             case_id,
             NucleicAcidTypes.DNA,

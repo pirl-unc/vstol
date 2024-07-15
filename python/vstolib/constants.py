@@ -274,7 +274,7 @@ class VariantCallingMethods:
             'MATEID': str,
             'NORMAL_SUPPORT': int,
             'TUMOUR_SUPPORT': int,
-            'SVLEN': int,
+            'SVLEN': float,
             'BP_NOTATION': str,
             'ORIGINATING_CLUSTER': str,
             'END_CLUSTER': str,

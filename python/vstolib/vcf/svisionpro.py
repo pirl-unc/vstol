@@ -135,8 +135,6 @@ def parse_svisionpro_callset(
                 variant_size = abs(position_1 - position_2) + 1
 
             # Append case variant call to variants list
-            variant_id = str(curr_variant_idx)
-            variant = Variant(id=variant_id)
             if idx == 0:
                 sample_id = case_id
             else:
