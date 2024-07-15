@@ -290,7 +290,8 @@ class VariantCallingMethods:
             'END_EVENT_SIZE_MEAN': float,
             'TUMOUR_DP': str,
             'NORMAL_DP': str,
-            'GT': str
+            'GT': str,
+            'PRECISE': bool
         }
         SEVERUS = {
             'ID': str,
@@ -314,7 +315,8 @@ class VariantCallingMethods:
             'DR': int,
             'DV': int,
             'VAF': float,
-            'hVAF': str
+            'hVAF': str,
+            'PRECISE': bool
         }
         SNIFFLES2 = {
             'ID': str,
@@ -435,7 +437,8 @@ class VariantCallingMethods:
             'RNAMES': str,
             'GT': str,
             'DR': int,
-            'DV': int
+            'DV': int,
+            'PRECISE': bool
         }
 
 

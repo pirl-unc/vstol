@@ -92,12 +92,18 @@ def get_attribute_types(variant_calling_method: str) -> Dict:
         return VariantCallingMethods.AttributeTypes.LUMPY_SOMATIC
     elif variant_calling_method == VariantCallingMethods.PBSV:
         return VariantCallingMethods.AttributeTypes.PBSV
+    elif variant_calling_method == VariantCallingMethods.SAVANA:
+        return VariantCallingMethods.AttributeTypes.SAVANA
+    elif variant_calling_method == VariantCallingMethods.SEVERUS:
+        return VariantCallingMethods.AttributeTypes.SEVERUS
     elif variant_calling_method == VariantCallingMethods.SNIFFLES2:
         return VariantCallingMethods.AttributeTypes.SNIFFLES2
     elif variant_calling_method == VariantCallingMethods.STRELKA2_SOMATIC:
         return VariantCallingMethods.AttributeTypes.STRELKA2_SOMATIC
     elif variant_calling_method == VariantCallingMethods.SVIM:
         return VariantCallingMethods.AttributeTypes.SVIM
+    elif variant_calling_method == VariantCallingMethods.SVISIONPRO:
+        return VariantCallingMethods.AttributeTypes.SVISIONPRO
     else:
         raise Exception('Unsupported variant calling method: %s')
 

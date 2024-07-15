@@ -69,6 +69,10 @@ MERGE_MATCH_VARIANT_TYPES = 'yes'
 OVERLAP_PADDING = 0
 
 
+"""score"""
+SCORE_WINDOW = 10000
+
+
 """tsv2vcf"""
 
 

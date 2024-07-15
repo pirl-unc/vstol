@@ -60,6 +60,9 @@ class VariantCall:
     variant_sequences: Set[str] = field(default_factory=set)
     attributes: OrderedDict = field(default_factory=dict)
     tags: Set[str] = field(default_factory=set)
+    average_alignment_score_window: int = field(default=-1)
+    position_1_average_alignment_score: float = field(default=-1.0)
+    position_2_average_alignment_score: float = field(default=-1.0)
     position_1_annotations: List[VariantCallAnnotation] = field(default_factory=list)
     position_2_annotations: List[VariantCallAnnotation] = field(default_factory=list)
 
@@ -172,7 +175,10 @@ class VariantCall:
             'alternate_allele_fraction': [self.alternate_allele_fraction],
             'alternate_allele_read_ids': [';'.join(self.alternate_allele_read_ids)],
             'variant_sequences': [';'.join(self.variant_sequences)],
-            'tags': [';'.join([str(i) for i in list(self.tags)])]
+            'tags': [';'.join([str(i) for i in list(self.tags)])],
+            'average_alignment_score_window': [self.average_alignment_score_window],
+            'position_1_average_alignment_score': [self.position_1_average_alignment_score],
+            'position_2_average_alignment_score': [self.position_2_average_alignment_score]
         }
         attributes = []
         for key, val in self.attributes.items():
@@ -275,7 +281,10 @@ class VariantCall:
             'alternate_allele_fraction': self.alternate_allele_fraction,
             'alternate_allele_read_ids': list(self.alternate_allele_read_ids),
             'variant_sequences': list(self.variant_sequences),
-            'tags': list(self.tags)
+            'tags': list(self.tags),
+            'average_alignment_score_window': self.average_alignment_score_window,
+            'position_1_average_alignment_score': self.position_1_average_alignment_score,
+            'position_2_average_alignment_score': self.position_2_average_alignment_score
         }
         attributes = {}
         for key, value in self.attributes.items():

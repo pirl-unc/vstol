@@ -97,7 +97,7 @@ def add_cli_filter_arg_parser(
              '"{case,control} {all,average,median,min,max,any} {attribute} {<,<=,>,>=,==,in} {value}". '
              'Example 1: "case all alternate_allele_read_count >= 3". '
              'Example 2: "case all chr_1 in ["chr1","chr2","chr3"]". '
-             'Please refer to the Exacto documentation on how the filter semantics work.'
+             'Please refer to the VSTOL documentation on how the filter semantics work.'
     )
     parser_optional.add_argument(
         "--reference-genome-fasta-file",

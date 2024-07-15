@@ -258,6 +258,9 @@ class VariantsList:
             'variant_sequences': [],
             'tags': [],
             'attributes': [],
+            'average_alignment_score_window': [],
+            'position_1_average_alignment_score': [],
+            'position_2_average_alignment_score': [],
             'position_1_annotation_annotator': [],
             'position_1_annotation_annotator_version': [],
             'position_1_annotation_gene_id': [],
@@ -432,6 +435,9 @@ class VariantsList:
             variant_call.reference_allele_read_count = retrieve_from_dict(dct=row, key='reference_allele_read_count', default_value=-1, type=int)
             variant_call.alternate_allele_read_count = retrieve_from_dict(dct=row, key='alternate_allele_read_count', default_value=-1, type=int)
             variant_call.alternate_allele_fraction = retrieve_from_dict(dct=row, key='alternate_allele_fraction', default_value=-1.0, type=float)
+            variant_call.average_alignment_score_window = retrieve_from_dict(dct=row, key='average_alignment_score_window', default_value=-1, type=int)
+            variant_call.position_1_average_alignment_score = retrieve_from_dict(dct=row, key='position_1_average_alignment_score', default_value=-1.0, type=float)
+            variant_call.position_2_average_alignment_score = retrieve_from_dict(dct=row, key='position_2_average_alignment_score', default_value=-1.0, type=float)
             alternate_allele_read_ids = retrieve_from_dict(dct=row, key='alternate_allele_read_ids', default_value='', type=str)
             variant_sequences = retrieve_from_dict(dct=row, key='variant_sequences', default_value='', type=str)
             attributes = retrieve_from_dict(dct=row, key='attributes', default_value='', type=str)

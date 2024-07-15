@@ -26,6 +26,7 @@ from .cli_filter import *
 from .cli_intersect import *
 from .cli_merge import *
 from .cli_overlap import *
+from .cli_score import *
 from .cli_tsv2vcf import *
 from .cli_vcf2tsv import *
 from ..logging import get_logger
@@ -63,6 +64,7 @@ def run():
     sub_parsers = add_cli_intersect_arg_parser(sub_parsers=sub_parsers)    # intersect
     sub_parsers = add_cli_merge_arg_parser(sub_parsers=sub_parsers)        # merge
     sub_parsers = add_cli_overlap_arg_parser(sub_parsers=sub_parsers)      # overlap
+    sub_parsers = add_cli_score_arg_parser(sub_parsers=sub_parsers)        # score
     sub_parsers = add_cli_tsv2vcf_arg_parser(sub_parsers=sub_parsers)      # tsv2vcf
     sub_parsers = add_cli_vcf2tsv_arg_parser(sub_parsers=sub_parsers)      # vcf2tsv
     args = arg_parser.parse_args()
@@ -82,6 +84,8 @@ def run():
         run_cli_merge_from_parsed_args(args=args)
     elif args.which == 'overlap':
         run_cli_overlap_from_parsed_args(args=args)
+    elif args.which == 'score':
+        run_cli_score_from_parsed_args(args=args)
     elif args.which == 'tsv2vcf':
         run_cli_tsv2vcf_from_parsed_args(args=args)
     elif args.which == 'vcf2tsv':

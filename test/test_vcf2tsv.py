@@ -45,9 +45,9 @@ def test_vcf2tsv_strelka2_somatic_snvs(strelka2_somatic_snvs_variants_list):
     print(strelka2_somatic_snvs_variants_list.size)
 
 
-def test_svim_vcf2tsv(svim_variants_list):
+def test_vcf2tsv_svim(svim_variants_list):
     print(svim_variants_list.size)
 
 
-def test_svisionpro_vcf2tsv(svisionpro_variants_list):
+def test_vcf2tsv_svisionpro(svisionpro_variants_list):
     print(svisionpro_variants_list.size)

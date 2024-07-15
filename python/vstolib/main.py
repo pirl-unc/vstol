@@ -25,6 +25,7 @@ from .constants import CollapseStrategies, VariantCallingMethods
 from .default import *
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
+from .metrics import calculate_average_alignment_score
 from .utilities import is_repeated_sequence
 from .variant import Variant
 from .variants_list import VariantsList
@@ -431,6 +432,40 @@ def overlap(
                 (len(variants_list_overlapping.variant_ids),
                  len(variants_list_overlapping.variant_call_ids)))
     return variants_list_overlapping
+
+
+def score(
+        variants_list: VariantsList,
+        bam_file: str,
+        window: int = SCORE_WINDOW
+) -> VariantsList:
+    """
+    Calculates average alignment score for each breakpoint.
+
+    Args:
+        variants_list   :   VariantsList object.
+        bam_file        :   BAM file.
+        window          :   Window (will be applied both upstream and downstream).
+
+    Returns:
+        VariantsList
+    """
+    for variant in variants_list.variants:
+        for variant_call in variant.variant_calls:
+            variant_call.position_1_average_alignment_score = calculate_average_alignment_score(
+                bam_file=bam_file,
+                chromosome=variant_call.chromosome_1,
+                position=variant_call.position_1,
+                window=window
+            )
+            variant_call.position_2_average_alignment_score = calculate_average_alignment_score(
+                bam_file=bam_file,
+                chromosome=variant_call.chromosome_2,
+                position=variant_call.position_2,
+                window=window
+            )
+            variant_call.average_alignment_score_window = window
+    return variants_list
 
 
 def vcf2tsv(
