@@ -20,7 +20,7 @@ jobs:
       with:
         miniconda-version: "latest"
         activate-environment: test-env
-        python-version: "3.10"
+        python-version: "3.8"
 
     - name: Install dependencies
       shell: bash -l {0}
