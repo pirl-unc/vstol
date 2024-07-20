@@ -20,7 +20,7 @@ jobs:
       with:
         miniconda-version: "latest"
         activate-environment: test-env
-        python-version: "3.8"
+        python-version: "3.10"
 
     - name: Install dependencies
       shell: bash -l {0}
@@ -41,7 +41,7 @@ jobs:
         conda install coveralls
         conda install pytest
         conda install pytest-cov
-        conda install pysam==0.22.0
+        conda install pysam==0.22.1
         conda install numpy==1.26.2
         conda install r-base==4.4.1
         Rscript -e 'install.packages("dplyr", repos="https://cloud.r-project.org/")'
