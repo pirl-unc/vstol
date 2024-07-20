@@ -43,6 +43,10 @@ jobs:
         conda install pytest-cov
         conda install pysam==0.22.0
         conda install numpy==1.26.2
+        conda install r-base==4.4.1
+        Rscript -e 'install.packages("dplyr", repos="https://cloud.r-project.org/")'
+        Rscript -e 'install.packages("ggplot2", repos="https://cloud.r-project.org/")'
+        Rscript -e 'install.packages("optparse", repos="https://cloud.r-project.org/")'
         pip install pyensembl
   
         # Install vstol

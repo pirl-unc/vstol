@@ -30,6 +30,7 @@ from .utilities import is_repeated_sequence
 from .variant import Variant
 from .variants_list import VariantsList
 from .variant_filter import VariantFilter
+from .visualization import visualize
 from .vcf.cutesv import parse_cutesv_callset
 from .vcf.dbsnp import parse_dbsnp_callset
 from .vcf.deepvariant import parse_deepvariant_callset
@@ -578,4 +579,3 @@ def vcf2tsv(
     else:
         raise Exception('Unsupported variant calling method: %s' % variant_calling_method)
     return variants_list
-

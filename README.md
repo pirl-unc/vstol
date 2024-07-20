@@ -19,6 +19,9 @@ pip install . --verbose
 - maturin>=0.14,<0.15
 - pysam
 - rust
+- r-base (>=4)
+- ggplot2 (R package)
+- optparse (R package)
 
 ## 03. Usage
 
@@ -39,6 +42,7 @@ vstol [-h] [--version] {annotate,diff,filter,intersect,merge,overlap,vcf2tsv}
 | overlap   | Identify variants that overlap with a list of genomic ranges.                                                               |
 | score     | Calculates average alignment score for each breakpoint.                                                                     | 
 | vcf2tsv   | Convert a VCF file (see below for supported variant callers) to a TSV file.                                                 |
+| visualize | Visualize a VSTOL TSV file                                                                                                  |
 
 ## 05. Supported Variant Callers
 

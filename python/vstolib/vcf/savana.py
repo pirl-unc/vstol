@@ -139,13 +139,25 @@ def parse_savana_callset(
             if 'NORMAL_SUPPORT' in attributes.keys():
                 normal_alternate_allele_read_count = int(attributes['NORMAL_SUPPORT'])
             if tumor_total_read_count != -1 and tumor_alternate_allele_read_count != -1:
-                tumor_reference_allele_read_count = tumor_total_read_count - tumor_alternate_allele_read_count
+                if tumor_total_read_count == 0:
+                    tumor_reference_allele_read_count = 0
+                else:
+                    tumor_reference_allele_read_count = tumor_total_read_count - tumor_alternate_allele_read_count
             if normal_total_read_count != -1 and normal_alternate_allele_read_count != -1:
-                normal_reference_allele_read_count = normal_total_read_count - normal_alternate_allele_read_count
-            if tumor_alternate_allele_read_count != -1 and tumor_total_read_count > 0:
-                tumor_alternate_allele_fraction = float(tumor_alternate_allele_read_count) / float(tumor_total_read_count)
-            if normal_alternate_allele_read_count != -1 and normal_total_read_count > 0:
-                normal_alternate_allele_fraction = float(normal_alternate_allele_read_count) / float(normal_total_read_count)
+                if normal_total_read_count == 0:
+                    normal_reference_allele_read_count = 0
+                else:
+                    normal_reference_allele_read_count = normal_total_read_count - normal_alternate_allele_read_count
+            if tumor_alternate_allele_read_count != -1 and tumor_total_read_count > -1:
+                if tumor_total_read_count == 0:
+                    tumor_alternate_allele_fraction = 1.0
+                else:
+                    tumor_alternate_allele_fraction = float(tumor_alternate_allele_read_count) / float(tumor_total_read_count)
+            if normal_alternate_allele_read_count != -1 and normal_total_read_count > -1:
+                if normal_total_read_count == 0:
+                    normal_alternate_allele_fraction = 1.0
+                else:
+                    normal_alternate_allele_fraction = float(normal_alternate_allele_read_count) / float(normal_total_read_count)
 
             # Update chromosome_2 and position_2 for 'BND'
             if variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION:
