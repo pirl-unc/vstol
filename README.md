@@ -20,13 +20,14 @@ pip install . --verbose
 - pysam
 - rust
 - r-base (>=4)
+- dplyr (R package)
 - ggplot2 (R package)
 - optparse (R package)
 
 ## 03. Usage
 
 ```
-vstol [-h] [--version] {annotate,diff,filter,intersect,merge,overlap,vcf2tsv}
+vstol [-h] [--version] {annotate,diff,filter,intersect,merge,overlap,vcf2tsv,visualize}
 ```
 
 ## 04. Available Commands
