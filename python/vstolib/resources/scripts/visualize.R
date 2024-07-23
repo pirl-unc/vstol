@@ -22,6 +22,12 @@ RoundUpToNextZeros <- function(x) {
   if (x <= 0) {
     stop("Input must be a positive integer")
   }
+  if (x < 10) {
+    return(10)
+  }
+  if (x < 100) {
+    return(100)
+  }
   magnitude <- 10^(nchar(as.character(x)) - 1)
   rounded <- ceiling(x / magnitude) * magnitude
   if (rounded == x) {
@@ -253,94 +259,107 @@ print(plot.variant.size)
 
 # Step 12. Plot a histogram of the reference allele read count
 df.variant.calls.temp <- df.variant.calls[df.variant.calls$reference_allele_read_count >= 0,]
-p <- ggplot(df.variant.calls.temp, aes(x = reference_allele_read_count)) + geom_histogram()
-p.data <- ggplot_build(p)$data[[1]]
-max.frequency <- max(p.data$count)
-plot.ref.allele.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = reference_allele_read_count)) +
-  geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
-  xlab("Reference Allele Read Count") + ylab("Frequency") +
-  ggtitle("Histogram of reference_allele_read_count") +
-  scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
-  theme_bw() +
-  theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.title = element_text(size = AXIS.TITLE.SIZE),
-        axis.text = element_text(size = AXIS.TEXT.SIZE))
-print(plot.ref.allele.read.count.histogram)
+if (nrow(df.variant.calls.temp) > 0) {
+  p <- ggplot(df.variant.calls.temp, aes(x = reference_allele_read_count)) + geom_histogram()
+  p.data <- ggplot_build(p)$data[[1]]
+  max.frequency <- max(p.data$count)
+  plot.ref.allele.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = reference_allele_read_count)) +
+    geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL, boundary = 0) + 
+    xlab("Reference Allele Read Count") + ylab("Frequency") +
+    ggtitle("Histogram of reference_allele_read_count") +
+    scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
+    theme_bw() +
+    theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          axis.title = element_text(size = AXIS.TITLE.SIZE),
+          axis.text = element_text(size = AXIS.TEXT.SIZE))
+  print(plot.ref.allele.read.count.histogram)
+}
 
 # Step 13. Plot a histogram of the alternate allele read count
 df.variant.calls.temp <- df.variant.calls[df.variant.calls$alternate_allele_read_count >= 0,]
-p <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_read_count)) + geom_histogram()
-p.data <- ggplot_build(p)$data[[1]]
-max.frequency <- max(p.data$count)
-plot.alt.allele.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_read_count)) +
-  geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
-  xlab("Alternate Allele Read Count") + ylab("Frequency") +
-  ggtitle("Histogram of alternate_allele_read_count") +
-  scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
-  theme_bw() +
-  theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.title = element_text(size = AXIS.TITLE.SIZE),
-        axis.text = element_text(size = AXIS.TEXT.SIZE))
-print(plot.alt.allele.read.count.histogram)
+if (nrow(df.variant.calls.temp) > 0) {
+  p <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_read_count)) + geom_histogram()
+  p.data <- ggplot_build(p)$data[[1]]
+  max.frequency <- max(p.data$count)
+  plot.alt.allele.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_read_count)) +
+    geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL, boundary = 0) + 
+    xlab("Alternate Allele Read Count") + ylab("Frequency") +
+    ggtitle("Histogram of alternate_allele_read_count") +
+    scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
+    theme_bw() +
+    theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          axis.title = element_text(size = AXIS.TITLE.SIZE),
+          axis.text = element_text(size = AXIS.TEXT.SIZE))
+  print(plot.alt.allele.read.count.histogram) 
+}
 
 # Step 14. Plot a histogram of the total read count
 df.variant.calls.temp <- df.variant.calls[df.variant.calls$total_read_count >= 0,]
-p <- ggplot(df.variant.calls.temp, aes(x = total_read_count)) + geom_histogram()
-p.data <- ggplot_build(p)$data[[1]]
-max.frequency <- max(p.data$count)
-plot.total.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = total_read_count)) +
-  geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
-  xlab("Total Read Count") + ylab("Frequency") +
-  ggtitle("Histogram of total_read_count") +
-  scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
-  theme_bw() +
-  theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.title = element_text(size = AXIS.TITLE.SIZE),
-        axis.text = element_text(size = AXIS.TEXT.SIZE))
-print(plot.total.read.count.histogram)
+if (nrow(df.variant.calls.temp) > 0) {
+  p <- ggplot(df.variant.calls.temp, aes(x = total_read_count)) + geom_histogram()
+  p.data <- ggplot_build(p)$data[[1]]
+  max.frequency <- max(p.data$count)
+  plot.total.read.count.histogram <- ggplot(df.variant.calls.temp, aes(x = total_read_count)) +
+    geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL, boundary = 0) + 
+    xlab("Total Read Count") + ylab("Frequency") +
+    ggtitle("Histogram of total_read_count") +
+    scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
+    theme_bw() +
+    theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          axis.title = element_text(size = AXIS.TITLE.SIZE),
+          axis.text = element_text(size = AXIS.TEXT.SIZE))
+  print(plot.total.read.count.histogram)
+}
 
 # Step 15. Plot a histogram of the alternate allele fraction
 df.variant.calls.temp <- df.variant.calls[df.variant.calls$alternate_allele_fraction > 0.0,]
-p <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_fraction)) + geom_histogram(binwidth = 0.05)
-p.data <- ggplot_build(p)$data[[1]]
-max.frequency <- max(p.data$count)
-plot.vaf.histogram <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_fraction)) +
-  geom_histogram(binwidth = 0.05, color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
-  xlab("Alternate Allele Fraction") + ylab("Frequency") +
-  ggtitle("Histogram of alternate_allele_fraction") +
-  scale_x_continuous(limits = c(0.0,1.0)) +
-  scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
-  theme_bw() +
-  theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.title = element_text(size = AXIS.TITLE.SIZE),
-        axis.text = element_text(size = AXIS.TEXT.SIZE))
-print(plot.vaf.histogram)
+if (nrow(df.variant.calls.temp) > 0) {
+  p <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_fraction)) + geom_histogram(binwidth = 0.05)
+  p.data <- ggplot_build(p)$data[[1]]
+  max.frequency <- max(p.data$count)
+  plot.vaf.histogram <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_fraction)) +
+    geom_histogram(binwidth = 0.05, color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL, boundary = 0) + 
+    xlab("Alternate Allele Fraction") + ylab("Frequency") +
+    ggtitle("Histogram of alternate_allele_fraction") +
+    coord_cartesian(xlim = c(0, 1)) +
+    scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
+    theme_bw() +
+    theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          axis.title = element_text(size = AXIS.TITLE.SIZE),
+          axis.text = element_text(size = AXIS.TEXT.SIZE))
+  print(plot.vaf.histogram)
+} 
 
 # Step 16. Plot a histogram of the quality score
-df.variant.calls.temp <- df.variant.calls[df.variant.calls$quality_score >= 0,]
-p <- ggplot(df.variant.calls.temp, aes(x = quality_score)) + geom_histogram()
-p.data <- ggplot_build(p)$data[[1]]
-max.frequency <- max(p.data$count)
-plot.quality.score <- ggplot(df.variant.calls.temp, aes(x = quality_score)) +
-  geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
-  xlab("Quality Score") + ylab("Frequency") +
-  ggtitle("Histogram of quality_score") +
-  scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
-  theme_bw() +
-  theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.title = element_text(size = AXIS.TITLE.SIZE),
-        axis.text = element_text(size = AXIS.TEXT.SIZE))
-print(plot.quality.score)
+df.variant.calls.temp <- df.variant.calls[
+  (df.variant.calls$quality_score >= 0) &
+  (is.na(df.variant.calls$quality_score) == FALSE),
+]
+if (nrow(df.variant.calls.temp) > 0) {
+  p <- ggplot(df.variant.calls.temp, aes(x = quality_score)) + geom_histogram()
+  p.data <- ggplot_build(p)$data[[1]]
+  max.frequency <- max(p.data$count)
+  plot.quality.score <- ggplot(df.variant.calls.temp, aes(x = quality_score)) +
+    geom_histogram(color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL, boundary = 0) + 
+    xlab("Quality Score") + ylab("Frequency") +
+    ggtitle("Histogram of quality_score") +
+    scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
+    theme_bw() +
+    theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank(),
+          axis.title = element_text(size = AXIS.TITLE.SIZE),
+          axis.text = element_text(size = AXIS.TEXT.SIZE))
+  print(plot.quality.score)
+}
 
 dev.off()
 
