@@ -314,6 +314,7 @@ plot.vaf.histogram <- ggplot(df.variant.calls.temp, aes(x = alternate_allele_fra
   geom_histogram(binwidth = 0.05, color = HISTOGRAM.COLOR, fill = HISTOGRAM.FILL) + 
   xlab("Alternate Allele Fraction") + ylab("Frequency") +
   ggtitle("Histogram of alternate_allele_fraction") +
+  scale_x_continuous(limits = c(0.0,1.0)) +
   scale_y_continuous(expand = c(0,1), limits = c(0, RoundUpToNextZeros(max.frequency))) +
   theme_bw() +
   theme(plot.title = element_text(size = PLOT.TITLE.SIZE),
