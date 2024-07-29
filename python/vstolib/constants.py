@@ -351,6 +351,7 @@ class VariantCallingMethods:
             'PRPOS': str,
             'PREND': str,
             'PRECISE': bool,
+            'IMPRECISE': bool,
             'SECONDARY': bool
         }
         MANTA_SOMATIC = {
