@@ -372,6 +372,7 @@ class VariantCallingMethods:
             'RIGHT_SVINSSEQ': str,
             'BND_DEPTH': int,
             'MATE_BND_DEPTH': int,
+            'SOMATIC': bool,
             'SOMATICSCORE': int,
             'JUNCTION_SOMATICSCORE': int,
             'PR': str,
