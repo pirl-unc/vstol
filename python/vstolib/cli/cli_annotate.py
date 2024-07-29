@@ -24,6 +24,7 @@ from ..ensembl import Ensembl
 from ..gencode import Gencode
 from ..refseq import RefSeq
 from ..main import annotate
+from ..utilities import str2bool
 from ..variants_list import VariantsList
 
 
@@ -256,23 +257,33 @@ def add_cli_annotate_arg_parser(
         dest="annovar_protocol",
         type=str,
         required=False,
-        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())),
+        default=','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.keys())),
         help="ANNOVAR protocol (e.g. 'refGene,exac03'). "
              "This parameter must be supplied if "
              "--annotator is '%s' (default: '%s')."
-             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())))
+             % (Annotators.ANNOVAR, ','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.keys())))
     )
     parser_optional.add_argument(
         "--annovar-operation",
         dest="annovar_operation",
         type=str,
         required=False,
-        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())),
+        default=','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.values())),
         help="ANNOVAR protocol (e.g. 'g,f'). "
              "This parameter must be supplied if "
              "--annotator is '%s' (default: '%s')."
-             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())))
+             % (Annotators.ANNOVAR, ','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.values())))
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=ANNOTATE_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % ANNOTATE_GZIP
+    )
+
     parser.set_defaults(which='annotate')
     return sub_parsers
 
@@ -304,6 +315,7 @@ def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
                     annovar_genome_assembly
                     annovar_protocol
                     annovar_operation
+                    gzip
     """
     # Step 1. Load variants
     variants_list = VariantsList.read_tsv_file(tsv_file=args.tsv_file)
@@ -342,8 +354,10 @@ def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
 
     # Step 4. Write to a TSV file
     df_variants = variants_list.to_dataframe()
-    df_variants.to_csv(
-        args.output_tsv_file,
-        sep='\t',
-        index=False
-    )
+    df_variants.sort_values(['variant_id'], inplace=True)
+    if args.gzip:
+        if args.output_tsv_file.endswith(".gz") == False:
+            args.output_tsv_file = args.output_tsv_file + '.gz'
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False, compression='gzip')
+    else:
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)

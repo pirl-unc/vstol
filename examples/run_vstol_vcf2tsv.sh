@@ -4,7 +4,8 @@ vstol vcf2tsv \
   --variant-calling-method cutesv \
   --sequencing-platform PACBIO \
   --source-id hg002 \
-  --output-tsv-file outputs/hg002_cutesv.tsv
+  --output-tsv-file outputs/hg002_cutesv.tsv \
+  --gzip yes
 
 # deepvariant
 vstol vcf2tsv \
@@ -29,6 +30,14 @@ vstol vcf2tsv \
   --sequencing-platform ILMN \
   --source-id hg002 \
   --output-tsv-file outputs/hg002_hg001_gatk4_mutect2.tsv
+
+# manta-somatic
+vstol vcf2tsv \
+  --vcf-file ../test/data/sample001_manta_somatic.vcf \
+  --variant-calling-method manta-somatic \
+  --sequencing-platform ILMN \
+  --source-id hg002 \
+  --output-tsv-file outputs/sample001_manta_somatic.tsv
 
 # lumpy
 vstol vcf2tsv \

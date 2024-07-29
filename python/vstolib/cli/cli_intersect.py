@@ -113,6 +113,16 @@ def add_cli_intersect_arg_parser(
              "even if the (super) variant types are different (default: %s)."
              % INTERSECT_MATCH_VARIANT_TYPES
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=INTERSECT_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % INTERSECT_GZIP
+    )
+
     parser.set_defaults(which='intersect')
     return sub_parsers
 
@@ -129,6 +139,7 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
                     max_neighbor_distance
                     match_all_breakpoints
                     match_variant_types
+                    gzip
     """
     # Step 1. Load variants lists
     logger.info("Started reading all TSV files")
@@ -155,10 +166,12 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
                 (len(variants_list.variant_ids), len(variants_list.variant_call_ids)))
 
     # Step 3. Write to a TSV file
-    df_variants_list = variants_list.to_dataframe()
-    df_variants_list.sort_values(['variant_id'], inplace=True)
-    df_variants_list.to_csv(
-        args.output_tsv_file,
-        sep='\t',
-        index=False
-    )
+    df_variants = variants_list.to_dataframe()
+    df_variants.sort_values(['variant_id'], inplace=True)
+    if args.gzip:
+        if args.output_tsv_file.endswith(".gz") == False:
+            args.output_tsv_file = args.output_tsv_file + '.gz'
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False, compression='gzip')
+    else:
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)
+

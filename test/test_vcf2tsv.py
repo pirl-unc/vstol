@@ -21,6 +21,10 @@ def test_vcf2tsv_lumpy_somatic(lumpy_somatic_variants_list):
     print(lumpy_somatic_variants_list.size)
 
 
+def test_vcf2tsv_manta_somatic(manta_somatic_variants_list):
+    print(manta_somatic_variants_list.size)
+
+
 def test_vcf2tsv_pbsv(pbsv_variants_list):
     print(pbsv_variants_list.size)
 

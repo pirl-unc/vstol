@@ -59,6 +59,12 @@ def get_typed_value(
     return value
 
 
+def is_gzipped(file_path) -> bool:
+    with open(file_path, 'rb') as f:
+        magic_number = f.read(2)
+    return magic_number == b'\x1f\x8b'
+
+
 def is_integer(x) -> bool:
     try:
         int(x)

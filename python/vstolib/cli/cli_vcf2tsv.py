@@ -19,8 +19,10 @@ and run 'vcf2tsv' command.
 
 import argparse
 from ..constants import *
+from ..default import *
 from ..logging import get_logger
 from ..main import vcf2tsv
+from ..utilities import str2bool
 from ..vcf.common import read_vcf_file
 
 
@@ -94,6 +96,15 @@ def add_cli_vcf2tsv_arg_parser(
         help="Control ID. This parameter must be specified if --variant-calling-method is strelka2-somatic. "
              "This is the normal (control) ID that corresponds to 'NORMAL'."
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=VCF2TSV_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % VCF2TSV_GZIP
+    )
 
     parser.set_defaults(which='vcf2tsv')
     return sub_parsers
@@ -110,7 +121,10 @@ def run_cli_vcf2tsv_from_parsed_args(args: argparse.Namespace):
                     sequencing_platform
                     source_id
                     output_tsv_file
+                    gzip
     """
+    print(args)
+
     if args.variant_calling_method == VariantCallingMethods.STRELKA2_SOMATIC:
         if args.case_id is None or args.control_id is None:
             raise Exception("The parameters --case-id and --control-id must be "
@@ -127,4 +141,10 @@ def run_cli_vcf2tsv_from_parsed_args(args: argparse.Namespace):
     )
 
     df_variants = variants_list.to_dataframe()
-    df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)
+
+    if args.gzip:
+        if args.output_tsv_file.endswith(".gz") == False:
+            args.output_tsv_file = args.output_tsv_file + '.gz'
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False, compression='gzip')
+    else:
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)

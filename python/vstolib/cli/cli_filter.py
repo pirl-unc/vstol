@@ -24,6 +24,7 @@ from ..default import *
 from ..genomic_ranges_list import GenomicRangesList
 from ..logging import get_logger
 from ..main import filter, filter_excluded_regions, filter_homopolymeric_variants
+from ..utilities import str2bool
 from ..variant import Variant
 from ..variant_filter import VariantFilter
 from ..variants_list import VariantsList
@@ -143,6 +144,16 @@ def add_cli_filter_arg_parser(
         required=False,
         help="Number of threads (default: %i)." % NUM_THREADS
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=FILTER_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % FILTER_GZIP
+    )
+
     parser.set_defaults(which='filter')
     return sub_parsers
 
@@ -166,6 +177,7 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
                     excluded_variants_padding
                     homopolymer_length
                     num_threads
+                    gzip
     """
     # Step 1. Load variants list
     logger.info('Loading target variants list')
@@ -270,6 +282,36 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
 
     # Step 9. Write to TSV files
     logger.info('Started writing passed and rejected variants lists')
-    variants_list_passed.to_dataframe().to_csv(args.output_passed_tsv_file, sep='\t', index=False)
-    variants_list_rejected.to_dataframe().to_csv(args.output_rejected_tsv_file, sep='\t', index=False)
+    df_variants_passed = variants_list_passed.to_dataframe()
+    df_variants_passed.sort_values(['variant_id'], inplace=True)
+    df_variants_rejected = variants_list_rejected.to_dataframe()
+    df_variants_rejected.sort_values(['variant_id'], inplace=True)
+    if args.gzip:
+        if args.output_passed_tsv_file.endswith(".gz") == False:
+            args.output_passed_tsv_file = args.output_passed_tsv_file + '.gz'
+        if args.output_rejected_tsv_file.endswith(".gz") == False:
+            args.output_rejected_tsv_file = args.output_rejected_tsv_file + '.gz'
+        df_variants_passed.to_csv(
+            args.output_passed_tsv_file,
+            sep='\t',
+            index=False,
+            compression='gzip'
+        )
+        df_variants_rejected.to_csv(
+            args.output_rejected_tsv_file,
+            sep='\t',
+            index=False,
+            compression='gzip'
+        )
+    else:
+        df_variants_passed.to_csv(
+            args.output_passed_tsv_file,
+            sep='\t',
+            index=False
+        )
+        df_variants_rejected.to_csv(
+            args.output_rejected_tsv_file,
+            sep='\t',
+            index=False
+        )
     logger.info('Finished writing passed and rejected variants lists')

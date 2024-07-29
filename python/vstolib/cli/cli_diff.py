@@ -132,6 +132,15 @@ def add_cli_diff_arg_parser(
              "Every BAM file must have CS and MD tags for this "
              "command to work properly."
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=DIFF_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % DIFF_GZIP
+    )
 
     parser.set_defaults(which='diff')
     return sub_parsers
@@ -151,6 +160,7 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
                     match_all_breakpoints
                     match_variant_types
                     query_bam_file
+                    gzip
     """
     # Step 1. Load the target variants list
     logger.info("Started reading the target variants list TSV file")
@@ -173,10 +183,12 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
     logger.info("Finished diffing")
 
     # Step 3. Write to a TSV file
-    df_variants_list = target_variants_list.to_dataframe()
-    df_variants_list.sort_values(['variant_id'], inplace=True)
-    df_variants_list.to_csv(
-        args.output_tsv_file,
-        sep='\t',
-        index=False
-    )
+    df_variants = target_variants_list.to_dataframe()
+    df_variants.sort_values(['variant_id'], inplace=True)
+    if args.gzip:
+        if args.output_tsv_file.endswith(".gz") == False:
+            args.output_tsv_file = args.output_tsv_file + '.gz'
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False, compression='gzip')
+    else:
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)
+

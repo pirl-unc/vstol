@@ -19,8 +19,10 @@ and run 'collapse' command.
 
 import argparse
 from ..constants import *
+from ..default import *
 from ..logging import get_logger
 from ..main import collapse
+from ..utilities import str2bool
 from ..variants_list import VariantsList
 
 
@@ -78,6 +80,15 @@ def add_cli_collapse_arg_parser(
              % (', '.join(CollapseStrategies.ALL),
                 CollapseStrategies.MAX_ALTERNATE_ALLELE_READ_COUNT)
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=COLLAPSE_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % COLLAPSE_GZIP
+    )
 
     parser.set_defaults(which='collapse')
     return sub_parsers
@@ -95,13 +106,16 @@ def run_cli_collapse_from_parsed_args(args: argparse.Namespace):
                     strategy
     """
     variants_list = VariantsList.read_tsv_file(tsv_file=args.tsv_file)
-    variants_list_collapsed = collapse(
+    variants_list = collapse(
         variants_list=variants_list,
         sample_id=args.sample_id,
         strategy=args.strategy
     )
-    variants_list_collapsed.to_dataframe().to_csv(
-        args.output_tsv_file,
-        sep='\t',
-        index=False
-    )
+    df_variants = variants_list.to_dataframe()
+    df_variants.sort_values(['variant_id'], inplace=True)
+    if args.gzip:
+        if args.output_tsv_file.endswith(".gz") == False:
+            args.output_tsv_file = args.output_tsv_file + '.gz'
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False, compression='gzip')
+    else:
+        df_variants.to_csv(args.output_tsv_file, sep='\t', index=False)

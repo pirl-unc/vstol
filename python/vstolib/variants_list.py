@@ -28,7 +28,7 @@ from typing import Dict, List, Tuple, Type
 from .genomic_range import GenomicRange
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
-from .utilities import get_typed_value, retrieve_from_dict
+from .utilities import get_typed_value, is_gzipped, retrieve_from_dict
 from .variant import Variant
 from .variant_call_annotation import VariantCallAnnotation
 from .variant_call import VariantCall
@@ -660,9 +660,16 @@ class VariantsList:
         Returns:
             VariantsList
         """
-        df = pd.read_csv(tsv_file,
-                         sep='\t',
-                         low_memory=low_memory,
-                         memory_map=memory_map)
+        if is_gzipped(tsv_file):
+            df = pd.read_csv(tsv_file,
+                             sep='\t',
+                             compression='gzip',
+                             low_memory=low_memory,
+                             memory_map=memory_map)
+        else:
+            df = pd.read_csv(tsv_file,
+                             sep='\t',
+                             low_memory=low_memory,
+                             memory_map=memory_map)
         return VariantsList.load_dataframe(df=df)
 

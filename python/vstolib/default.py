@@ -21,8 +21,10 @@ NUM_THREADS = 4
 
 
 """annotate"""
+ANNOTATE_GZIP = 'no'
+
 # ANNOVAR protocol and corresponding operation
-ANNOVAR_PROTOCOL_OPERATION = {
+ANNOTATE_ANNOVAR_PROTOCOL_OPERATION = {
     'refGene': 'g',
     'exac03': 'f',
     '1000g2015aug_eur': 'f',
@@ -35,16 +37,22 @@ ANNOVAR_PROTOCOL_OPERATION = {
 }
 
 
+"""collapse"""
+COLLAPSE_GZIP = 'no'
+
+
 """diff"""
 DIFF_MAX_NEIGHBOR_DISTANCE = 1000
 DIFF_MATCH_ALL_BREAKPOINTS = 'no'
 DIFF_MATCH_VARIANT_TYPES = 'no'
+DIFF_GZIP = 'no'
 
 
 """filter"""
 # Padding for an excluded region.
 # The pad is applied to upstream and downstream of a gapped genomic region.
 FILTER_EXCLUDED_REGION_PADDING = 100000
+FILTER_GZIP = 'no'
 
 # Homopolymer length.
 FILTER_HOMOPOLYMER_LENGTH = 20
@@ -55,6 +63,7 @@ FILTER_HOMOPOLYMER_LENGTH = 20
 INTERSECT_MAX_NEIGHBOR_DISTANCE = 10
 INTERSECT_MATCH_ALL_BREAKPOINTS = 'yes'
 INTERSECT_MATCH_VARIANT_TYPES = 'yes'
+INTERSECT_GZIP = 'no'
 
 
 
@@ -63,20 +72,23 @@ INTERSECT_MATCH_VARIANT_TYPES = 'yes'
 MERGE_MAX_NEIGHBOR_DISTANCE = 10
 MERGE_MATCH_ALL_BREAKPOINTS = 'yes'
 MERGE_MATCH_VARIANT_TYPES = 'yes'
+MERGE_GZIP = 'no'
 
 
 """overlap"""
 OVERLAP_PADDING = 0
+OVERLAP_GZIP = 'no'
 
 
 """score"""
 SCORE_WINDOW = 10000
+SCORE_GZIP = 'no'
 
 
 """tsv2vcf"""
-
+TSV2VCF_GZIP = 'no'
 
 """vcf2tsv"""
-
+VCF2TSV_GZIP = 'no'
 
 

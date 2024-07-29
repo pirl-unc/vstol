@@ -18,6 +18,13 @@ parser <- OptionParser(usage="%prog [options]",
                        option_list = options.list)
 args <- parse_args(parser, args = commandArgs(trailingOnly=TRUE))
 
+IsGzipped <- function(file.path) {
+  con <- file(file.path, "rb")
+  bytes <- readBin(con, "raw", n = 2)
+  close(con)
+  return(identical(bytes, as.raw(c(0x1f, 0x8b))))
+}
+
 RoundUpToNextZeros <- function(x) {
   if (x <= 0) {
     stop("Input must be a positive integer")
@@ -37,7 +44,11 @@ RoundUpToNextZeros <- function(x) {
 }
 
 # Step 2. Read the variant calls
-df.variant.calls <- read.csv(args$tsv.file, sep = "\t", check.names = F, stringsAsFactors = F)
+if (IsGzipped(file.path = args$tsv.file)) {
+  df.variant.calls <- read.csv(gzfile(args$tsv.file), sep = "\t", check.names = F, stringsAsFactors = F)
+} else {
+  df.variant.calls <- read.csv(args$tsv.file, sep = "\t", check.names = F, stringsAsFactors = F)
+}
 
 # Plot parameters
 PLOT.TITLE.SIZE <- 18

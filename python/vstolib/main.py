@@ -37,6 +37,7 @@ from .vcf.deepvariant import parse_deepvariant_callset
 from .vcf.delly2 import parse_delly2_somatic_callset
 from .vcf.gatk4_mutect2 import parse_gatk4_mutect2_callset
 from .vcf.lumpy import parse_lumpy_somatic_callset
+from .vcf.manta import parse_manta_somatic_callset
 from .vcf.pbsv import parse_pbsv_callset
 from .vcf.savana import parse_savana_callset
 from .vcf.severus import parse_severus_callset
@@ -517,6 +518,12 @@ def vcf2tsv(
         )
     elif variant_calling_method == VariantCallingMethods.LUMPY_SOMATIC:
         variants_list = parse_lumpy_somatic_callset(
+            df_vcf=df_vcf,
+            sequencing_platform=sequencing_platform,
+            source_id=source_id
+        )
+    elif variant_calling_method == VariantCallingMethods.MANTA_SOMATIC:
+        variants_list = parse_manta_somatic_callset(
             df_vcf=df_vcf,
             sequencing_platform=sequencing_platform,
             source_id=source_id

@@ -19,8 +19,10 @@ and run 'tsv2vcf' command.
 
 import argparse
 from ..constants import *
+from ..default import *
 from ..logging import get_logger
 from ..main import collapse
+from ..utilities import str2bool
 from ..variants_list import VariantsList
 from ..vcf.common import write_vcf_file
 
@@ -75,6 +77,15 @@ def add_cli_tsv2vcf_arg_parser(
              % (', '.join(CollapseStrategies.ALL),
                 CollapseStrategies.MAX_ALTERNATE_ALLELE_READ_COUNT)
     )
+    parser_optional.add_argument(
+        "--gzip",
+        dest="gzip",
+        type=str2bool,
+        required=False,
+        default=TSV2VCF_GZIP,
+        help="If 'yes', gzip the output TSV file (default: %s)."
+             % TSV2VCF_GZIP
+    )
 
     parser.set_defaults(which='tsv2vcf')
     return sub_parsers
@@ -90,6 +101,7 @@ def run_cli_tsv2vcf_from_parsed_args(args: argparse.Namespace):
                     sample_id
                     output_vcf_file
                     strategy
+                    gzip
     """
     variants_list = VariantsList.read_tsv_file(tsv_file=args.tsv_file)
     variants_list_collapsed = collapse(
@@ -99,5 +111,6 @@ def run_cli_tsv2vcf_from_parsed_args(args: argparse.Namespace):
     )
     write_vcf_file(
         variants_list=variants_list_collapsed,
-        output_vcf_file=args.output_vcf_file
+        output_vcf_file=args.output_vcf_file,
+        gzip=args.gzip
     )

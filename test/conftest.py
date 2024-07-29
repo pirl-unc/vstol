@@ -68,6 +68,18 @@ def lumpy_somatic_variants_list():
     return variants_list
 
 @pytest.fixture
+def manta_somatic_variants_list():
+    vcf_file = get_data_path(name='sample001_manta_somatic.vcf')
+    df_vcf = read_vcf_file(vcf_file=vcf_file)
+    variants_list = vcf2tsv(
+        df_vcf=df_vcf,
+        source_id='sample001',
+        variant_calling_method=VariantCallingMethods.MANTA_SOMATIC,
+        sequencing_platform='illumina'
+    )
+    return variants_list
+
+@pytest.fixture
 def pbsv_variants_list():
     vcf_file = get_data_path(name='hg002_pbsv.vcf')
     df_vcf = read_vcf_file(vcf_file=vcf_file)
