@@ -124,6 +124,7 @@ class VariantCallingMethods:
     class AttributeTypes:
         CLAIRS = {
             'ID': str,
+            'H': bool,
             'FAU': int,
             'FCU': int,
             'FGU': int,
