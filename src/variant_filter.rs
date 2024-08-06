@@ -61,6 +61,7 @@ impl VariantFilter {
             "nucleic_acid",
             "variant_calling_method",
             "sequencing_platform",
+            "precise",
             "chromosome_1",
             "chromosome_2",
             "reference_allele",
@@ -79,9 +80,8 @@ impl VariantFilter {
             "alternate_allele_read_count",
             "alternate_allele_fraction"
         ];
-        let boolean_attributes = vec![
-            "precise"
-        ];
+//         let boolean_attributes = vec![
+//         ];
         if string_attributes.contains(&self.attribute.as_str()) {
             let attribute_value: &str = match self.attribute.as_str() {
                 "id" => &variant_call.id.as_str(),
@@ -92,6 +92,7 @@ impl VariantFilter {
                 "nucleic_acid" => variant_call.nucleic_acid.as_str(),
                 "variant_calling_method" => variant_call.variant_calling_method.as_str(),
                 "sequencing_platform" => variant_call.sequencing_platform.as_str(),
+                "precise" => variant_call.precise.as_str(),
                 "chromosome_1" => variant_call.chromosome_1.as_str(),
                 "chromosome_2" => variant_call.chromosome_2.as_str(),
                 "reference_allele" => variant_call.reference_allele.as_str(),
@@ -273,76 +274,77 @@ impl VariantFilter {
                     std::process::exit(exitcode::DATAERR);
                 }
             }
-        } else if boolean_attributes.contains(&self.attribute.as_str()) {
-             let attribute_value: bool = match self.attribute.as_str() {
-                "precise" => variant_call.precise,
-                _ => false,
-            };
-            match &self.value {
-                Value::String(filter_value) => {
-                    let filter_value_: Result<bool, std::str::ParseBoolError> = filter_value.as_str().parse();
-                    let filter_value_bool: bool = match filter_value_ {
-                        Ok(value) => value,
-                        Err(_) => {
-                            eprintln!("{}", format!("Cannot parse value to a boolean value: {}", self.value));
-                            std::process::exit(exitcode::DATAERR);
-                        },
-                    };
-
-                    if self.operator == constants::OPERATOR_EQUAL_TO {
-                        if attribute_value == filter_value_bool {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
-                        if attribute_value != filter_value_bool {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
-                        std::process::exit(exitcode::DATAERR);
-                    }
-                }
-                Value::Array(filter_value) => {
-                    eprintln!("Filter value cannot be a string array for a boolean attribute.");
-                    std::process::exit(exitcode::DATAERR);
-                }
-                Value::Bool(filter_value) => {
-                    let filter_value: bool = filter_value.clone();
-                    if self.operator == constants::OPERATOR_EQUAL_TO {
-                        if attribute_value == filter_value {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
-                        if attribute_value != filter_value {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
-                        std::process::exit(exitcode::DATAERR);
-                    }
-                }
-                Value::Number(filter_value) => {
-                    eprintln!("Filter value cannot be a number for a boolean attribute.");
-                    std::process::exit(exitcode::DATAERR);
-                }
-                Value::Null => {
-                    eprintln!("Filter value cannot be null for a boolean attribute.");
-                    std::process::exit(exitcode::DATAERR);
-                }
-                Value::Object(_) => {
-                    eprintln!("Filter value cannot be an object for a boolean attribute.");
-                    std::process::exit(exitcode::DATAERR);
-                }
-            }
         }
+//         } else if boolean_attributes.contains(&self.attribute.as_str()) {
+//             let attribute_value: bool = match self.attribute.as_str() {
+//                 "precise" => variant_call.precise,
+//                 _ => false,
+//             };
+//             match &self.value {
+//                 Value::String(filter_value) => {
+//                     let filter_value_: Result<bool, std::str::ParseBoolError> = filter_value.as_str().parse();
+//                     let filter_value_bool: bool = match filter_value_ {
+//                         Ok(value) => value,
+//                         Err(_) => {
+//                             eprintln!("{}", format!("Cannot parse value to a boolean value: {}", self.value));
+//                             std::process::exit(exitcode::DATAERR);
+//                         },
+//                     };
+//
+//                     if self.operator == constants::OPERATOR_EQUAL_TO {
+//                         if attribute_value == filter_value_bool {
+//                             return true;
+//                         } else {
+//                             return false;
+//                         }
+//                     } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
+//                         if attribute_value != filter_value_bool {
+//                             return true;
+//                         } else {
+//                             return false;
+//                         }
+//                     } else {
+//                         eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
+//                         std::process::exit(exitcode::DATAERR);
+//                     }
+//                 }
+//                 Value::Array(filter_value) => {
+//                     eprintln!("Filter value cannot be a string array for a boolean attribute.");
+//                     std::process::exit(exitcode::DATAERR);
+//                 }
+//                 Value::Bool(filter_value) => {
+//                     let filter_value: bool = filter_value.clone();
+//                     if self.operator == constants::OPERATOR_EQUAL_TO {
+//                         if attribute_value == filter_value {
+//                             return true;
+//                         } else {
+//                             return false;
+//                         }
+//                     } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
+//                         if attribute_value != filter_value {
+//                             return true;
+//                         } else {
+//                             return false;
+//                         }
+//                     } else {
+//                         eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
+//                         std::process::exit(exitcode::DATAERR);
+//                     }
+//                 }
+//                 Value::Number(filter_value) => {
+//                     eprintln!("Filter value cannot be a number for a boolean attribute.");
+//                     std::process::exit(exitcode::DATAERR);
+//                 }
+//                 Value::Null => {
+//                     eprintln!("Filter value cannot be null for a boolean attribute.");
+//                     std::process::exit(exitcode::DATAERR);
+//                 }
+//                 Value::Object(_) => {
+//                     eprintln!("Filter value cannot be an object for a boolean attribute.");
+//                     std::process::exit(exitcode::DATAERR);
+//                 }
+//             }
+//         }
         else {
             return false;
         }

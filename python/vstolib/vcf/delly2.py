@@ -62,7 +62,7 @@ def parse_delly2_somatic_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -115,9 +115,10 @@ def parse_delly2_somatic_callset(
             # variant_sequences
             # alternate_allele_read_ids
             if 'PRECISE' in attributes.keys():
-                precise = True
-            if 'IMPRECISE' in attributes.keys():
-                precise = False
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'SVTYPE' in attributes.keys():
                 variant_type = attributes['SVTYPE']
             if 'END' in attributes.keys():

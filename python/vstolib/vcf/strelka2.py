@@ -65,7 +65,7 @@ def parse_strelka2_somatic_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = True
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -89,6 +89,10 @@ def parse_strelka2_somatic_callset(
                                                            default_value='',
                                                            type=curr_type)
                 else:
+                    if curr_info == 'PRECISE':
+                        attributes['PRECISE'] = True
+                    elif curr_info == 'IMPRECISE':
+                        attributes['PRECISE'] = False
                     attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
@@ -104,11 +108,17 @@ def parse_strelka2_somatic_callset(
 
             # Step 4. Update variables
             # Update the following variables:
+            # precise
             # variant_type
             # variant_size
             # variant_sequences
             # position_1
             # position_2
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if len(reference_allele) == 1 and len(alternate_allele) == 1:
                 variant_type = VariantTypes.SINGLE_NUCLEOTIDE_VARIANT
                 variant_sequences.append(str(alternate_allele))

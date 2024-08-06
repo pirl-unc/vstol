@@ -1,12 +1,12 @@
 vstol annotate \
-  --tsv-file ../test/data/hg002_sniffles2.tsv \
+  --tsv-file outputs/hg002_sniffles2.tsv \
   --annotator ensembl \
   --output-tsv-file outputs/hg002_sniffles2_ensembl_annotated.tsv \
   --ensembl-release 95 \
   --ensembl-species human
 
 vstol annotate \
-  --tsv-file ../test/data/hg002_sniffles2.tsv \
+  --tsv-file outputs/hg002_sniffles2.tsv \
   --annotator gencode \
   --output-tsv-file outputs/hg002_sniffles2_gencode_annotated.tsv \
   --gencode-gtf-file ../test/data/gencode.v41.annotations.gtf \

@@ -66,7 +66,7 @@ def parse_svisionpro_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -88,7 +88,12 @@ def parse_svisionpro_callset(
                     curr_type = VariantCallingMethods.AttributeTypes.SVISIONPRO[curr_key]
                     attributes[curr_key] = get_typed_value(value=curr_info_elements[1], default_value='', type=curr_type)
                 else:
-                    attributes[curr_info] = True
+                    if curr_info == 'PRECISE':
+                        attributes['PRECISE'] = True
+                    elif curr_info == 'IMPRECISE':
+                        attributes['PRECISE'] = False
+                    else:
+                        attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
             format = str(row['FORMAT']).split(':')
@@ -103,6 +108,7 @@ def parse_svisionpro_callset(
 
             # Step 4. Update variables
             # Update the following variables:
+            # precise
             # variant_size
             # variant_type
             # chromosome_2
@@ -112,12 +118,23 @@ def parse_svisionpro_callset(
             # alternate_allele_read_count
             # alternate_allele_fraction
             # alternate_allele_read_ids
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'END' in attributes.keys():
                 position_2 = attributes['END']
             if 'SVLEN' in attributes.keys():
                 variant_size = abs(attributes['SVLEN'])
             if 'SVTYPE' in attributes.keys():
-                variant_type = attributes['SVTYPE']
+                if alternate_allele == 'CSV':
+                    variant_type = 'CSV'
+                else:
+                    if attributes['SVTYPE'] == 'tDUP' or attributes['SVTYPE'] == 'dDUP':
+                        variant_type = VariantTypes.DUPLICATION
+                    else:
+                        variant_type = attributes['SVTYPE']
             if 'DR' in attributes.keys():
                 reference_allele_read_count = get_typed_value(value=attributes['DR'], default_value=-1, type=int)
             if 'DV' in attributes.keys():

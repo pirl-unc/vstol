@@ -62,7 +62,7 @@ def parse_pbsv_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -106,17 +106,20 @@ def parse_pbsv_callset(
 
             # Step 4. Update variables
             # Update the following variables:
-            # variant_type
             # precise
+            # variant_type
             # position_2
             # total_read_count
             # reference_allele_read_count
             # alternate_allele_read_count
             # variant_size
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'SVTYPE' in attributes.keys():
                 variant_type = attributes['SVTYPE']
-            if 'PRECISE' in attributes.keys():
-                precise = attributes['PRECISE']
             if 'END' in attributes.keys():
                 position_2 = attributes['END']
             if 'DP' in attributes.keys():

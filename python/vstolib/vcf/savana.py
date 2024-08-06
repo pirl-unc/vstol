@@ -67,7 +67,7 @@ def parse_savana_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             tumor_total_read_count = -1
             tumor_reference_allele_read_count = -1
             tumor_alternate_allele_read_count = -1
@@ -93,7 +93,12 @@ def parse_savana_callset(
                     curr_type = VariantCallingMethods.AttributeTypes.SAVANA[curr_key]
                     attributes[curr_key] = get_typed_value(value=curr_info_elements[1], default_value='', type=curr_type)
                 else:
-                    attributes[curr_info] = True
+                    if curr_info == 'PRECISE':
+                        attributes['PRECISE'] = True
+                    elif curr_info == 'IMPRECISE':
+                        attributes['PRECISE'] = False
+                    else:
+                        attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
             format = str(row['FORMAT']).split(':')
@@ -108,6 +113,7 @@ def parse_savana_callset(
 
             # Step 4. Update variables
             # Update the following variables:
+            # precise
             # variant_size
             # variant_type
             # chromosome_2
@@ -120,6 +126,11 @@ def parse_savana_callset(
             # normal_reference_allele_read_count
             # normal_alternate_allele_read_count
             # normal_alternate_allele_fraction
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'SVLEN' in attributes.keys():
                 variant_size = abs(int(attributes['SVLEN']))
             if 'SVTYPE' in attributes.keys():

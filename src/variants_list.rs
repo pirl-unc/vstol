@@ -279,12 +279,13 @@ impl VariantsList {
                                 if (match_variant_types == false) || ((match_variant_types == true) && (variant_type_1 == variant_type_2)) {
                                     // Maximum neighbor distance must be 0 for SNVs and MNVs
                                     let mut max_neighbor_distance_: isize = max_neighbor_distance;
-                                    if (variant_call_1.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT) ||
-                                        (variant_call_1.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT) {
-                                        // variant_call_1 and variant_call_2 are both SNV or MNV
+                                    if (variant_call_1.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT ||
+                                        variant_call_1.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT ||
+                                        variant_call_2.variant_type == constants::SINGLE_NUCLEOTIDE_VARIANT ||
+                                        variant_call_2.variant_type == constants::MULTI_NUCLEOTIDE_VARIANT) {
+                                        // variant_call_1 or variant_call_2 is either SNV or MNV
                                         max_neighbor_distance_ = 0;
                                     }
-
                                     let distance_11: isize = (variant_call_1.position_1 - variant_call_2.position_1).abs();
                                     let distance_22: isize = (variant_call_1.position_2 - variant_call_2.position_2).abs();
                                     let distance_12: isize = (variant_call_1.position_1 - variant_call_2.position_2).abs();

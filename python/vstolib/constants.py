@@ -88,6 +88,7 @@ class TranslocationOrientations:
 
 
 class VariantCallingMethods:
+    CLAIRS = 'clairs'
     CUTESV = 'cutesv'
     DBSNP = 'dbsnp'
     DEEPVARIANT = 'deepvariant'
@@ -103,6 +104,7 @@ class VariantCallingMethods:
     SVIM = 'svim'
     SVISIONPRO = 'svisionpro'
     ALL = [
+        CLAIRS,
         CUTESV,
         DBSNP,
         DEEPVARIANT,
@@ -120,6 +122,33 @@ class VariantCallingMethods:
     ]
 
     class AttributeTypes:
+        CLAIRS = {
+            'ID': str,
+            'FAU': int,
+            'FCU': int,
+            'FGU': int,
+            'FTU': int,
+            'RAU': int,
+            'RCU': int,
+            'RGU': int,
+            'RTU': int,
+            'GT': str,
+            'GQ': int,
+            'DP': int,
+            'AF': float,
+            'AD': str,
+            'NAF': float,
+            'NDP': int,
+            'NAD': int,
+            'AU': int,
+            'CU': int,
+            'GU': int,
+            'TU': int,
+            'NAU': int,
+            'NCU': int,
+            'NGU': int,
+            'NTU': int
+        }
         CUTESV = {
             'ID': str,
             'SVTYPE': str,
@@ -419,7 +448,8 @@ class VariantCallingMethods:
             'TUMOUR_DP': str,
             'NORMAL_DP': str,
             'GT': str,
-            'PRECISE': bool
+            'PRECISE': bool,
+            'CLASS': str
         }
         SEVERUS = {
             'ID': str,

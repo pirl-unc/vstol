@@ -31,6 +31,7 @@ from .variant import Variant
 from .variants_list import VariantsList
 from .variant_filter import VariantFilter
 from .visualization import visualize
+from .vcf.clairs import parse_clairs_callset
 from .vcf.cutesv import parse_cutesv_callset
 from .vcf.dbsnp import parse_dbsnp_callset
 from .vcf.deepvariant import parse_deepvariant_callset
@@ -492,7 +493,14 @@ def vcf2tsv(
     Returns:
         VariantsList
     """
-    if variant_calling_method == VariantCallingMethods.CUTESV:
+    if variant_calling_method == VariantCallingMethods.CLAIRS:
+        variants_list = parse_clairs_callset(
+            df_vcf=df_vcf,
+            sequencing_platform=sequencing_platform,
+            source_id=source_id,
+            case_id=case_id
+        )
+    elif variant_calling_method == VariantCallingMethods.CUTESV:
         variants_list = parse_cutesv_callset(
             df_vcf=df_vcf,
             sequencing_platform=sequencing_platform,

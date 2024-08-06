@@ -62,7 +62,7 @@ def parse_svim_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -86,7 +86,12 @@ def parse_svim_callset(
                                                            default_value='',
                                                            type=curr_type)
                 else:
-                    attributes[curr_info] = True
+                    if curr_info == 'PRECISE':
+                        attributes['PRECISE'] = True
+                    elif curr_info == 'IMPRECISE':
+                        attributes['PRECISE'] = False
+                    else:
+                        attributes[curr_info] = True
 
             # Step 3. Extract FORMAT
             format = str(row['FORMAT']).split(':')
@@ -101,6 +106,7 @@ def parse_svim_callset(
 
             # Step 4. Update variables
             # Update the following variables:
+            # precise
             # variant_type
             # variant_subtype
             # position_2
@@ -109,6 +115,11 @@ def parse_svim_callset(
             # variant_size
             # variant_sequences
             # alternate_allele_read_ids
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'SVTYPE' in attributes.keys():
                 variant_type = attributes['SVTYPE']
             if variant_type == 'DUP:TANDEM':

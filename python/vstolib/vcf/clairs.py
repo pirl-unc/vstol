@@ -12,12 +12,11 @@
 
 
 """
-The purpose of this python3 script is to implement a parser for Severus VCF files.
+The purpose of this python3 script is to implement a parser for ClairS VCF files.
 """
 
 
 import pandas as pd
-import re
 from collections import OrderedDict
 from typing import Dict
 from ..constants import NucleicAcidTypes, VariantCallingMethods, VariantTypes
@@ -31,26 +30,26 @@ from ..variants_list import VariantsList
 logger = get_logger(__name__)
 
 
-def parse_severus_callset(
+def parse_clairs_callset(
         df_vcf: pd.DataFrame,
         sequencing_platform: str,
         source_id: str,
-        case_id: str,
+        case_id: str
 ) -> VariantsList:
     """
-    Parses a Severus DataFrame and returns a VariantsList object.
+    Parses a ClairS DataFrame and returns a VariantsList object.
 
     Parameters:
-        df_vcf                  :   DataFrame of rows from a Severus VCF file.
+        df_vcf                  :   DataFrame of rows from a ClairS VCF file.
         sequencing_platform     :   Sequencing platform.
         source_id               :   Source ID.
-        case_id                 :   Case ID.
+        case_id                 :   Case sample ID.
 
     Returns:
         VariantsList
     """
     variants: Dict[str, Variant] = {}
-    sample_id = df_vcf.columns.values.tolist()[9:][0]
+    sample_id = df_vcf.columns.values.tolist()[9]
     curr_variant_call_idx = 1
     curr_variant_idx = 1
     for row in df_vcf.to_dict('records'):
@@ -58,7 +57,7 @@ def parse_severus_callset(
         chromosome_1 = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
         chromosome_2 = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
         position_1 = retrieve_from_dict(dct=row, key='POS', default_value=-1, type=int)
-        position_2 = position_1
+        position_2 = -1
         reference_allele = retrieve_from_dict(dct=row, key='REF', default_value='', type=str)
         alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
         filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
@@ -82,22 +81,19 @@ def parse_severus_callset(
             if '=' in curr_info:
                 curr_info_elements = curr_info.split('=')
                 curr_key = curr_info_elements[0]
-                curr_type = VariantCallingMethods.AttributeTypes.SEVERUS[curr_key]
-                attributes[curr_key] = get_typed_value(value=curr_info_elements[1], default_value='', type=curr_type)
+                curr_type = VariantCallingMethods.AttributeTypes.CLAIRS[curr_key]
+                attributes[curr_key] = get_typed_value(value=curr_info_elements[1],
+                                                       default_value='',
+                                                       type=curr_type)
             else:
-                if curr_info == 'PRECISE':
-                    attributes['PRECISE'] = True
-                elif curr_info == 'IMPRECISE':
-                    attributes['PRECISE'] = False
-                else:
-                    attributes[curr_info] = True
+                attributes[curr_info] = True
 
         # Step 3. Extract FORMAT
         format = str(row['FORMAT']).split(':')
         curr_sample = str(row[sample_id]).split(':')
         for curr_format in format:
             curr_key = curr_format
-            curr_type = VariantCallingMethods.AttributeTypes.SEVERUS[curr_key]
+            curr_type = VariantCallingMethods.AttributeTypes.CLAIRS[curr_key]
             attributes[curr_key] = retrieve_from_list(lst=curr_sample,
                                                       index=format.index(curr_format),
                                                       default_value='',
@@ -105,50 +101,70 @@ def parse_severus_callset(
 
         # Step 4. Update variables
         # Update the following variables:
-        # precise
-        # variant_size
         # variant_type
-        # chromosome_2
+        # variant_sequences
+        # variant_size
+        # position_1
         # position_2
-        # total_read_count
+        if len(reference_allele) == 1 and len(alternate_allele) == 1:
+            variant_type = VariantTypes.SINGLE_NUCLEOTIDE_VARIANT
+            variant_sequences.append(str(alternate_allele))
+            variant_size = 1
+            position_2 = position_1
+        elif len(reference_allele) == 1 and len(alternate_allele) > 1:
+            if ',' in alternate_allele:
+                variant_type = VariantTypes.MULTI_NUCLEOTIDE_VARIANT
+                variant_sequences.append(str(alternate_allele))
+                position_2 = position_1
+            else:
+                variant_type = VariantTypes.INSERTION
+                variant_sequences.append(str(alternate_allele[1:]))
+                variant_size = len(alternate_allele[1:])
+                position_2 = position_1
+        elif len(reference_allele) > 1 and len(alternate_allele) == 1:
+            variant_type = VariantTypes.DELETION
+            variant_sequences.append(str(reference_allele[1:]))
+            variant_size = len(reference_allele[1:])
+            position_1 = position_1 + 1
+            position_2 = position_1 + variant_size - 1
+        elif len(reference_allele) > 1 and len(alternate_allele) > 1:
+            variant_type = VariantTypes.MULTI_NUCLEOTIDE_VARIANT
+            variant_sequences.append(str(alternate_allele))
+            variant_size = len(alternate_allele)
+            position_2 = position_1 + len(variant_sequences[0]) - 1
+        else:
+            raise Exception(
+                'Unknown variant type. REF: %s. ALT: %s' %
+                (reference_allele, alternate_allele)
+            )
+
+        # Update the following variables:
         # reference_allele_read_count
         # alternate_allele_read_count
+        # total_read_count
+        if 'AD' in attributes.keys():
+            reference_allele_read_count = get_typed_value(value=attributes['AD'].split(',')[0], default_value=-1, type=int)
+            alternate_allele_read_count = get_typed_value(value=attributes['AD'].split(',')[1], default_value=-1, type=int)
+        if 'DP' in attributes.keys():
+            total_read_count = get_typed_value(value=attributes['DP'], default_value=-1, type=int)
+
+        # Update the following variables if they are currently unknown but can be inferred:
+        # total_read_count
         # alternate_allele_fraction
-        # alternate_allele_read_ids
-        if 'PRECISE' in attributes.keys():
-            if attributes['PRECISE']:
-                precise = 'yes'
-            else:
-                precise = 'no'
-        if 'CHR2' in attributes.keys():
-            chromosome_2 = attributes['CHR2']
-        if 'END' in attributes.keys():
-            position_2 = attributes['END']
-        if 'SVLEN' in attributes.keys():
-            variant_size = abs(attributes['SVLEN'])
-        if 'SVTYPE' in attributes.keys():
-            variant_type = attributes['SVTYPE']
-        if 'DETAILED_TYPE' in attributes.keys():
-            variant_subtype = attributes['DETAILED_TYPE']
-        if 'DR' in attributes.keys():
-            reference_allele_read_count = get_typed_value(value=attributes['DR'], default_value=-1, type=int)
-        if 'DV' in attributes.keys():
-            alternate_allele_read_count = get_typed_value(value=attributes['DV'], default_value=-1, type=int)
-        if reference_allele_read_count != -1 and alternate_allele_read_count != -1:
-            total_read_count = reference_allele_read_count + alternate_allele_read_count
-        if alternate_allele_read_count != -1 and total_read_count != -1:
+        if alternate_allele_read_count >= 0 and \
+            reference_allele_read_count >= 0 and \
+            total_read_count == -1:
+            total_read_count = alternate_allele_read_count + reference_allele_read_count
+        if alternate_allele_read_count >= 0 and \
+            total_read_count > 0 and \
+            alternate_allele_fraction == -1.0:
             alternate_allele_fraction = float(alternate_allele_read_count) / float(total_read_count)
 
-        # Update variant_size for 'BND'
-        if (variant_type == VariantTypes.BREAKPOINT or variant_type == VariantTypes.TRANSLOCATION) and \
-                (chromosome_1 == chromosome_2):
-            variant_size = abs(position_1 - position_2) + 1
-
-        # Append case variant call to variants list
+        # Append variant call to variants list
         variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
-            case_id,
+            sample_id,
             NucleicAcidTypes.DNA,
-            VariantCallingMethods.SEVERUS,
+            VariantCallingMethods.CLAIRS,
             curr_variant_call_idx,
             variant_type,
             chromosome_1,
@@ -156,13 +172,12 @@ def parse_severus_callset(
             chromosome_2,
             position_2
         )
-        curr_variant_call_idx += 1
         variant_call = VariantCall(
             id=variant_call_id,
             source_id=source_id,
             sample_id=case_id,
             nucleic_acid=NucleicAcidTypes.DNA,
-            variant_calling_method=VariantCallingMethods.SEVERUS,
+            variant_calling_method=VariantCallingMethods.CLAIRS,
             sequencing_platform=sequencing_platform,
             chromosome_1=chromosome_1,
             position_1=position_1,
@@ -188,7 +203,9 @@ def parse_severus_callset(
         if variant_id not in variants:
             variants[variant_id] = Variant(id=variant_id)
         variants[variant_id].add_variant_call(variant_call=variant_call)
+        curr_variant_call_idx += 1
         curr_variant_idx += 1
+
     variants_list = VariantsList(variants=list(variants.values()))
     logger.info('%i variants and %i variant calls in the returning VariantsList.' %
                 (len(variants_list.variant_ids), len(variants_list.variant_call_ids)))

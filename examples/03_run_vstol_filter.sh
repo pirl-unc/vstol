@@ -1,10 +1,10 @@
 vstol filter \
-  --tsv-file ../test/data/hg002_merged_variants.tsv \
+  --tsv-file outputs/hg002_merged_variants.tsv \
   --case-sample-id HG002 \
   --output-passed-tsv-file outputs/hg002_merged_variants_passed.tsv \
   --output-rejected-tsv-file outputs/hg002_merged_variants_rejected.tsv \
   --filter 'case any filter == PASS' \
-  --filter 'case any precise == true' \
+  --filter 'case all precise != no' \
   --filter 'case all alternate_allele_read_count >= 3' \
   --filter 'case all chromosome_1 in ["chr1","chr2","chr3"]' \
   --filter 'case all chromosome_2 in ["chr1","chr2","chr3"]' \

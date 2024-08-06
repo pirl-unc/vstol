@@ -18,7 +18,6 @@ to handling VCF files.
 
 
 import gzip
-import os
 import pandas as pd
 from typing import Dict
 from ..constants import VariantCallingMethods

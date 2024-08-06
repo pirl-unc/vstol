@@ -49,7 +49,7 @@ class VariantCall:
     sequencing_platform: str = field(default='')
     filter: str = field(default='')
     quality_score: float = field(default=-1.0)
-    precise: bool = field(default=False)
+    precise: str = field(default='')
     variant_subtype: str = field(default='')
     variant_size: int = field(default=-1)
     reference_allele_read_count: int = field(default=-1)

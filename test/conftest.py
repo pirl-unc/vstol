@@ -8,6 +8,19 @@ from vstolib.vcf.common import read_vcf_file
 
 
 @pytest.fixture
+def clairs_variants_list():
+    vcf_file = get_data_path(name='sample001_clairs.vcf')
+    df_vcf = read_vcf_file(vcf_file=vcf_file)
+    variants_list = vcf2tsv(
+        df_vcf=df_vcf,
+        source_id='hg002',
+        case_id='hg002',
+        variant_calling_method=VariantCallingMethods.CLAIRS,
+        sequencing_platform='pacbio'
+    )
+    return variants_list
+
+@pytest.fixture
 def cutesv_variants_list():
     vcf_file = get_data_path(name='hg002_cutesv.vcf')
     df_vcf = read_vcf_file(vcf_file=vcf_file)

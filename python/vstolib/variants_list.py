@@ -428,7 +428,7 @@ class VariantsList:
             variant_call.sequencing_platform = retrieve_from_dict(dct=row, key='sequencing_platform', default_value='', type=str)
             variant_call.filter = retrieve_from_dict(dct=row, key='filter', default_value='', type=str)
             variant_call.quality_score = retrieve_from_dict(dct=row, key='quality_score', default_value=-1.0, type=float)
-            variant_call.precise = retrieve_from_dict(dct=row, key='precise', default_value=False, type=bool)
+            variant_call.precise = retrieve_from_dict(dct=row, key='precise', default_value='', type=str)
             variant_call.variant_subtype = retrieve_from_dict(dct=row, key='variant_subtype', default_value='', type=str)
             variant_call.variant_size = retrieve_from_dict(dct=row, key='variant_size', default_value=-1, type=int)
             variant_call.total_read_count = retrieve_from_dict(dct=row, key='total_read_count', default_value=-1, type=int)

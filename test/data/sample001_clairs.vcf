@@ -1,0 +1,40 @@
+##fileformat=VCFv4.2
+##source=ClairS
+##clairs_version=0.3.0
+##cmdline=/opt/bin/run_clairs --tumor_bam_fn hg38_tp53_tumor_long_read_dna.bam --normal_bam_fn hg38_tp53_normal_long_read_dna.bam --ref_fn hg38_chr17_1-8000000.fa --threads 2 --platform hifi_revio --output_dir /Users/leework/Documents/Research/projects/project_nexus/nexus/tmp/work/test_long_read_dna_variant_calling_clairs/63/3f83c7a12d22549088f71ca958cbb6/tumor_clairs_outputs
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=LowQual,Description="Low quality variant">
+##FILTER=<ID=RefCall,Description="Reference call">
+##FILTER=<ID=Germline,Description="Germline variant">
+##INFO=<ID=H,Number=0,Type=Flag,Description="Variant found only in one haplotype in the phased reads">
+##INFO=<ID=FAU,Number=1,Type=Integer,Description="Count of A in forward strand in the tumor BAM">
+##INFO=<ID=FCU,Number=1,Type=Integer,Description="Count of C in forward strand in the tumor BAM">
+##INFO=<ID=FGU,Number=1,Type=Integer,Description="Count of G in forward strand in the tumor BAM">
+##INFO=<ID=FTU,Number=1,Type=Integer,Description="Count of T in forward strand in the tumor BAM">
+##INFO=<ID=RAU,Number=1,Type=Integer,Description="Count of A in reverse strand in the tumor BAM">
+##INFO=<ID=RCU,Number=1,Type=Integer,Description="Count of C in reverse strand in the tumor BAM">
+##INFO=<ID=RGU,Number=1,Type=Integer,Description="Count of G in reverse strand in the tumor BAM">
+##INFO=<ID=RTU,Number=1,Type=Integer,Description="Count of T in reverse strand in the tumor BAM">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype quality">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth in the tumor BAM">
+##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the tumor BAM">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed in the tumor BAM">
+##FORMAT=<ID=NAF,Number=1,Type=Float,Description="Estimated allele frequency in the normal BAM">
+##FORMAT=<ID=NDP,Number=1,Type=Integer,Description="Read depth in the normal BAM">
+##FORMAT=<ID=NAD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed in the normal BAM">
+##FORMAT=<ID=AU,Number=1,Type=Integer,Description="Count of A in the tumor BAM">
+##FORMAT=<ID=CU,Number=1,Type=Integer,Description="Count of C in the tumor BAM">
+##FORMAT=<ID=GU,Number=1,Type=Integer,Description="Count of G in the tumor BAM">
+##FORMAT=<ID=TU,Number=1,Type=Integer,Description="Count of T in the tumor BAM">
+##FORMAT=<ID=NAU,Number=1,Type=Integer,Description="Count of A in the normal BAM">
+##FORMAT=<ID=NCU,Number=1,Type=Integer,Description="Count of C in the normal BAM">
+##FORMAT=<ID=NGU,Number=1,Type=Integer,Description="Count of G in the normal BAM">
+##FORMAT=<ID=NTU,Number=1,Type=Integer,Description="Count of T in the normal BAM">
+##contig=<ID=chr17,length=7843138>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
+chr17	7686991	.	T	A	21.305	PASS	FAU=0;FCU=0;FGU=0;FTU=0;RAU=60;RCU=0;RGU=0;RTU=0	GT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU	1/1:21:60:1.0000:0,60:0.0000:60:0,0:60:0:0:0:0:0:0:60
+chr17	7687091	.	A	G	22.934	PASS	FAU=0;FCU=0;FGU=0;FTU=0;RAU=0;RCU=0;RGU=60;RTU=0	GT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU	1/1:22:60:1.0000:0,60:0.0000:60:0,0:0:0:60:0:60:0:0:0
+chr17	7687191	.	C	T	22.443	PASS	FAU=0;FCU=0;FGU=0;FTU=0;RAU=0;RCU=0;RGU=0;RTU=60	GT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU	1/1:22:60:1.0000:0,60:0.0000:60:0,0:0:0:0:60:0:60:0:0
+chr17	7687291	.	C	T	22.135	PASS	FAU=0;FCU=0;FGU=0;FTU=0;RAU=0;RCU=0;RGU=0;RTU=60	GT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU	1/1:22:60:1.0000:0,60:0.0000:60:0,0:0:0:0:60:0:60:0:0
+chr17	7687391	.	C	T	0.000	LowQual	FAU=0;FCU=0;FGU=0;FTU=0;RAU=0;RCU=0;RGU=0;RTU=60	GT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU	1/1:22:60:1.0000:0,60:0.0000:60:60,0:0:0:0:60:0:60:0:0

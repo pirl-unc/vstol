@@ -62,7 +62,7 @@ def parse_cutesv_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = False
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -119,7 +119,10 @@ def parse_cutesv_callset(
             if 'SVLEN' in attributes.keys():
                 variant_size = abs(attributes['SVLEN'])
             if 'PRECISE' in attributes.keys():
-                precise = attributes['PRECISE']
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'CHR2' in attributes.keys():
                 chromosome_2 = attributes['CHR2']
             if 'END' in attributes.keys():

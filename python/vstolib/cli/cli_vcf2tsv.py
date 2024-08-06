@@ -123,13 +123,22 @@ def run_cli_vcf2tsv_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     gzip
     """
-    print(args)
-
     if args.variant_calling_method == VariantCallingMethods.STRELKA2_SOMATIC:
         if args.case_id is None or args.control_id is None:
             raise Exception("The parameters --case-id and --control-id must be "
                             "specified when --variant-calling-method strelka2-somatic")
-
+    if args.variant_calling_method == VariantCallingMethods.SAVANA:
+        if args.case_id is None or args.control_id is None:
+            raise Exception("The parameters --case-id and --control-id must be "
+                            "specified when --variant-calling-method savana")
+    if args.variant_calling_method == VariantCallingMethods.SEVERUS:
+        if args.case_id is None:
+            raise Exception("The parameter --case-id must be "
+                            "specified when --variant-calling-method severus")
+    if args.variant_calling_method == VariantCallingMethods.SVISIONPRO:
+        if args.case_id is None or args.control_id is None:
+            raise Exception("The parameters --case-id and --control-id must be "
+                            "specified when --variant-calling-method svisionpro")
     df_vcf = read_vcf_file(vcf_file=args.vcf_file)
     variants_list = vcf2tsv(
         df_vcf=df_vcf,

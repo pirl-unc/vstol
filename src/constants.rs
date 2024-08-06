@@ -23,6 +23,7 @@ pub const INVERSION: &str = "INV";
 pub const DUPLICATION: &str = "DUP";
 pub const TRANSLOCATION: &str = "TRA";
 pub const BREAKPOINT: &str = "BND";
+pub const COMPLEX_SV: &str = "CSV";
 pub const REFERENCE: &str = "REF";
 
 pub const QUANTIFIER_ALL: &str = "all";
@@ -51,6 +52,7 @@ lazy_static! {
         map.insert(INVERSION, BREAKPOINT.to_string() + ";" + INVERSION + ";" + TRANSLOCATION);
         map.insert(TRANSLOCATION, BREAKPOINT.to_string() + ";" + INVERSION + ";" + TRANSLOCATION);
         map.insert(BREAKPOINT, BREAKPOINT.to_string() + ";" + INVERSION + ";" + TRANSLOCATION);
+        map.insert(COMPLEX_SV, COMPLEX_SV.to_string());
         return map;
     };
 }

@@ -60,7 +60,7 @@ def parse_deepvariant_callset(
             alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
             filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
             quality_score = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
-            precise = True
+            precise = ''
             total_read_count = -1
             reference_allele_read_count = -1
             alternate_allele_read_count = -1
@@ -135,10 +135,16 @@ def parse_deepvariant_callset(
                 )
 
             # Update the following variables:
+            # precise
             # total_read_count
             # reference_allele_read_count
             # alternate_allele_read_count
             # alternate_allele_fraction
+            if 'PRECISE' in attributes.keys():
+                if attributes['PRECISE']:
+                    precise = 'yes'
+                else:
+                    precise = 'no'
             if 'DP' in attributes.keys():
                 total_read_count = attributes['DP']
             if 'AD' in attributes.keys():

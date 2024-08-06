@@ -1,6 +1,10 @@
 from .conftest import *
 
 
+def test_vcf2tsv_clairs(clairs_variants_list):
+    print(clairs_variants_list.size)
+
+
 def test_vcf2tsv_cutesv(cutesv_variants_list):
     print(cutesv_variants_list.size)
 
