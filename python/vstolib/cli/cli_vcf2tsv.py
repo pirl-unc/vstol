@@ -123,6 +123,10 @@ def run_cli_vcf2tsv_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     gzip
     """
+    if args.variant_calling_method == VariantCallingMethods.CLAIRS:
+        if args.case_id is None:
+            raise Exception("The parameter --case-id must be "
+                            "specified when --variant-calling-method clairs")
     if args.variant_calling_method == VariantCallingMethods.STRELKA2_SOMATIC:
         if args.case_id is None or args.control_id is None:
             raise Exception("The parameters --case-id and --control-id must be "
