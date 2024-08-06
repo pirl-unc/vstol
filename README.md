@@ -51,6 +51,7 @@ To use `VSTOL`, we recommend that you first convert a VCF file to a TSV file
 using the `vcf2tsv` command in `VSTOL`. 
 The following variant callers are currently supported:
 
+- [ClairS](https://github.com/HKU-BAL/ClairS)
 - [cuteSV](https://github.com/tjiangHIT/cuteSV)
 - [DeepVariant](https://github.com/google/deepvariant)
 - [Delly2](https://github.com/dellytools/delly)
