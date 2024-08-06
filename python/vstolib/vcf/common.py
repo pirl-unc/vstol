@@ -80,7 +80,9 @@ def get_attribute_types(variant_calling_method: str) -> Dict:
     """
     Get the attribute type dictionary for a variant calling method.
     """
-    if variant_calling_method == VariantCallingMethods.CUTESV:
+    if variant_calling_method == VariantCallingMethods.CLAIRS:
+        return VariantCallingMethods.AttributeTypes.CLAIRS
+    elif variant_calling_method == VariantCallingMethods.CUTESV:
         return VariantCallingMethods.AttributeTypes.CUTESV
     elif variant_calling_method == VariantCallingMethods.DEEPVARIANT:
         return VariantCallingMethods.AttributeTypes.DEEPVARIANT

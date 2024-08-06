@@ -151,6 +151,7 @@ def parse_clairs_callset(
         # Update the following variables if they are currently unknown but can be inferred:
         # total_read_count
         # alternate_allele_fraction
+        # reference_allele_read_count
         if alternate_allele_read_count >= 0 and \
             reference_allele_read_count >= 0 and \
             total_read_count == -1:
@@ -159,6 +160,10 @@ def parse_clairs_callset(
             total_read_count > 0 and \
             alternate_allele_fraction == -1.0:
             alternate_allele_fraction = float(alternate_allele_read_count) / float(total_read_count)
+        if alternate_allele_read_count >= 0 and \
+            total_read_count > 0 and \
+            reference_allele_read_count <= 0:
+            reference_allele_read_count = total_read_count - alternate_allele_read_count
 
         # Append variant call to variants list
         variant_call_id = '%s_%s_%s_%i_%s_%s:%i_%s:%i' % (
