@@ -91,6 +91,14 @@ def add_cli_score_arg_parser(
         help="If 'yes', gzip the output TSV file (default: %s)."
              % SCORE_GZIP
     )
+    parser_optional.add_argument(
+        "--num-threads",
+        dest="num_threads",
+        type=int,
+        default=NUM_THREADS,
+        required=False,
+        help="Number of threads (default: %i)." % NUM_THREADS
+    )
 
     parser.set_defaults(which='score')
     return sub_parsers
@@ -107,6 +115,7 @@ def run_cli_score_from_parsed_args(args: argparse.Namespace):
                     output_tsv_file
                     window
                     gzip
+                    num_threads
     """
     # Step 1. Load variants
     variants_list = VariantsList.read_tsv_file(tsv_file=args.tsv_file)
@@ -115,7 +124,8 @@ def run_cli_score_from_parsed_args(args: argparse.Namespace):
     variants_list = score(
         variants_list=variants_list,
         bam_file=args.bam_file,
-        window=args.window
+        window=args.window,
+        num_threads=args.num_threads
     )
 
     # Step 3. Write to a TSV file
