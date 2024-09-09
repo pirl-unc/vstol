@@ -17,8 +17,10 @@ The purpose of this python3 script is to implement main APIs.
 
 
 import copy
+import multiprocessing as mp
 import pandas as pd
 from collections import defaultdict
+from functools import partial
 from typing import List, Literal, Tuple
 from .annotator import Annotator
 from .constants import CollapseStrategies, VariantCallingMethods
@@ -437,10 +439,33 @@ def overlap(
     return variants_list_overlapping
 
 
+def _score_helper(
+        bam_file: str,
+        window: int,
+        variant: Variant
+) -> Variant:
+    for variant_call in variant.variant_calls:
+        variant_call.position_1_average_alignment_score = calculate_average_alignment_score(
+            bam_file=bam_file,
+            chromosome=variant_call.chromosome_1,
+            position=variant_call.position_1,
+            window=window
+        )
+        variant_call.position_2_average_alignment_score = calculate_average_alignment_score(
+            bam_file=bam_file,
+            chromosome=variant_call.chromosome_2,
+            position=variant_call.position_2,
+            window=window
+        )
+        variant_call.average_alignment_score_window = window
+    return variant
+
+
 def score(
         variants_list: VariantsList,
         bam_file: str,
-        window: int = SCORE_WINDOW
+        window: int = SCORE_WINDOW,
+        num_threads: int = NUM_THREADS
 ) -> VariantsList:
     """
     Calculates average alignment score for each breakpoint.
@@ -449,26 +474,19 @@ def score(
         variants_list   :   VariantsList object.
         bam_file        :   BAM file.
         window          :   Window (will be applied both upstream and downstream).
+        num_threads     :   Number of threads.
 
     Returns:
         VariantsList
     """
-    for variant in variants_list.variants:
-        for variant_call in variant.variant_calls:
-            variant_call.position_1_average_alignment_score = calculate_average_alignment_score(
-                bam_file=bam_file,
-                chromosome=variant_call.chromosome_1,
-                position=variant_call.position_1,
-                window=window
-            )
-            variant_call.position_2_average_alignment_score = calculate_average_alignment_score(
-                bam_file=bam_file,
-                chromosome=variant_call.chromosome_2,
-                position=variant_call.position_2,
-                window=window
-            )
-            variant_call.average_alignment_score_window = window
-    return variants_list
+    pool = mp.Pool(processes=num_threads)
+    func = partial(_score_helper, bam_file, window)
+    variants = pool.map(func, variants_list.variants)
+    pool.close()
+    variants_list_ = VariantsList()
+    for variant in variants:
+        variants_list_.add_variant(variant=variant)
+    return variants_list_
 
 
 def vcf2tsv(

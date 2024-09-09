@@ -7,5 +7,6 @@ def test_score(severus_variants_list):
     variants_list = score(
         variants_list=severus_variants_list,
         bam_file=bam_file,
-        window=1000
+        window=1000,
+        num_threads=1
     )
