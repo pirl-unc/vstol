@@ -18,16 +18,18 @@ The purpose of this python3 script is to implement main APIs.
 
 import copy
 import multiprocessing as mp
+import numpy as np
 import pandas as pd
+import pysam
 from collections import defaultdict
 from functools import partial
 from typing import List, Literal, Tuple
+from vstolib import vstolibrs
 from .annotator import Annotator
 from .constants import CollapseStrategies, VariantCallingMethods
 from .default import *
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
-from .metrics import calculate_average_alignment_score
 from .utilities import is_repeated_sequence
 from .variant import Variant
 from .variants_list import VariantsList
@@ -439,28 +441,6 @@ def overlap(
     return variants_list_overlapping
 
 
-def _score_helper(
-        bam_file: str,
-        window: int,
-        variant: Variant
-) -> Variant:
-    for variant_call in variant.variant_calls:
-        variant_call.position_1_average_alignment_score = calculate_average_alignment_score(
-            bam_file=bam_file,
-            chromosome=variant_call.chromosome_1,
-            position=variant_call.position_1,
-            window=window
-        )
-        variant_call.position_2_average_alignment_score = calculate_average_alignment_score(
-            bam_file=bam_file,
-            chromosome=variant_call.chromosome_2,
-            position=variant_call.position_2,
-            window=window
-        )
-        variant_call.average_alignment_score_window = window
-    return variant
-
-
 def score(
         variants_list: VariantsList,
         bam_file: str,
@@ -474,19 +454,68 @@ def score(
         variants_list   :   VariantsList object.
         bam_file        :   BAM file.
         window          :   Window (will be applied both upstream and downstream).
-        num_threads     :   Number of threads.
 
     Returns:
         VariantsList
     """
-    pool = mp.Pool(processes=num_threads)
-    func = partial(_score_helper, bam_file, window)
-    variants = pool.map(func, variants_list.variants)
-    pool.close()
-    variants_list_ = VariantsList()
-    for variant in variants:
-        variants_list_.add_variant(variant=variant)
-    return variants_list_
+    # Step 1. Get the regions
+    regions = []
+    bamfile = pysam.AlignmentFile(bam_file, "rb")
+    for variant in variants_list.variants:
+        for variant_call in variant.variant_calls:
+            # Position 1
+            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_1)
+            start = variant_call.position_1 - window
+            end = variant_call.position_1 + window
+            if start < 0:
+                start = 0
+            if end > chromosome_length:
+                end = chromosome_length
+            regions.append((variant_call.chromosome_1,start,end))
+
+            # Position 2
+            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_2)
+            start = variant_call.position_2 - window
+            end = variant_call.position_2 + window
+            if start < 0:
+                start = 0
+            if end > chromosome_length:
+                end = chromosome_length
+            regions.append((variant_call.chromosome_2,start,end))
+
+    # Step 2. Calculate the average alignment scores
+    regions_scores = vstolibrs.calculate_average_alignment_scores(
+        bam_file=bam_file,
+        regions=regions,
+        num_threads=num_threads
+    )
+
+    # Step 3. Store the average alignment scores
+    for variant in variants_list.variants:
+        for variant_call in variant.variant_calls:
+            # Position 1
+            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_1)
+            start = variant_call.position_1 - window
+            end = variant_call.position_1 + window
+            if start < 0:
+                start = 0
+            if end > chromosome_length:
+                end = chromosome_length
+            variant_call.position_1_average_alignment_score = regions_scores[(variant_call.chromosome_1,start,end)]
+
+            # Position 2
+            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_2)
+            start = variant_call.position_2 - window
+            end = variant_call.position_2 + window
+            if start < 0:
+                start = 0
+            if end > chromosome_length:
+                end = chromosome_length
+            variant_call.position_2_average_alignment_score = regions_scores[(variant_call.chromosome_2,start,end)]
+
+            variant_call.average_alignment_score_window = window
+
+    return variants_list
 
 
 def vcf2tsv(

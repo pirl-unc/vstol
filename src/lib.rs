@@ -19,7 +19,6 @@ extern crate pyo3;
 extern crate serde_json;
 use chrono::Local;
 use env_logger::{Builder, Env};
-use log::{info, LevelFilter};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use std::collections::HashMap;
@@ -27,6 +26,7 @@ use std::io::Write;
 mod constants;
 mod genomic_range;
 mod genomic_ranges_list;
+mod metrics;
 mod utilities;
 mod variant;
 mod variant_call;
@@ -35,6 +35,7 @@ mod variant_filter;
 mod variants_list;
 use genomic_range::GenomicRange;
 use genomic_ranges_list::GenomicRangesList;
+use metrics::calculate_average_alignment_scores as calculate_average_alignment_scores_;
 use variant::Variant;
 use variant_call::VariantCall;
 use variant_call_annotation::VariantCallAnnotation;
@@ -125,11 +126,34 @@ fn deserialize_variant_filter(json_str: &str) -> VariantFilter {
     }
 }
 
+/// Calculates average alignment scores for a given list of regions.
+///
+/// # Arguments
+/// * `bam_file`        -   BAM file.
+/// * `regions`         -   vector of tuples where each tuple is (chromosome,start,end).
+/// * `num_threads`     -   number of threads.
+///
+/// # Returns
+/// * HashMap where key = (chromosome,start,end) and value = average alignment score.
+#[pyfunction]
+fn calculate_average_alignment_scores(
+    py: Python,
+    bam_file: String,
+    regions: Vec<(String,u32,u32)>,
+    num_threads: usize) -> PyResult<HashMap<(String, u32, u32), f64>> {
+    let scores: HashMap<(String,u32,u32),f64> = calculate_average_alignment_scores_(
+        bam_file.as_str(),
+        &regions,
+        num_threads
+    );
+    Ok(scores)
+}
+
 /// This function filters a serialized VariantsList object and returns a filtered VariantsList.
 ///
 /// # Arguments
 /// * `py_str`                  -   serialized VariantsList object.
-/// * `py_list`                 -   a list of serialized VariantFilter objects.
+/// * `py_list`                 -   list of serialized VariantFilter objects.
 /// * `num_threads`             -   number of threads.
 ///
 /// # Returns
@@ -284,6 +308,7 @@ fn vstolibrs(_py: Python, m: &PyModule) -> PyResult<()> {
         )
     }).init();
 
+    m.add_function(wrap_pyfunction!(calculate_average_alignment_scores, m)?);
     m.add_function(wrap_pyfunction!(filter_variants_list, m)?);
     m.add_function(wrap_pyfunction!(find_overlapping_variant_calls, m)?);
     m.add_function(wrap_pyfunction!(intersect_variants_lists, m)?);

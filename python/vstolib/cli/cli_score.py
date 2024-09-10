@@ -121,12 +121,14 @@ def run_cli_score_from_parsed_args(args: argparse.Namespace):
     variants_list = VariantsList.read_tsv_file(tsv_file=args.tsv_file)
 
     # Step 2. Calculate average alignment score for each breakpoint
+    logger.info("Started calculating average alignment score for each breakpoint.")
     variants_list = score(
         variants_list=variants_list,
         bam_file=args.bam_file,
         window=args.window,
         num_threads=args.num_threads
     )
+    logger.info("Finished calculating average alignment score for each breakpoint.")
 
     # Step 3. Write to a TSV file
     df_variants = variants_list.to_dataframe()
