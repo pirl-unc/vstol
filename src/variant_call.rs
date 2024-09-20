@@ -45,6 +45,8 @@ pub struct VariantCall {
     pub alternate_allele_fraction: f64,
     pub alternate_allele_read_ids: Vec<String>,
     pub variant_sequences: Vec<String>,
+    pub position_1_average_alignment_score: f64,
+    pub position_2_average_alignment_score: f64,
     pub attributes: HashMap<String, String>,
     pub tags: Vec<String>,
     pub position_1_annotations: Vec<VariantCallAnnotation>,
@@ -76,7 +78,9 @@ impl VariantCall {
         reference_allele_read_count: isize,
         alternate_allele_read_count: isize,
         total_read_count: isize,
-        alternate_allele_fraction: f64) -> Self {
+        alternate_allele_fraction: f64,
+        position_1_average_alignment_score: f64,
+        position_2_average_alignment_score: f64) -> Self {
         Self {
             id: id,
             sample_id: sample_id,
@@ -102,6 +106,8 @@ impl VariantCall {
             alternate_allele_read_count: alternate_allele_read_count,
             total_read_count: total_read_count,
             alternate_allele_fraction: alternate_allele_fraction,
+            position_1_average_alignment_score: position_1_average_alignment_score,
+            position_2_average_alignment_score: position_2_average_alignment_score,
             alternate_allele_read_ids: Vec::new(),
             variant_sequences: Vec::new(),
             attributes: HashMap::new(),
@@ -175,6 +181,8 @@ impl Clone for VariantCall {
             alternate_allele_read_count: self.alternate_allele_read_count,
             total_read_count: self.total_read_count,
             alternate_allele_fraction: self.alternate_allele_fraction,
+            position_1_average_alignment_score: self.position_1_average_alignment_score,
+            position_2_average_alignment_score: self.position_2_average_alignment_score,
             alternate_allele_read_ids: self.alternate_allele_read_ids.clone(),
             variant_sequences: self.variant_sequences.clone(),
             attributes: attributes,

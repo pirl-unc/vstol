@@ -78,7 +78,9 @@ impl VariantFilter {
             "total_read_count",
             "reference_allele_read_count",
             "alternate_allele_read_count",
-            "alternate_allele_fraction"
+            "alternate_allele_fraction",
+            "position_1_average_alignment_score",
+            "position_2_average_alignment_score"
         ];
 //         let boolean_attributes = vec![
 //         ];
@@ -161,6 +163,8 @@ impl VariantFilter {
                 "reference_allele_read_count" => variant_call.reference_allele_read_count as f64,
                 "alternate_allele_read_count" => variant_call.alternate_allele_read_count as f64,
                 "alternate_allele_fraction" => variant_call.alternate_allele_fraction as f64,
+                "position_1_average_alignment_score" => variant_call.position_1_average_alignment_score as f64,
+                "position_2_average_alignment_score" => variant_call.position_2_average_alignment_score as f64,
                 _ => -1.0,
             };
             match &self.value {
