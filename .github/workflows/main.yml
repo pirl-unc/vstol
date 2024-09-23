@@ -34,7 +34,7 @@ jobs:
         conda config --add channels defaults
         conda config --add channels bioconda
         conda config --add channels conda-forge
-        conda install pandas==2.2.2
+        conda install pandas==2.1.4
         conda install maturin
         conda install rust
         conda install pylint
