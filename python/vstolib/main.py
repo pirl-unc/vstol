@@ -484,36 +484,35 @@ def score(
             regions.append((variant_call.chromosome_2,start,end))
 
     # Step 2. Calculate the average alignment scores
-    regions_scores = vstolibrs.calculate_average_alignment_scores(
-        bam_file=bam_file,
-        regions=regions,
-        num_threads=num_threads
-    )
+    if len(regions) > 0:
+        regions_scores = vstolibrs.calculate_average_alignment_scores(
+            bam_file=bam_file,
+            regions=regions,
+            num_threads=num_threads
+        )
+        for variant in variants_list.variants:
+            for variant_call in variant.variant_calls:
+                # Position 1
+                chromosome_length = bamfile.get_reference_length(variant_call.chromosome_1)
+                start = variant_call.position_1 - window
+                end = variant_call.position_1 + window
+                if start < 0:
+                    start = 0
+                if end > chromosome_length:
+                    end = chromosome_length
+                variant_call.position_1_average_alignment_score = regions_scores[(variant_call.chromosome_1,start,end)]
 
-    # Step 3. Store the average alignment scores
-    for variant in variants_list.variants:
-        for variant_call in variant.variant_calls:
-            # Position 1
-            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_1)
-            start = variant_call.position_1 - window
-            end = variant_call.position_1 + window
-            if start < 0:
-                start = 0
-            if end > chromosome_length:
-                end = chromosome_length
-            variant_call.position_1_average_alignment_score = regions_scores[(variant_call.chromosome_1,start,end)]
+                # Position 2
+                chromosome_length = bamfile.get_reference_length(variant_call.chromosome_2)
+                start = variant_call.position_2 - window
+                end = variant_call.position_2 + window
+                if start < 0:
+                    start = 0
+                if end > chromosome_length:
+                    end = chromosome_length
+                variant_call.position_2_average_alignment_score = regions_scores[(variant_call.chromosome_2,start,end)]
 
-            # Position 2
-            chromosome_length = bamfile.get_reference_length(variant_call.chromosome_2)
-            start = variant_call.position_2 - window
-            end = variant_call.position_2 + window
-            if start < 0:
-                start = 0
-            if end > chromosome_length:
-                end = chromosome_length
-            variant_call.position_2_average_alignment_score = regions_scores[(variant_call.chromosome_2,start,end)]
-
-            variant_call.average_alignment_score_window = window
+                variant_call.average_alignment_score_window = window
 
     return variants_list
 
