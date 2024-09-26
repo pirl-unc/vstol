@@ -39,8 +39,7 @@ class Ensembl(Annotator):
     @property
     def ensembl(self) -> pyensembl.EnsemblRelease:
         if self._ensembl is None:
-            self._ensembl = pyensembl.EnsemblRelease(release=self.release,
-                                                     species=self.species)
+            self._ensembl = pyensembl.EnsemblRelease(release=self.release, species=self.species)
         return self._ensembl
 
     @property
@@ -86,8 +85,7 @@ class Ensembl(Annotator):
         """
         variant_call_annotations = []
         chromosome = chromosome.replace('chr', '')
-        genes = self.ensembl.genes_at_locus(contig=chromosome,
-                                            position=position)
+        genes = self.ensembl.genes_at_locus(contig=chromosome, position=position)
         if len(genes) == 0:
             variant_call_annotation = VariantCallAnnotation(
                 annotator=Annotators.ENSEMBL,
@@ -98,26 +96,73 @@ class Ensembl(Annotator):
             variant_call_annotations.append(variant_call_annotation)
         else:
             for gene in genes:
-                region = GenomicRegionTypes.INTRONIC
-                exon_ids = self.ensembl.exon_ids_of_gene_id(gene.gene_id)
-                for exon_id in exon_ids:
-                    exon = self.ensembl.exon_by_id(exon_id=exon_id)
-                    if exon.start <= position <= exon.end:
-                        region = GenomicRegionTypes.EXONIC
-                        break
-                variant_call_annotation = VariantCallAnnotation(
-                    annotator=Annotators.ENSEMBL,
-                    region=region,
-                    species=self.species,
-                    annotator_version=str(self.release),
-                    gene_id=gene.gene_id,
-                    gene_id_stable=gene.gene_id,
-                    gene_name=gene.gene_name,
-                    gene_strand=gene.strand,
-                    gene_type=gene.biotype,
-                    gene_version=''
-                )
-                variant_call_annotations.append(variant_call_annotation)
+                for transcript_id in self.ensembl.transcript_ids_of_gene_id(gene.gene_id):
+                    transcript = self.ensembl.transcript_by_id(transcript_id)
+                    if transcript.start > position or transcript.end < position:
+                        continue
+                    if transcript.contains_start_codon and transcript.contains_stop_codon: # protein-coding transcript
+                        if transcript.strand == '+':
+                            cds_start = transcript.start_codon_positions[0]
+                            cds_end = transcript.stop_codon_positions[-1]
+                            if position < cds_start or position > cds_end:
+                                region = GenomicRegionTypes.UNTRANSLATED_REGION
+                            else:
+                                region = GenomicRegionTypes.INTRONIC
+                        else:
+                            cds_start = transcript.start_codon_positions[-1]
+                            cds_end = transcript.stop_codon_positions[0]
+                            if position > cds_start or position < cds_end:
+                                region = GenomicRegionTypes.UNTRANSLATED_REGION
+                            else:
+                                region = GenomicRegionTypes.INTRONIC
+                    else:
+                        region = GenomicRegionTypes.INTRONIC
+                    if region == GenomicRegionTypes.UNTRANSLATED_REGION:
+                        variant_call_annotation = VariantCallAnnotation(
+                            annotator=Annotators.ENSEMBL,
+                            region=region,
+                            species=self.species,
+                            annotator_version=str(self.release),
+                            gene_id=gene.gene_id,
+                            gene_id_stable=gene.gene_id,
+                            gene_name=gene.gene_name,
+                            gene_strand=gene.strand,
+                            gene_type=gene.biotype,
+                            gene_version='',
+                            transcript_id=transcript.transcript_id,
+                            transcript_id_stable=transcript.transcript_id,
+                            transcript_name=transcript.transcript_name,
+                            transcript_strand=transcript.strand,
+                            transcript_type=transcript.biotype
+                        )
+                    else:
+                        exon_id = ''
+                        for exon in transcript.exons:
+                            if exon.start <= position <= exon.end:
+                                region = GenomicRegionTypes.EXONIC
+                                exon_id = exon.exon_id
+                                break
+                        variant_call_annotation = VariantCallAnnotation(
+                            annotator=Annotators.ENSEMBL,
+                            region=region,
+                            species=self.species,
+                            annotator_version=str(self.release),
+                            gene_id=gene.gene_id,
+                            gene_id_stable=gene.gene_id,
+                            gene_name=gene.gene_name,
+                            gene_strand=gene.strand,
+                            gene_type=gene.biotype,
+                            gene_version='',
+                            transcript_id=transcript.transcript_id,
+                            transcript_id_stable=transcript.transcript_id,
+                            transcript_name=transcript.transcript_name,
+                            transcript_strand=transcript.strand,
+                            transcript_type=transcript.biotype,
+                            transcript_version='',
+                            exon_id=exon_id,
+                            exon_id_stable=exon_id
+                        )
+                    variant_call_annotations.append(variant_call_annotation)
         return variant_call_annotations
 
     def annotate_variant_call_using_pyensembl(

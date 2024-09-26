@@ -269,6 +269,14 @@ class VariantsList:
             'position_1_annotation_gene_strand': [],
             'position_1_annotation_gene_type': [],
             'position_1_annotation_gene_version': [],
+            'position_1_annotation_transcript_id': [],
+            'position_1_annotation_transcript_id_stable': [],
+            'position_1_annotation_transcript_name': [],
+            'position_1_annotation_transcript_strand': [],
+            'position_1_annotation_transcript_type': [],
+            'position_1_annotation_transcript_version': [],
+            'position_1_annotation_exon_id': [],
+            'position_1_annotation_exon_id_stable': [],
             'position_1_annotation_region': [],
             'position_1_annotation_species': [],
             'position_2_annotation_annotator': [],
@@ -279,6 +287,14 @@ class VariantsList:
             'position_2_annotation_gene_strand': [],
             'position_2_annotation_gene_type': [],
             'position_2_annotation_gene_version': [],
+            'position_2_annotation_transcript_id': [],
+            'position_2_annotation_transcript_id_stable': [],
+            'position_2_annotation_transcript_name': [],
+            'position_2_annotation_transcript_strand': [],
+            'position_2_annotation_transcript_type': [],
+            'position_2_annotation_transcript_version': [],
+            'position_2_annotation_exon_id': [],
+            'position_2_annotation_exon_id_stable': [],
             'position_2_annotation_region': [],
             'position_2_annotation_species': []
         }
@@ -442,6 +458,7 @@ class VariantsList:
             variant_sequences = retrieve_from_dict(dct=row, key='variant_sequences', default_value='', type=str)
             attributes = retrieve_from_dict(dct=row, key='attributes', default_value='', type=str)
             tags = retrieve_from_dict(dct=row, key='tags', default_value='', type=str)
+
             position_1_annotation_annotator = retrieve_from_dict(dct=row, key='position_1_annotation_annotator', default_value='', type=str)
             position_1_annotation_annotator_version = retrieve_from_dict(dct=row, key='position_1_annotation_annotator_version', default_value='', type=str)
             position_1_annotation_gene_id = retrieve_from_dict(dct=row, key='position_1_annotation_gene_id', default_value='', type=str)
@@ -450,8 +467,17 @@ class VariantsList:
             position_1_annotation_gene_strand = retrieve_from_dict(dct=row, key='position_1_annotation_gene_strand', default_value='', type=str)
             position_1_annotation_gene_type = retrieve_from_dict(dct=row, key='position_1_annotation_gene_type', default_value='', type=str)
             position_1_annotation_gene_version = retrieve_from_dict(dct=row, key='position_1_annotation_gene_version', default_value='', type=str)
+            position_1_annotation_transcript_id = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_id', default_value='', type=str)
+            position_1_annotation_transcript_id_stable = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_id_stable', default_value='', type=str)
+            position_1_annotation_transcript_name = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_name', default_value='', type=str)
+            position_1_annotation_transcript_strand = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_strand', default_value='', type=str)
+            position_1_annotation_transcript_type = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_type', default_value='', type=str)
+            position_1_annotation_transcript_version = retrieve_from_dict(dct=row, key='position_1_annotation_transcript_version', default_value='', type=str)
+            position_1_annotation_exon_id = retrieve_from_dict(dct=row, key='position_1_annotation_exon_id', default_value='', type=str)
+            position_1_annotation_exon_id_stable = retrieve_from_dict(dct=row, key='position_1_annotation_exon_id_stable', default_value='', type=str)
             position_1_annotation_region = retrieve_from_dict(dct=row, key='position_1_annotation_region', default_value='', type=str)
             position_1_annotation_species = retrieve_from_dict(dct=row, key='position_1_annotation_species', default_value='', type=str)
+
             position_2_annotation_annotator = retrieve_from_dict(dct=row, key='position_2_annotation_annotator', default_value='', type=str)
             position_2_annotation_annotator_version = retrieve_from_dict(dct=row, key='position_2_annotation_annotator_version', default_value='', type=str)
             position_2_annotation_gene_id = retrieve_from_dict(dct=row, key='position_2_annotation_gene_id', default_value='', type=str)
@@ -460,6 +486,14 @@ class VariantsList:
             position_2_annotation_gene_strand = retrieve_from_dict(dct=row, key='position_2_annotation_gene_strand', default_value='', type=str)
             position_2_annotation_gene_type = retrieve_from_dict(dct=row, key='position_2_annotation_gene_type', default_value='', type=str)
             position_2_annotation_gene_version = retrieve_from_dict(dct=row, key='position_2_annotation_gene_version', default_value='', type=str)
+            position_2_annotation_transcript_id = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_id', default_value='', type=str)
+            position_2_annotation_transcript_id_stable = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_id_stable', default_value='', type=str)
+            position_2_annotation_transcript_name = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_name', default_value='', type=str)
+            position_2_annotation_transcript_strand = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_strand', default_value='', type=str)
+            position_2_annotation_transcript_type = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_type', default_value='', type=str)
+            position_2_annotation_transcript_version = retrieve_from_dict(dct=row, key='position_2_annotation_transcript_version', default_value='', type=str)
+            position_2_annotation_exon_id = retrieve_from_dict(dct=row, key='position_2_annotation_exon_id', default_value='', type=str)
+            position_2_annotation_exon_id_stable = retrieve_from_dict(dct=row, key='position_2_annotation_exon_id_stable', default_value='', type=str)
             position_2_annotation_region = retrieve_from_dict(dct=row, key='position_2_annotation_region', default_value='', type=str)
             position_2_annotation_species = retrieve_from_dict(dct=row, key='position_2_annotation_species', default_value='', type=str)
 
@@ -506,52 +540,90 @@ class VariantsList:
             if position_1_annotation_annotator != '':
                 position_1_annotation_annotator = position_1_annotation_annotator.split(';')
                 position_1_annotation_annotator_version = position_1_annotation_annotator_version.split(';')
+                position_1_annotation_region = position_1_annotation_region.split(';')
+                position_1_annotation_species = position_1_annotation_species.split(';')
+                # Gene
                 position_1_annotation_gene_id = position_1_annotation_gene_id.split(';')
                 position_1_annotation_gene_id_stable = position_1_annotation_gene_id_stable.split(';')
                 position_1_annotation_gene_name = position_1_annotation_gene_name.split(';')
                 position_1_annotation_gene_strand = position_1_annotation_gene_strand.split(';')
                 position_1_annotation_gene_type = position_1_annotation_gene_type.split(';')
                 position_1_annotation_gene_version = position_1_annotation_gene_version.split(';')
-                position_1_annotation_region = position_1_annotation_region.split(';')
-                position_1_annotation_species = position_1_annotation_species.split(';')
+                # Transcript
+                position_1_annotation_transcript_id = position_1_annotation_transcript_id.split(';')
+                position_1_annotation_transcript_id_stable = position_1_annotation_transcript_id_stable.split(';')
+                position_1_annotation_transcript_name = position_1_annotation_transcript_name.split(';')
+                position_1_annotation_transcript_strand = position_1_annotation_transcript_strand.split(';')
+                position_1_annotation_transcript_type = position_1_annotation_transcript_type.split(';')
+                position_1_annotation_transcript_version = position_1_annotation_transcript_version.split(';')
+                # Exon
+                position_1_annotation_exon_id = position_1_annotation_exon_id.split(';')
+                position_1_annotation_exon_id_stable = position_1_annotation_exon_id_stable.split(';')
                 for i in range(0, len(position_1_annotation_annotator)):
                     variant_call_annotation = VariantCallAnnotation(
                         annotator=position_1_annotation_annotator[i],
                         annotator_version=position_1_annotation_annotator_version[i],
+                        region=position_1_annotation_region[i],
+                        species=position_1_annotation_species[i],
                         gene_id=position_1_annotation_gene_id[i],
                         gene_id_stable=position_1_annotation_gene_id_stable[i],
                         gene_name=position_1_annotation_gene_name[i],
                         gene_strand=position_1_annotation_gene_strand[i],
                         gene_type=position_1_annotation_gene_type[i],
                         gene_version=position_1_annotation_gene_version[i],
-                        region=position_1_annotation_region[i],
-                        species=position_1_annotation_species[i]
+                        transcript_id=position_1_annotation_transcript_id[i],
+                        transcript_id_stable=position_1_annotation_transcript_id_stable[i],
+                        transcript_name=position_1_annotation_transcript_name[i],
+                        transcript_strand=position_1_annotation_transcript_strand[i],
+                        transcript_type=position_1_annotation_transcript_type[i],
+                        transcript_version=position_1_annotation_transcript_version[i],
+                        exon_id=position_1_annotation_exon_id[i],
+                        exon_id_stable=position_1_annotation_exon_id_stable[i]
                     )
                     variant_call.add_position_1_annotation(variant_call_annotation=variant_call_annotation)
 
             if position_2_annotation_annotator != '':
                 position_2_annotation_annotator = position_2_annotation_annotator.split(';')
                 position_2_annotation_annotator_version = position_2_annotation_annotator_version.split(';')
+                position_2_annotation_region = position_2_annotation_region.split(';')
+                position_2_annotation_species = position_2_annotation_species.split(';')
+                # Gene
                 position_2_annotation_gene_id = position_2_annotation_gene_id.split(';')
                 position_2_annotation_gene_id_stable = position_2_annotation_gene_id_stable.split(';')
                 position_2_annotation_gene_name = position_2_annotation_gene_name.split(';')
                 position_2_annotation_gene_strand = position_2_annotation_gene_strand.split(';')
                 position_2_annotation_gene_type = position_2_annotation_gene_type.split(';')
                 position_2_annotation_gene_version = position_2_annotation_gene_version.split(';')
-                position_2_annotation_region = position_2_annotation_region.split(';')
-                position_2_annotation_species = position_2_annotation_species.split(';')
+                # Transcript
+                position_2_annotation_transcript_id = position_2_annotation_transcript_id.split(';')
+                position_2_annotation_transcript_id_stable = position_2_annotation_transcript_id_stable.split(';')
+                position_2_annotation_transcript_name = position_2_annotation_transcript_name.split(';')
+                position_2_annotation_transcript_strand = position_2_annotation_transcript_strand.split(';')
+                position_2_annotation_transcript_type = position_2_annotation_transcript_type.split(';')
+                position_2_annotation_transcript_version = position_2_annotation_transcript_version.split(';')
+                # Exon
+                position_2_annotation_exon_id = position_2_annotation_exon_id.split(';')
+                position_2_annotation_exon_id_stable = position_2_annotation_exon_id_stable.split(';')
                 for i in range(0, len(position_2_annotation_annotator)):
                     variant_call_annotation = VariantCallAnnotation(
                         annotator=position_2_annotation_annotator[i],
                         annotator_version=position_2_annotation_annotator_version[i],
+                        region=position_2_annotation_region[i],
+                        species=position_2_annotation_species[i],
                         gene_id=position_2_annotation_gene_id[i],
                         gene_id_stable=position_2_annotation_gene_id_stable[i],
                         gene_name=position_2_annotation_gene_name[i],
                         gene_strand=position_2_annotation_gene_strand[i],
                         gene_type=position_2_annotation_gene_type[i],
                         gene_version=position_2_annotation_gene_version[i],
-                        region=position_2_annotation_region[i],
-                        species=position_2_annotation_species[i]
+                        transcript_id=position_2_annotation_transcript_id[i],
+                        transcript_id_stable=position_2_annotation_transcript_id_stable[i],
+                        transcript_name=position_2_annotation_transcript_name[i],
+                        transcript_strand=position_2_annotation_transcript_strand[i],
+                        transcript_type=position_2_annotation_transcript_type[i],
+                        transcript_version=position_2_annotation_transcript_version[i],
+                        exon_id=position_2_annotation_exon_id[i],
+                        exon_id_stable=position_2_annotation_exon_id_stable[i]
                     )
                     variant_call.add_position_2_annotation(variant_call_annotation=variant_call_annotation)
 

@@ -117,11 +117,11 @@ class Gencode(Annotator):
                     curr_gene_stable_id, curr_gene_version = Gencode.get_stable_ensembl_id(id=str(curr_metadata_dict['gene_id']))
                     curr_gene_name = str(curr_metadata_dict['gene_name'])
                     curr_gene_type = str(curr_metadata_dict['gene_type'])
-                    curr_gene_level = int(curr_metadata_dict['level'])
+                    curr_level = int(curr_metadata_dict['level'])
 
                     if len(self.types) > 0 and curr_gene_type not in self.types:
                         continue
-                    if len(self.levels) > 0 and curr_gene_level not in self.levels:
+                    if len(self.levels) > 0 and curr_level not in self.levels:
                         continue
 
                     data['gene_id'].append(curr_gene_id)
@@ -133,7 +133,7 @@ class Gencode(Annotator):
                     data['end'].append(curr_gene_end)
                     data['strand'].append(curr_gene_strand)
                     data['type'].append(curr_gene_type)
-                    data['level'].append(curr_gene_level)
+                    data['level'].append(curr_level)
                     data['version'].append(curr_gene_version)
             self.df_genes = pd.DataFrame(data)
         self.__gene_ids = set()
@@ -190,9 +190,9 @@ class Gencode(Annotator):
                     curr_transcript_name = str(curr_metadata_dict['transcript_name'][0])
                     curr_transcript_tags = [str(tag).replace('"', '') for tag in curr_metadata_dict['tag']]
                     try:
-                        curr_transcript_level = int(curr_metadata_dict['level'][0])
+                        curr_level = int(curr_metadata_dict['level'][0])
                     except:
-                        curr_transcript_level = ''
+                        curr_level = ''
                     try:
                         curr_transcript_support_level = int(curr_metadata_dict['transcript_support_level'][0])
                     except:
@@ -201,7 +201,7 @@ class Gencode(Annotator):
                         continue
                     if len(self.types) > 0 and curr_transcript_type not in self.types:
                         continue
-                    if len(self.levels) > 0 and curr_transcript_level not in self.levels:
+                    if len(self.levels) > 0 and curr_level not in self.levels:
                         continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
@@ -214,7 +214,7 @@ class Gencode(Annotator):
                     data['strand'].append(curr_transcript_strand)
                     data['version'].append(curr_transcript_version)
                     data['name'].append(curr_transcript_name)
-                    data['level'].append(curr_transcript_level)
+                    data['level'].append(curr_level)
                     data['support_level'].append(curr_transcript_support_level)
                     data['tags'].append(';'.join(curr_transcript_tags))
             self.df_transcripts = pd.DataFrame(data)
@@ -237,6 +237,7 @@ class Gencode(Annotator):
             'start': [],
             'end': [],
             'number': [],
+            'level': [],
             'strand': [],
             'version': [],
             'tags': []
@@ -269,9 +270,15 @@ class Gencode(Annotator):
                     curr_exon_stable_id, curr_exon_version = Gencode.get_stable_ensembl_id(id=str(curr_metadata_dict['exon_id'][0]))
                     curr_exon_number = int(curr_metadata_dict['exon_number'][0])
                     curr_exon_tags = [str(tag).replace('"', '') for tag in curr_metadata_dict['tag']]
+                    try:
+                        curr_level = int(curr_metadata_dict['level'][0])
+                    except:
+                        curr_level = ''
                     if curr_gene_id not in self.__gene_ids:
                         continue
                     if curr_transcript_id not in self.__transcript_ids:
+                        continue
+                    if len(self.levels) > 0 and curr_level not in self.levels:
                         continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
@@ -282,6 +289,7 @@ class Gencode(Annotator):
                     data['start'].append(curr_exon_start)
                     data['end'].append(curr_exon_end)
                     data['number'].append(curr_exon_number)
+                    data['level'].append(curr_level)
                     data['strand'].append(curr_exon_strand)
                     data['version'].append(curr_exon_version)
                     data['tags'].append(';'.join(curr_exon_tags))
@@ -296,7 +304,8 @@ class Gencode(Annotator):
             'gene_id': [],
             'transcript_id': [],
             'start_codon_start': [],
-            'start_codon_end': []
+            'start_codon_end': [],
+            'level': []
         }
         with open(self.gtf_file, 'r') as f:
             lines = f.readlines()
@@ -323,10 +332,17 @@ class Gencode(Annotator):
                         continue
                     if curr_transcript_id not in self.__transcript_ids:
                         continue
+                    try:
+                        curr_level = int(curr_metadata_dict['level'][0])
+                    except:
+                        curr_level = ''
+                    if len(self.levels) > 0 and curr_level not in self.levels:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['start_codon_start'].append(curr_start_codon_start)
                     data['start_codon_end'].append(curr_start_codon_end)
+                    data['level'].append(curr_level)
         self.df_start_codons = pd.DataFrame(data)
         logger.info('Loaded %i start codons in total.' % len(self.df_start_codons))
 
@@ -338,7 +354,8 @@ class Gencode(Annotator):
             'gene_id': [],
             'transcript_id': [],
             'stop_codon_start': [],
-            'stop_codon_end': []
+            'stop_codon_end': [],
+            'level': []
         }
         with open(self.gtf_file, 'r') as f:
             lines = f.readlines()
@@ -365,10 +382,17 @@ class Gencode(Annotator):
                         continue
                     if curr_transcript_id not in self.__transcript_ids:
                         continue
+                    try:
+                        curr_level = int(curr_metadata_dict['level'][0])
+                    except:
+                        curr_level = ''
+                    if len(self.levels) > 0 and curr_level not in self.levels:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['stop_codon_start'].append(curr_stop_codon_start)
                     data['stop_codon_end'].append(curr_stop_codon_end)
+                    data['level'].append(curr_level)
         self.df_stop_codons = pd.DataFrame(data)
         logger.info('Loaded %i stop codons in total.' % len(self.df_stop_codons))
 
@@ -381,7 +405,8 @@ class Gencode(Annotator):
             'transcript_id': [],
             'utr_start': [],
             'utr_end': [],
-            'utr_type': []
+            'utr_type': [],
+            'level': []
         }
         with open(self.gtf_file, 'r') as f:
             lines = f.readlines()
@@ -408,10 +433,17 @@ class Gencode(Annotator):
                         continue
                     if curr_transcript_id not in self.__transcript_ids:
                         continue
+                    try:
+                        curr_level = int(curr_metadata_dict['level'][0])
+                    except:
+                        curr_level = ''
+                    if len(self.levels) > 0 and curr_level not in self.levels:
+                        continue
                     data['gene_id'].append(curr_gene_id)
                     data['transcript_id'].append(curr_transcript_id)
                     data['utr_start'].append(curr_utr_start)
                     data['utr_end'].append(curr_utr_end)
+                    data['level'].append(curr_level)
                     if int(curr_metadata_dict['exon_number']) == 1:
                         data['utr_type'].append(GenomicRegionTypes.FIVE_PRIME_UTR)
                     else:
@@ -448,38 +480,93 @@ class Gencode(Annotator):
                 species=self.species
             )
             variant_call_annotations.append(variant_call_annotation)
-        else:
-            for _, row in df_genes_matched.iterrows():
+            return variant_call_annotations
+        for _, row in df_genes_matched.iterrows():
+            gene_id = row['gene_id']
+            gene_id_stable = row['gene_id_stable']
+            gene_name = row['name']
+            gene_strand = row['strand']
+            gene_type = row['type']
+            gene_version = row['version']
+            df_transcripts_matched = self.df_transcripts[
+                (self.df_transcripts['gene_id'] == row['gene_id'])
+            ]
+            for _, row2 in df_transcripts_matched.iterrows():
+                transcript_id = row2['transcript_id']
+                transcript_id_stable = row2['transcript_id_stable']
+                transcript_name = row2['name']
+                transcript_strand = row2['strand']
+                transcript_type = row2['type']
+                transcript_version = row2['version']
+                transcript_start = row2['start']
+                transcript_end = row2['end']
+                if transcript_start > position or transcript_end < position:
+                    continue
                 df_utrs_matched = self.df_utrs[
-                    (self.df_utrs['gene_id'] == row['gene_id']) &
+                    (self.df_utrs['gene_id'] == gene_id) &
+                    (self.df_utrs['transcript_id'] == transcript_id) &
                     (self.df_utrs['utr_start'] <= position) &
                     (self.df_utrs['utr_end'] >= position)
                 ]
-                if len(df_utrs_matched) > 0:
-                    region = df_utrs_matched['utr_type'].values[0]
-                else:
+                if len(df_utrs_matched) == 0:
                     df_exons_matched = self.df_exons[
                         (self.df_exons['gene_id'] == row['gene_id']) &
+                        (self.df_exons['transcript_id'] == transcript_id) &
                         (self.df_exons['start'] <= position) &
                         (self.df_exons['end'] >= position)
                     ]
-                    if len(df_exons_matched) > 0:
-                        region = GenomicRegionTypes.EXONIC
-                    else:
+                    exon_id = ''
+                    exon_id_stable = ''
+                    if len(df_exons_matched) == 0:
                         region = GenomicRegionTypes.INTRONIC
-                variant_call_annotation = VariantCallAnnotation(
-                    annotator=Annotators.GENCODE,
-                    annotator_version=self.version,
-                    gene_id=row['gene_id'],
-                    gene_id_stable=row['gene_id_stable'],
-                    gene_name=row['name'],
-                    gene_strand=row['strand'],
-                    gene_type=row['type'],
-                    gene_version=row['version'],
-                    region=region,
-                    species=self.species
-                )
-                variant_call_annotations.append(variant_call_annotation)
+                    else:
+                        assert (len(df_exons_matched) == 1)
+                        exon_id = df_exons_matched['exon_id'].values[0]
+                        exon_id_stable = df_exons_matched['exon_id_stable'].values[0]
+                        region = GenomicRegionTypes.EXONIC
+                    variant_call_annotation = VariantCallAnnotation(
+                        annotator=Annotators.GENCODE,
+                        annotator_version=self.version,
+                        gene_id=gene_id,
+                        gene_id_stable=gene_id_stable,
+                        gene_name=gene_name,
+                        gene_strand=gene_strand,
+                        gene_type=gene_type,
+                        gene_version=gene_version,
+                        transcript_id=transcript_id,
+                        transcript_id_stable=transcript_id_stable,
+                        transcript_name=transcript_name,
+                        transcript_strand=transcript_strand,
+                        transcript_type=transcript_type,
+                        transcript_version=transcript_version,
+                        exon_id=exon_id,
+                        exon_id_stable=exon_id_stable,
+                        region=region,
+                        species=self.species
+                    )
+                    variant_call_annotations.append(variant_call_annotation)
+                else:
+                    assert(len(df_utrs_matched) == 1)
+                    region = df_utrs_matched['utr_type'].values[0]
+                    variant_call_annotation = VariantCallAnnotation(
+                        annotator=Annotators.GENCODE,
+                        annotator_version=self.version,
+                        gene_id=gene_id,
+                        gene_id_stable=gene_id_stable,
+                        gene_name=gene_name,
+                        gene_strand=gene_strand,
+                        gene_type=gene_type,
+                        gene_version=gene_version,
+                        transcript_id=transcript_id,
+                        transcript_id_stable=transcript_id_stable,
+                        transcript_name=transcript_name,
+                        transcript_strand=transcript_strand,
+                        transcript_type=transcript_type,
+                        transcript_version=transcript_version,
+                        region=region,
+                        species=self.species
+                    )
+                    variant_call_annotations.append(variant_call_annotation)
         return variant_call_annotations
 
     def annotate_variant_call(

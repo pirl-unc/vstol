@@ -185,71 +185,43 @@ class VariantCall:
             attributes.append('%s=%s' % (key, val))
         data['attributes'] = [';'.join(attributes)]
 
-        pos_1_annotation_annotator = []
-        pos_1_annotation_annotator_version = []
-        pos_1_annotation_gene_id = []
-        pos_1_annotation_gene_id_stable = []
-        pos_1_annotation_gene_name = []
-        pos_1_annotation_gene_strand = []
-        pos_1_annotation_gene_type = []
-        pos_1_annotation_gene_version = []
-        pos_1_annotation_region = []
-        pos_1_annotation_species = []
-        for i in self.position_1_annotations:
-            pos_1_annotation_annotator.append(i.annotator)
-            pos_1_annotation_annotator_version.append(i.annotator_version)
-            pos_1_annotation_gene_id.append(i.gene_id)
-            pos_1_annotation_gene_id_stable.append(i.gene_id_stable)
-            pos_1_annotation_gene_name.append(i.gene_name)
-            pos_1_annotation_gene_strand.append(i.gene_strand)
-            pos_1_annotation_gene_type.append(i.gene_type)
-            pos_1_annotation_gene_version.append(i.gene_version)
-            pos_1_annotation_region.append(i.region)
-            pos_1_annotation_species.append(i.species)
+        data['position_1_annotation_annotator'] = [';'.join([i.annotator for i in self.position_1_annotations])]
+        data['position_1_annotation_annotator_version'] = [';'.join([i.annotator_version for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_id'] = [';'.join([i.gene_id for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_id_stable'] = [';'.join([i.gene_id_stable for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_name'] = [';'.join([i.gene_name for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_strand'] = [';'.join([i.gene_strand for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_type'] = [';'.join([i.gene_type for i in self.position_1_annotations])]
+        data['position_1_annotation_gene_version'] = [';'.join([i.gene_version for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_id'] = [';'.join([i.transcript_id for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_id_stable'] = [';'.join([i.transcript_id_stable for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_name'] = [';'.join([i.transcript_name for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_strand'] = [';'.join([i.transcript_strand for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_type'] = [';'.join([i.transcript_type for i in self.position_1_annotations])]
+        data['position_1_annotation_transcript_version'] = [';'.join([i.transcript_version for i in self.position_1_annotations])]
+        data['position_1_annotation_exon_id'] = [';'.join([i.exon_id for i in self.position_1_annotations])]
+        data['position_1_annotation_exon_id_stable'] = [';'.join([i.exon_id_stable for i in self.position_1_annotations])]
+        data['position_1_annotation_region'] = [';'.join([i.region for i in self.position_1_annotations])]
+        data['position_1_annotation_species'] = [';'.join([i.species for i in self.position_1_annotations])]
 
-        pos_2_annotation_annotator = []
-        pos_2_annotation_annotator_version = []
-        pos_2_annotation_gene_id = []
-        pos_2_annotation_gene_id_stable = []
-        pos_2_annotation_gene_name = []
-        pos_2_annotation_gene_strand = []
-        pos_2_annotation_gene_type = []
-        pos_2_annotation_gene_version = []
-        pos_2_annotation_region = []
-        pos_2_annotation_species = []
-        for i in self.position_2_annotations:
-            pos_2_annotation_annotator.append(i.annotator)
-            pos_2_annotation_annotator_version.append(i.annotator_version)
-            pos_2_annotation_gene_id.append(i.gene_id)
-            pos_2_annotation_gene_id_stable.append(i.gene_id_stable)
-            pos_2_annotation_gene_name.append(i.gene_name)
-            pos_2_annotation_gene_strand.append(i.gene_strand)
-            pos_2_annotation_gene_type.append(i.gene_type)
-            pos_2_annotation_gene_version.append(i.gene_version)
-            pos_2_annotation_region.append(i.region)
-            pos_2_annotation_species.append(i.species)
-
-        data['position_1_annotation_annotator'] = [';'.join(pos_1_annotation_annotator)]
-        data['position_1_annotation_annotator_version'] = [';'.join(pos_1_annotation_annotator_version)]
-        data['position_1_annotation_gene_id'] = [';'.join(pos_1_annotation_gene_id)]
-        data['position_1_annotation_gene_id_stable'] = [';'.join(pos_1_annotation_gene_id_stable)]
-        data['position_1_annotation_gene_name'] = [';'.join(pos_1_annotation_gene_name)]
-        data['position_1_annotation_gene_strand'] = [';'.join(pos_1_annotation_gene_strand)]
-        data['position_1_annotation_gene_type'] = [';'.join(pos_1_annotation_gene_type)]
-        data['position_1_annotation_gene_version'] = [';'.join(pos_1_annotation_gene_version)]
-        data['position_1_annotation_region'] = [';'.join(pos_1_annotation_region)]
-        data['position_1_annotation_species'] = [';'.join(pos_1_annotation_species)]
-
-        data['position_2_annotation_annotator'] = [';'.join(pos_2_annotation_annotator)]
-        data['position_2_annotation_annotator_version'] = [';'.join(pos_2_annotation_annotator_version)]
-        data['position_2_annotation_gene_id'] = [';'.join(pos_2_annotation_gene_id)]
-        data['position_2_annotation_gene_id_stable'] = [';'.join(pos_2_annotation_gene_id_stable)]
-        data['position_2_annotation_gene_name'] = [';'.join(pos_2_annotation_gene_name)]
-        data['position_2_annotation_gene_strand'] = [';'.join(pos_2_annotation_gene_strand)]
-        data['position_2_annotation_gene_type'] = [';'.join(pos_2_annotation_gene_type)]
-        data['position_2_annotation_gene_version'] = [';'.join(pos_2_annotation_gene_version)]
-        data['position_2_annotation_region'] = [';'.join(pos_2_annotation_region)]
-        data['position_2_annotation_species'] = [';'.join(pos_2_annotation_species)]
+        data['position_2_annotation_annotator'] = [';'.join([i.annotator for i in self.position_2_annotations])]
+        data['position_2_annotation_annotator_version'] = [';'.join([i.annotator_version for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_id'] = [';'.join([i.gene_id for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_id_stable'] = [';'.join([i.gene_id_stable for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_name'] = [';'.join([i.gene_name for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_strand'] = [';'.join([i.gene_strand for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_type'] = [';'.join([i.gene_type for i in self.position_2_annotations])]
+        data['position_2_annotation_gene_version'] = [';'.join([i.gene_version for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_id'] = [';'.join([i.transcript_id for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_id_stable'] = [';'.join([i.transcript_id_stable for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_name'] = [';'.join([i.transcript_name for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_strand'] = [';'.join([i.transcript_strand for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_type'] = [';'.join([i.transcript_type for i in self.position_2_annotations])]
+        data['position_2_annotation_transcript_version'] = [';'.join([i.transcript_version for i in self.position_2_annotations])]
+        data['position_2_annotation_exon_id'] = [';'.join([i.exon_id for i in self.position_2_annotations])]
+        data['position_2_annotation_exon_id_stable'] = [';'.join([i.exon_id_stable for i in self.position_2_annotations])]
+        data['position_2_annotation_region'] = [';'.join([i.region for i in self.position_2_annotations])]
+        data['position_2_annotation_species'] = [';'.join([i.species for i in self.position_2_annotations])]
 
         return data
 

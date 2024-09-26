@@ -25,6 +25,14 @@ pub struct VariantCallAnnotation {
     gene_strand: String,
     gene_type: String,
     gene_version: String,
+    transcript_id: String,
+    transcript_id_stable: String,
+    transcript_name: String,
+    transcript_strand: String,
+    transcript_type: String,
+    transcript_version: String,
+    exon_id: String,
+    exon_id_stable: String,
     region: String,
     species: String
 }
@@ -39,6 +47,14 @@ impl VariantCallAnnotation {
         gene_strand: String,
         gene_type: String,
         gene_version: String,
+        transcript_id: String,
+        transcript_id_stable: String,
+        transcript_name: String,
+        transcript_strand: String,
+        transcript_type: String,
+        transcript_version: String,
+        exon_id: String,
+        exon_id_stable: String,
         region: String,
         species: String) -> Self {
         VariantCallAnnotation {
@@ -50,6 +66,14 @@ impl VariantCallAnnotation {
             gene_strand: gene_strand,
             gene_type: gene_type,
             gene_version: gene_version,
+            transcript_id: transcript_id,
+            transcript_id_stable: transcript_id_stable,
+            transcript_name: transcript_name,
+            transcript_strand: transcript_strand,
+            transcript_type: transcript_type,
+            transcript_version: transcript_version,
+            exon_id: exon_id,
+            exon_id_stable: exon_id_stable,
             region: region,
             species: species
         }
@@ -67,6 +91,14 @@ impl Clone for VariantCallAnnotation {
             gene_strand: self.gene_strand.clone(),
             gene_type: self.gene_type.clone(),
             gene_version: self.gene_version.clone(),
+            transcript_id: self.transcript_id.clone(),
+            transcript_id_stable: self.transcript_id_stable.clone(),
+            transcript_name: self.transcript_name.clone(),
+            transcript_strand: self.transcript_strand.clone(),
+            transcript_type: self.transcript_type.clone(),
+            transcript_version: self.transcript_version.clone(),
+            exon_id: self.exon_id.clone(),
+            exon_id_stable: self.exon_id_stable.clone(),
             region: self.region.clone(),
             species: self.species.clone()
         }

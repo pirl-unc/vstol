@@ -30,12 +30,23 @@ class VariantCallAnnotation:
 
     # Optional fields
     annotator_version: str = field(default='')
+
     gene_id: str = field(default='')
     gene_id_stable: str = field(default='')
     gene_name: str = field(default='')
     gene_strand: str = field(default='')
     gene_type: str = field(default='')
     gene_version: str = field(default='')
+
+    transcript_id: str = field(default='')
+    transcript_id_stable: str = field(default='')
+    transcript_name: str = field(default='')
+    transcript_strand: str = field(default='')
+    transcript_type: str = field(default='')
+    transcript_version: str = field(default='')
+
+    exon_id: str = field(default='')
+    exon_id_stable: str = field(default='')
 
     def to_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame(self.to_dataframe_row())
@@ -50,6 +61,14 @@ class VariantCallAnnotation:
             'gene_strand': [self.gene_strand],
             'gene_type': [self.gene_type],
             'gene_version': [self.gene_version],
+            'transcript_id': [self.transcript_id],
+            'transcript_id_stable': [self.transcript_id_stable],
+            'transcript_name': [self.transcript_name],
+            'transcript_strand': [self.transcript_strand],
+            'transcript_type': [self.transcript_type],
+            'transcript_version': [self.transcript_version],
+            'exon_id': [self.exon_id],
+            'exon_id_stable': [self.exon_id_stable],
             'region': [self.region],
             'species': [self.species]
         }
@@ -64,6 +83,14 @@ class VariantCallAnnotation:
             'gene_strand': self.gene_strand,
             'gene_type': self.gene_type,
             'gene_version': self.gene_version,
+            'transcript_id': self.transcript_id,
+            'transcript_id_stable': self.transcript_id_stable,
+            'transcript_name': self.transcript_name,
+            'transcript_strand': self.transcript_strand,
+            'transcript_type': self.transcript_type,
+            'transcript_version': self.transcript_version,
+            'exon_id': self.exon_id,
+            'exon_id_stable': self.exon_id_stable,
             'region': self.region,
             'species': self.species
         }
