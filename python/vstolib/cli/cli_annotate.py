@@ -136,8 +136,8 @@ def add_cli_annotate_arg_parser(
         nargs='+',
         type=str,
         required=False,
-        default=['protein_coding'],
-        help="GENCODE gene types (default: protein_coding)."
+        default=[],
+        help="GENCODE gene types (default: [])."
              "This parameter must be supplied if "
              "--annotator is '%s'."
              % Annotators.GENCODE

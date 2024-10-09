@@ -38,7 +38,7 @@ def test_annotate_gencode():
     for v in variation_annotations:
         assert(v.region == GenomicRegionTypes.INTRONIC)
 
-   # Intergenic
+    # Intergenic
     variation_annotations = gencode.annotate_position(
         chromosome='chr1',
         position=1329900

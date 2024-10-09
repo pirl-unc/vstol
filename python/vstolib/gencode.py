@@ -567,6 +567,14 @@ class Gencode(Annotator):
                         species=self.species
                     )
                     variant_call_annotations.append(variant_call_annotation)
+        if len(variant_call_annotations) == 0:
+            variant_call_annotation = VariantCallAnnotation(
+                annotator=Annotators.GENCODE,
+                annotator_version=self.version,
+                region=GenomicRegionTypes.INTERGENIC,
+                species=self.species
+            )
+            variant_call_annotations.append(variant_call_annotation)
         return variant_call_annotations
 
     def annotate_variant_call(
