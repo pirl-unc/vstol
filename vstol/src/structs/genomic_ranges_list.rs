@@ -14,7 +14,7 @@
 extern crate serde;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
-use crate::genomic_range::GenomicRange;
+use crate::structs::genomic_range::GenomicRange;
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,7 +23,7 @@ pub struct GenomicRangesList {
 }
 
 impl GenomicRangesList {
-    fn new() -> Self {
+    pub fn new() -> Self {
         GenomicRangesList {
             genomic_ranges_map: HashMap::new()
         }
@@ -47,15 +47,18 @@ impl GenomicRangesList {
     pub fn find_overlaps(&self, chromosome: String, start: isize, end: isize) -> Vec<GenomicRange> {
         let mut overlaps: Vec<GenomicRange> = Vec::new();
         let key: String = chromosome.clone();
-        for genomic_ranges in self.genomic_ranges_map.get(&key) {
+
+        // Use if let to check if the key exists and unpack the Option
+        if let Some(genomic_ranges) = self.genomic_ranges_map.get(&key) {
             for genomic_range in genomic_ranges {
-                let mut genomic_range_ = genomic_range.clone();
+                let genomic_range_ = genomic_range.clone();
                 if genomic_range_.overlaps(chromosome.clone(), start, end) {
                     overlaps.push(genomic_range_);
                 }
             }
         }
-        return overlaps;
+
+        overlaps
     }
 }
 

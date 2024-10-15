@@ -1,0 +1,8 @@
+mod unit_tests_variants_list_create;
+mod unit_tests_variants_list_merge;
+mod unit_tests_variants_list_filter;
+mod unit_tests_variants_list_sort;
+mod unit_tests_variants_list_compare;
+mod unit_tests_variants_list_intersect;
+mod unit_tests_variants_list_subtract;
+mod unit_tests_variants_list_overlap;

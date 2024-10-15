@@ -8,8 +8,7 @@ vstol filter \
   --filter 'case all alternate_allele_read_count >= 3' \
   --filter 'case all chromosome_1 in ["chr1","chr2","chr3"]' \
   --filter 'case all chromosome_2 in ["chr1","chr2","chr3"]' \
-  --reference-genome-fasta-file hg38.fa \
-  --homopolymer-length 20 \
+  --reference-genome-fasta-file ../test/data/hg38.fa \
+  --homopolymer-length 10 \
   --excluded-regions-tsv-file ../test/data/hg38_ucsc_gap_table.tsv \
-  --excluded-regions-padding 100000 \
   --num-threads 1

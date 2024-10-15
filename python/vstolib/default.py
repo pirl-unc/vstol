@@ -12,19 +12,11 @@
 
 
 """
-The purpose of this python3 script is to define Velo default parameters.
+The purpose of this python3 script is to define VSTOL default parameters.
 """
 
 
-RANDOM_SEED = 1
-NUM_THREADS = 4
-
-
-"""annotate"""
-ANNOTATE_GZIP = 'no'
-
-# ANNOVAR protocol and corresponding operation
-ANNOTATE_ANNOVAR_PROTOCOL_OPERATION = {
+ANNOVAR_PROTOCOL_OPERATION = {     # ANNOVAR protocol and corresponding operation
     'refGene': 'g',
     'exac03': 'f',
     '1000g2015aug_eur': 'f',
@@ -35,60 +27,16 @@ ANNOTATE_ANNOVAR_PROTOCOL_OPERATION = {
     'avsnp150': 'f',
     'dbnsfp42c': 'f'
 }
+GZIP = 'no'
+HOMOPOLYMER_LENGTH = 10
+MATCH_ALL_BREAKPOINTS = 'yes'
+MATCH_VARIANT_TYPES = 'yes'
+MAX_NEIGHBOR_DISTANCE = 100
+MIN_DEL_SIZE_OVERLAP = 0.5
+MIN_INS_SIZE_OVERLAP = 0.5
+NUM_THREADS = 4
+RANDOM_SEED = 1
+WINDOW = 10000
 
-
-"""collapse"""
-COLLAPSE_GZIP = 'no'
-
-
-"""diff"""
-DIFF_MAX_NEIGHBOR_DISTANCE = 1000
-DIFF_MATCH_ALL_BREAKPOINTS = 'no'
-DIFF_MATCH_VARIANT_TYPES = 'no'
-DIFF_GZIP = 'no'
-
-
-"""filter"""
-# Padding for an excluded region.
-# The pad is applied to upstream and downstream of a gapped genomic region.
-FILTER_EXCLUDED_REGION_PADDING = 100000
-FILTER_GZIP = 'no'
-
-# Homopolymer length.
-FILTER_HOMOPOLYMER_LENGTH = 20
-
-
-"""intersect"""
-# Maximum neighbor distance (bases).
-INTERSECT_MAX_NEIGHBOR_DISTANCE = 10
-INTERSECT_MATCH_ALL_BREAKPOINTS = 'yes'
-INTERSECT_MATCH_VARIANT_TYPES = 'yes'
-INTERSECT_GZIP = 'no'
-
-
-
-"""merge"""
-# Maximum neighbor distance (bases).
-MERGE_MAX_NEIGHBOR_DISTANCE = 10
-MERGE_MATCH_ALL_BREAKPOINTS = 'yes'
-MERGE_MATCH_VARIANT_TYPES = 'yes'
-MERGE_GZIP = 'no'
-
-
-"""overlap"""
-OVERLAP_PADDING = 0
-OVERLAP_GZIP = 'no'
-
-
-"""score"""
-SCORE_WINDOW = 10000
-SCORE_GZIP = 'no'
-
-
-"""tsv2vcf"""
-TSV2VCF_GZIP = 'no'
-
-"""vcf2tsv"""
-VCF2TSV_GZIP = 'no'
 
 

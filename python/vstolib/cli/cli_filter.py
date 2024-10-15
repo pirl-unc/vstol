@@ -118,23 +118,14 @@ def add_cli_filter_arg_parser(
              "Expected headers: 'chromosome', 'start', 'end'."
     )
     parser_optional.add_argument(
-        "--excluded-regions-padding",
-        dest="excluded_regions_padding",
-        type=int,
-        required=False,
-        default=FILTER_EXCLUDED_REGION_PADDING,
-        help="Number of bases to pad each region in '--excluded-regions-tsv-files' (default: %i)."
-             % FILTER_EXCLUDED_REGION_PADDING
-    )
-    parser_optional.add_argument(
         "--homopolymer-length",
         dest="homopolymer_length",
         type=int,
         required=False,
-        default=FILTER_HOMOPOLYMER_LENGTH,
+        default=HOMOPOLYMER_LENGTH,
         help="Variant calls with a homopolymer of this length in either breakpoint will be filtered out."
              "(default: %i)."
-             % FILTER_HOMOPOLYMER_LENGTH
+             % HOMOPOLYMER_LENGTH
     )
     parser_optional.add_argument(
         "--num-threads",
@@ -149,9 +140,9 @@ def add_cli_filter_arg_parser(
         dest="gzip",
         type=str2bool,
         required=False,
-        default=FILTER_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % FILTER_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='filter')
@@ -172,7 +163,6 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
                     filter
                     reference_genome_fasta_file
                     excluded_regions_tsv_file
-                    excluded_regions_padding
                     excluded_variants_tsv_file
                     excluded_variants_padding
                     homopolymer_length
@@ -226,7 +216,6 @@ def run_cli_filter_from_parsed_args(args: argparse.Namespace):
         _, variants_list_excluded_regions_rejected = filter_excluded_regions(
             variants_list=variants_list,
             excluded_regions_list=excluded_regions_list,
-            excluded_regions_padding=args.excluded_regions_padding,
             num_threads=args.num_threads
         )
     else:

@@ -1,0 +1,23 @@
+[package]
+name = "vstol"
+version = "0.3.7"
+edition = "2021"
+
+[dependencies]
+bam = "0.1.4"
+chrono = "0.4"
+env_logger = "0.9"
+exitcode = "1.1.2"
+lazy_static = "1.4.0"
+log = "0.4"
+rayon = "1.8.0"
+regex = "1.7.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+debug = 0
+incremental = true

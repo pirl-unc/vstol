@@ -23,8 +23,8 @@ import multiprocessing as mp
 from collections import defaultdict, OrderedDict
 from dataclasses import dataclass, field
 from functools import partial
-from vstolib import vstolibrs
 from typing import Dict, List, Tuple, Type
+from vstolib import vstolibrs
 from .genomic_range import GenomicRange
 from .genomic_ranges_list import GenomicRangesList
 from .logging import get_logger
@@ -78,54 +78,6 @@ class VariantsList:
         curr_len = len(self.variants)
         self._variants_dict[variant.id] = curr_len
         self.variants.append(variant)
-
-    def diff(
-            self,
-            variants_list: 'VariantsList',
-            num_threads:int,
-            max_neighbor_distance: int,
-            match_all_breakpoints: bool,
-            match_variant_types: bool
-    ) -> 'VariantsList':
-        """
-        Diff another variants list.
-
-        Parameters:
-            variants_list:              VariantsList object.
-            num_threads:                :   Number of threads.
-            max_neighbor_distance:          Maximum neighbor distance.
-            match_all_breakpoints       :   If True, for two VariantCall objects to be considered
-                                            intersecting, all breakpoints must match or be near each other.
-            match_variant_types         :   If True, for two VariantCall objects to be considered
-                                            intersecting, their variant types must match.
-
-        Returns:
-            VariantsList
-        """
-        # Step 1. Identify intersecting variant call IDs
-        variants_list_intersecting = VariantsList.intersect(
-            variants_lists=[self, variants_list],
-            max_neighbor_distance=max_neighbor_distance,
-            num_threads=num_threads,
-            match_all_breakpoints=match_all_breakpoints,
-            match_variant_types=match_variant_types
-        )
-        rejected_variant_call_ids = set()
-        for variant in variants_list_intersecting.variants:
-            for variant_call in variant.variant_calls:
-                rejected_variant_call_ids.add(variant_call.id)
-
-        # Step 2. Prepare private VariantsList to output
-        variants_list_diff = VariantsList()
-        for variant in self.variants:
-            variant_ = Variant(id=variant.id)
-            for variant_call in variant.variant_calls:
-                if variant_call.id not in rejected_variant_call_ids:
-                    variant_.add_variant_call(variant_call)
-            if variant_.num_variant_calls > 0:
-                variants_list_diff.add_variant(variant=variant_)
-
-        return variants_list_diff
 
     def filter(
             self,
@@ -186,7 +138,6 @@ class VariantsList:
     def overlap(
             self,
             genomic_ranges_list: GenomicRangesList,
-            padding: int,
             num_threads: int
     ) -> List[Tuple[str, List[GenomicRange]]]:
         """
@@ -194,7 +145,6 @@ class VariantsList:
 
         Parameters:
             genomic_ranges_list         :   GenomicRangesList object.
-            padding                     :   Padding to apply to GenomicRange start and end.
             num_threads                 :   Number of threads.
 
         Returns:
@@ -207,11 +157,10 @@ class VariantsList:
         genomic_ranges_list_serialized = json.dumps(genomic_ranges_list.to_dict())
 
         # Step 3. Identify Variant objects that overlap GenomicRange objects
-        nearby_variant_call_ids = vstolibrs.find_overlapping_variant_calls(
+        nearby_variant_call_ids = vstolibrs.overlap_variant_calls(
             variants_list_serialized,
             genomic_ranges_list_serialized,
-            num_threads,
-            padding
+            num_threads
         )
 
         # Step 4. Get Variant and GenomicRange objects
@@ -223,6 +172,51 @@ class VariantsList:
                 genomic_ranges.append(genomic_range)
             overlapping_variant_call_ids.append((variant_call_id, genomic_ranges))
         return overlapping_variant_call_ids
+
+    def subtract(
+            self,
+            variants_list: 'VariantsList',
+            num_threads: int,
+            max_neighbor_distance: int,
+            match_all_breakpoints: bool,
+            match_variant_types: bool,
+            min_ins_size_overlap: float,
+            min_del_size_overlap: float
+    ) -> 'VariantsList':
+        """
+        Subtract another variants list.
+
+        Parameters:
+            variants_list               :   VariantsList object.
+            num_threads                 :   Number of threads.
+            max_neighbor_distance:          Maximum neighbor distance.
+            match_all_breakpoints       :   If True, for two VariantCall objects to be considered
+                                            intersecting, all breakpoints must match or be near each other.
+            match_variant_types         :   If True, for two VariantCall objects to be considered
+                                            intersecting, their variant types must match.
+            min_ins_size_overlap        :   Minimum insertion size overlap.
+            min_del_size_overlap        :   Minimum deletion size overlap.
+
+        Returns:
+            VariantsList
+        """
+        # Step 1. Serialize VariantsList objects
+        vl_a = json.dumps(self.to_dict())
+        vl_b = json.dumps(variants_list.to_dict())
+
+        # Step 2. Subtract B from A.
+        json_str = vstolibrs.subtract_variants_list(
+            vl_a,
+            vl_b,
+            num_threads,
+            max_neighbor_distance,
+            match_all_breakpoints,
+            match_variant_types,
+            min_ins_size_overlap,
+            min_del_size_overlap
+        )
+
+        return VariantsList.load_serialized_json(json_str=json_str)
 
     def to_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame(self.to_dataframe_row())
@@ -311,6 +305,65 @@ class VariantsList:
         return data
 
     @staticmethod
+    def compare(
+            a: 'VariantsList',
+            b: 'VariantsList',
+            num_threads: int,
+            max_neighbor_distance: int,
+            match_all_breakpoints: bool,
+            match_variant_types: bool,
+            min_ins_size_overlap: float,
+            min_del_size_overlap: float
+    ) -> Tuple['VariantsList','VariantsList','VariantsList']:
+        """
+        Compare two VariantsList objects and return three VariantsList objects: shared, specific to a, and specific to b.
+
+        Parameters:
+            a                       :   VariantsList object.
+            b                       :   VariantsList object.
+            num_threads             :   Number of threads.
+            max_neighbor_distance   :   Maximum neighbor distance.
+                                        This value is used to decide if
+                                        a VariantCall should be appended to an existing Variant.
+                                        If there exists a VariantCall in a given Variant
+                                        where the distances to both position_1 and position_2
+                                        are equal to or less than max_neighbor_distance
+                                        to position_1 and position_2 of the specified VariantCall,
+                                        respectively, then the specified VariantCall is
+                                        appended to the Variant. If such VariantCall
+                                        is not identified, then a new Variant is constructed
+                                        and added to self.variants.
+            match_all_breakpoints   :   If True, for two VariantCall objects to be considered
+                                        intersecting, all breakpoints must match or be near each other.
+            match_variant_types     :   If True, for two VariantCall objects to be considered
+                                        intersecting, their variant types must match.
+            min_ins_size_overlap    :   Minimum insertion size overlap.
+            min_del_size_overlap    :   Minimum deletion size overlap.
+
+        Returns:
+            Tuples[shared VariantList, a-specific VariantList, b-specific VariantList]
+        """
+        # Step 1. Serialize all VariantsList objects
+        variants_lists_serialized = []
+        variants_lists_serialized.append(json.dumps(a.to_dict()))
+        variants_lists_serialized.append(json.dumps(b.to_dict()))
+
+        # Step 2. Compare VariantsList objects
+        json_str = vstolibrs.compare_variants_lists(
+            variants_lists_serialized,
+            num_threads,
+            max_neighbor_distance,
+            match_all_breakpoints,
+            match_variant_types,
+            min_ins_size_overlap,
+            min_del_size_overlap
+        )
+
+        variants_lists = VariantsList.load_serialized_json_list(json_str=json_str)
+        assert(len(variants_lists) == 3)
+        return variants_lists[0], variants_lists[1], variants_lists[2]
+
+    @staticmethod
     def find_breakpoint_flanking_sequences_worker(
             reference_genome_fasta_file: str,
             length: int,
@@ -336,11 +389,15 @@ class VariantsList:
         return flanking_sequences
 
     @staticmethod
-    def intersect(variants_lists: List['VariantsList'],
-                  num_threads: int,
-                  max_neighbor_distance: int,
-                  match_all_breakpoints: bool,
-                  match_variant_types: bool) -> 'VariantsList':
+    def intersect(
+            variants_lists: List['VariantsList'],
+            num_threads: int,
+            max_neighbor_distance: int,
+            match_all_breakpoints: bool,
+            match_variant_types: bool,
+            min_ins_size_overlap: float,
+            min_del_size_overlap: float
+    ) -> 'VariantsList':
         """
         Return an intersecting VariantsList.
 
@@ -362,6 +419,8 @@ class VariantsList:
                                                 intersecting, all breakpoints must match or be near each other.
             match_variant_types             :   If True, for two VariantCall objects to be considered
                                                 intersecting, their variant types must match.
+            min_ins_size_overlap            :   Minimum insertion size overlap.
+            min_del_size_overlap            :   Minimum deletion size overlap.
 
         Returns:
             VariantList
@@ -377,7 +436,9 @@ class VariantsList:
             num_threads,
             max_neighbor_distance,
             match_all_breakpoints,
-            match_variant_types
+            match_variant_types,
+            min_ins_size_overlap,
+            min_del_size_overlap
         )
 
         return VariantsList.load_serialized_json(json_str=json_str)
@@ -669,11 +730,50 @@ class VariantsList:
         return variants_list
 
     @staticmethod
-    def merge(variants_lists: List['VariantsList'],
-              num_threads: int,
-              max_neighbor_distance: int,
-              match_all_breakpoints: bool,
-              match_variant_types: bool) -> 'VariantsList':
+    def load_serialized_json_list(json_str: str) -> List['VariantsList']:
+        """
+        Load a list of VariantsList objects from a serialized JSON string.
+
+        Parameters:
+            json_str        :   JSON string.
+
+        Returns:
+            List[VariantsList]
+        """
+        variants_lists = []
+        for variants_list_dict in json.loads(json_str):
+            variants_list = VariantsList()
+            for variant_dict in variants_list_dict['variants']:
+                variant = Variant(id=variant_dict['id'])
+                for variant_call_dict in variant_dict['variant_calls']:
+                    position_1_annotations_dict = variant_call_dict['position_1_annotations']
+                    position_2_annotations_dict = variant_call_dict['position_2_annotations']
+                    del variant_call_dict['position_1_annotations']
+                    del variant_call_dict['position_2_annotations']
+                    variant_call = VariantCall(**variant_call_dict)
+                    for position_1_annotation_dict in position_1_annotations_dict:
+                        variant_call.add_position_1_annotation(
+                            variant_call_annotation=VariantCallAnnotation(**position_1_annotation_dict)
+                        )
+                    for position_2_annotation_dict in position_2_annotations_dict:
+                        variant_call.add_position_2_annotation(
+                            variant_call_annotation=VariantCallAnnotation(**position_2_annotation_dict)
+                        )
+                    variant.add_variant_call(variant_call=variant_call)
+                variants_list.add_variant(variant=variant)
+            variants_lists.append(variants_list)
+        return variants_lists
+
+    @staticmethod
+    def merge(
+            variants_lists: List['VariantsList'],
+            num_threads: int,
+            max_neighbor_distance: int,
+            match_all_breakpoints: bool,
+            match_variant_types: bool,
+            min_ins_size_overlap: float,
+            min_del_size_overlap: float
+    ) -> 'VariantsList':
         """
         Merge a list of VariantsList objects and return a VariantsList object.
 
@@ -710,7 +810,9 @@ class VariantsList:
             num_threads,
             max_neighbor_distance,
             match_all_breakpoints,
-            match_variant_types
+            match_variant_types,
+            min_ins_size_overlap,
+            min_del_size_overlap
         )
 
         return VariantsList.load_serialized_json(json_str=json_str)

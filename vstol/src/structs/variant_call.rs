@@ -13,11 +13,11 @@
 
 extern crate serde;
 use serde::{Serialize, Deserialize};
-use std::collections::HashMap;
-use crate::variant_call_annotation::VariantCallAnnotation;
+use std::collections::{HashMap, HashSet};
+use crate::structs::variant_call_annotation::VariantCallAnnotation;
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Serialize, Deserialize)]
 pub struct VariantCall {
     pub id: String,
     pub sample_id: String,
@@ -43,12 +43,13 @@ pub struct VariantCall {
     pub alternate_allele_read_count: isize,
     pub total_read_count: isize,
     pub alternate_allele_fraction: f64,
-    pub alternate_allele_read_ids: Vec<String>,
-    pub variant_sequences: Vec<String>,
+    pub alternate_allele_read_ids: HashSet<String>,
+    pub variant_sequences: HashSet<String>,
+    pub average_alignment_score_window: isize,
     pub position_1_average_alignment_score: f64,
     pub position_2_average_alignment_score: f64,
     pub attributes: HashMap<String, String>,
-    pub tags: Vec<String>,
+    pub tags: HashSet<String>,
     pub position_1_annotations: Vec<VariantCallAnnotation>,
     pub position_2_annotations: Vec<VariantCallAnnotation>
 }
@@ -79,6 +80,7 @@ impl VariantCall {
         alternate_allele_read_count: isize,
         total_read_count: isize,
         alternate_allele_fraction: f64,
+        average_alignment_score_window: isize,
         position_1_average_alignment_score: f64,
         position_2_average_alignment_score: f64) -> Self {
         Self {
@@ -106,19 +108,20 @@ impl VariantCall {
             alternate_allele_read_count: alternate_allele_read_count,
             total_read_count: total_read_count,
             alternate_allele_fraction: alternate_allele_fraction,
+            average_alignment_score_window: average_alignment_score_window,
             position_1_average_alignment_score: position_1_average_alignment_score,
             position_2_average_alignment_score: position_2_average_alignment_score,
-            alternate_allele_read_ids: Vec::new(),
-            variant_sequences: Vec::new(),
+            alternate_allele_read_ids: HashSet::new(),
+            variant_sequences: HashSet::new(),
             attributes: HashMap::new(),
-            tags: Vec::new(),
+            tags: HashSet::new(),
             position_1_annotations: Vec::new(),
             position_2_annotations: Vec::new()
         }
     }
 
     pub fn add_alternate_allele_read_id(&mut self, alternate_allele_read_id: String) {
-        self.alternate_allele_read_ids.push(alternate_allele_read_id);
+        self.alternate_allele_read_ids.insert(alternate_allele_read_id);
     }
 
     pub fn add_position_1_annotation(&mut self, variant_call_annotation: VariantCallAnnotation) {
@@ -130,7 +133,7 @@ impl VariantCall {
     }
 
     pub fn add_tag(&mut self, tag: String) {
-        self.tags.push(tag);
+        self.tags.insert(tag);
     }
 
     pub fn add_attribute(&mut self, key: String, value: String) {
@@ -138,7 +141,7 @@ impl VariantCall {
     }
 
     pub fn add_variant_sequence(&mut self, variant_sequence: String) {
-        self.variant_sequences.push(variant_sequence);
+        self.variant_sequences.insert(variant_sequence);
     }
 }
 
@@ -181,6 +184,7 @@ impl Clone for VariantCall {
             alternate_allele_read_count: self.alternate_allele_read_count,
             total_read_count: self.total_read_count,
             alternate_allele_fraction: self.alternate_allele_fraction,
+            average_alignment_score_window: self.average_alignment_score_window,
             position_1_average_alignment_score: self.position_1_average_alignment_score,
             position_2_average_alignment_score: self.position_2_average_alignment_score,
             alternate_allele_read_ids: self.alternate_allele_read_ids.clone(),

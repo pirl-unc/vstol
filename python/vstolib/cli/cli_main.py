@@ -21,12 +21,13 @@ import vstolib
 from typing import Tuple
 from .cli_annotate import *
 from .cli_collapse import *
-from .cli_diff import *
+from .cli_compare import *
 from .cli_filter import *
 from .cli_intersect import *
 from .cli_merge import *
 from .cli_overlap import *
 from .cli_score import *
+from .cli_subtract import *
 from .cli_tsv2vcf import *
 from .cli_vcf2tsv import *
 from .cli_visualize import *
@@ -60,12 +61,13 @@ def run():
     arg_parser, sub_parsers = init_arg_parser()
     sub_parsers = add_cli_annotate_arg_parser(sub_parsers=sub_parsers)     # annotate
     sub_parsers = add_cli_collapse_arg_parser(sub_parsers=sub_parsers)     # collapse
-    sub_parsers = add_cli_diff_arg_parser(sub_parsers=sub_parsers)         # diff
+    sub_parsers = add_cli_compare_arg_parser(sub_parsers=sub_parsers)      # compare
     sub_parsers = add_cli_filter_arg_parser(sub_parsers=sub_parsers)       # filter
     sub_parsers = add_cli_intersect_arg_parser(sub_parsers=sub_parsers)    # intersect
     sub_parsers = add_cli_merge_arg_parser(sub_parsers=sub_parsers)        # merge
     sub_parsers = add_cli_overlap_arg_parser(sub_parsers=sub_parsers)      # overlap
     sub_parsers = add_cli_score_arg_parser(sub_parsers=sub_parsers)        # score
+    sub_parsers = add_cli_subtract_arg_parser(sub_parsers=sub_parsers)     # subtract
     sub_parsers = add_cli_tsv2vcf_arg_parser(sub_parsers=sub_parsers)      # tsv2vcf
     sub_parsers = add_cli_vcf2tsv_arg_parser(sub_parsers=sub_parsers)      # vcf2tsv
     sub_parsers = add_cli_visuzlize_arg_parser(sub_parsers=sub_parsers)    # visualize
@@ -76,8 +78,6 @@ def run():
         run_cli_annotate_from_parsed_args(args=args)
     elif args.which == 'collapse':
         run_cli_collapse_from_parsed_args(args=args)
-    elif args.which == 'diff':
-        run_cli_diff_from_parsed_args(args=args)
     elif args.which == 'filter':
         run_cli_filter_from_parsed_args(args=args)
     elif args.which == 'intersect':
@@ -88,6 +88,8 @@ def run():
         run_cli_overlap_from_parsed_args(args=args)
     elif args.which == 'score':
         run_cli_score_from_parsed_args(args=args)
+    elif args.which == 'subtract':
+        run_cli_subtract_from_parsed_args(args=args)
     elif args.which == 'tsv2vcf':
         run_cli_tsv2vcf_from_parsed_args(args=args)
     elif args.which == 'vcf2tsv':

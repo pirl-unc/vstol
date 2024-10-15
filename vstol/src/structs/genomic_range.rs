@@ -24,11 +24,11 @@ pub struct GenomicRange {
 
 impl GenomicRange {
     pub fn new(
-        chromosome: String,
+        chromosome: &str,
         start: isize,
         end: isize) -> Self {
         Self {
-            chromosome: chromosome,
+            chromosome: chromosome.to_string(),
             start: start,
             end: end
         }
@@ -36,15 +36,15 @@ impl GenomicRange {
 
     pub fn id(&self) -> String {
         let id = format!("{}:{}-{}", self.chromosome, self.start, self.end);
-        return id;
+        id
     }
 
     pub fn overlaps(&self, chromosome: String, start: isize, end: isize) -> bool {
         // De Morgan's law on checking for non-overlapping regions
         if chromosome == self.chromosome && start <= self.end && end >= self.start {
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 }

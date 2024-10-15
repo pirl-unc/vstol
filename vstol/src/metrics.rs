@@ -13,8 +13,7 @@
 
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
-use bam::IndexedReader;
-use std::collections::HashMap;
+use std::collections::{HashMap};
 
 
 pub fn calculate_average_alignment_scores(

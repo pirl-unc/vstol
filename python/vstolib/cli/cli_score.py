@@ -77,19 +77,19 @@ def add_cli_score_arg_parser(
         dest="window",
         type=int,
         required=False,
-        default=SCORE_WINDOW,
+        default=WINDOW,
         help="Breakpoint window (default: %i). The average alignment score will be calculated "
              "with reads mapped upstream and downstream of this window from each breakpoint."
-             % SCORE_WINDOW
+             % WINDOW
     )
     parser_optional.add_argument(
         "--gzip",
         dest="gzip",
         type=str2bool,
         required=False,
-        default=SCORE_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % SCORE_GZIP
+             % GZIP
     )
     parser_optional.add_argument(
         "--num-threads",

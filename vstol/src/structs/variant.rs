@@ -14,9 +14,8 @@
 extern crate exitcode;
 extern crate serde;
 use serde::{Serialize, Deserialize};
-use std::process;
-use crate::variant_call::VariantCall;
-use crate::utilities;
+use crate::common::{calculate_max,calculate_mean,calculate_median,calculate_min};
+use crate::structs::variant_call::VariantCall;
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -61,7 +60,7 @@ impl Variant {
             };
             return value;
         }).collect();
-        return utilities::calculate_mean(values);
+        calculate_mean(values)
     }
 
     pub fn get_median(&self, attribute: String) -> f64 {
@@ -79,7 +78,7 @@ impl Variant {
             };
             return value;
         }).collect();
-        return utilities::calculate_median(values);
+        calculate_median(values)
     }
 
     pub fn get_max(&self, attribute: String) -> f64 {
@@ -97,7 +96,7 @@ impl Variant {
             };
             return value;
         }).collect();
-        return utilities::calculate_max(values);
+        calculate_max(values)
     }
 
     pub fn get_min(&self, attribute: String) -> f64 {
@@ -115,7 +114,7 @@ impl Variant {
             };
             return value;
         }).collect();
-        return utilities::calculate_min(values);
+        calculate_min(values)
     }
 }
 

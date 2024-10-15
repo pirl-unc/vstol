@@ -101,9 +101,9 @@ def add_cli_vcf2tsv_arg_parser(
         dest="gzip",
         type=str2bool,
         required=False,
-        default=VCF2TSV_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % VCF2TSV_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='vcf2tsv')

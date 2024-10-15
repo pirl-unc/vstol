@@ -257,31 +257,31 @@ def add_cli_annotate_arg_parser(
         dest="annovar_protocol",
         type=str,
         required=False,
-        default=','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.keys())),
+        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())),
         help="ANNOVAR protocol (e.g. 'refGene,exac03'). "
              "This parameter must be supplied if "
              "--annotator is '%s' (default: '%s')."
-             % (Annotators.ANNOVAR, ','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.keys())))
+             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.keys())))
     )
     parser_optional.add_argument(
         "--annovar-operation",
         dest="annovar_operation",
         type=str,
         required=False,
-        default=','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.values())),
+        default=','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())),
         help="ANNOVAR protocol (e.g. 'g,f'). "
              "This parameter must be supplied if "
              "--annotator is '%s' (default: '%s')."
-             % (Annotators.ANNOVAR, ','.join(list(ANNOTATE_ANNOVAR_PROTOCOL_OPERATION.values())))
+             % (Annotators.ANNOVAR, ','.join(list(ANNOVAR_PROTOCOL_OPERATION.values())))
     )
     parser_optional.add_argument(
         "--gzip",
         dest="gzip",
         type=str2bool,
         required=False,
-        default=ANNOTATE_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % ANNOTATE_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='annotate')

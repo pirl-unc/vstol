@@ -53,6 +53,6 @@ lazy_static! {
         map.insert(TRANSLOCATION, BREAKPOINT.to_string() + ";" + INVERSION + ";" + TRANSLOCATION);
         map.insert(BREAKPOINT, BREAKPOINT.to_string() + ";" + INVERSION + ";" + TRANSLOCATION);
         map.insert(COMPLEX_SV, COMPLEX_SV.to_string());
-        return map;
+        map
     };
 }

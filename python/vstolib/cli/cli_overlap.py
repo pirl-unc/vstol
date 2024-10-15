@@ -85,22 +85,13 @@ def add_cli_overlap_arg_parser(
         help="Number of threads (default: %i)." % NUM_THREADS
     )
     parser_optional.add_argument(
-        "--padding",
-        dest="padding",
-        type=int,
-        required=False,
-        default=OVERLAP_PADDING,
-        help="Padding to apply to each breakpoint (default: %i)."
-             % OVERLAP_PADDING
-    )
-    parser_optional.add_argument(
         "--gzip",
         dest="gzip",
         type=str2bool,
         required=False,
-        default=OVERLAP_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % OVERLAP_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='overlap')
@@ -117,7 +108,6 @@ def run_cli_overlap_from_parsed_args(args: argparse.Namespace):
                     ranges_tsv_file
                     output_tsv_file
                     num_threads
-                    padding
                     gzip
     """
     # Step 1. Load variants list
@@ -135,7 +125,6 @@ def run_cli_overlap_from_parsed_args(args: argparse.Namespace):
     variants_list = overlap(
         variants_list=variants_list,
         genomic_ranges_list=genomic_ranges_list,
-        padding=args.padding,
         num_threads=args.num_threads
     )
     logger.info("Finished identifying overlaps")

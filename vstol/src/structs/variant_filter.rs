@@ -12,12 +12,11 @@
 
 
 extern crate exitcode;
-use pyo3::prelude::*;
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 use crate::constants;
-use crate::variant_call::VariantCall;
-use crate::variant::Variant;
+use crate::structs::variant_call::VariantCall;
+use crate::structs::variant::Variant;
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -108,15 +107,15 @@ impl VariantFilter {
                 Value::String(filter_value) => {
                     if self.operator == constants::OPERATOR_EQUAL_TO {
                         if attribute_value == filter_value {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
                         if attribute_value != filter_value {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else {
                         eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
@@ -127,20 +126,20 @@ impl VariantFilter {
                     if self.operator == constants::OPERATOR_IN {
                         let attribute_value_as_value = Value::String(attribute_value.to_string());
                         if filter_value.contains(&attribute_value_as_value) {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else {
                         eprintln!("{}", format!("Unsupported operator for string array: {}", self.operator));
                         std::process::exit(exitcode::DATAERR);
                     }
                 }
-                Value::Bool(filter_value) => {
+                Value::Bool(_) => {
                     eprintln!("Filter value cannot be a boolean for a string attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
-                Value::Number(filter_value) => {
+                Value::Number(_) => {
                     eprintln!("Filter value cannot be a number for a string attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
@@ -179,50 +178,50 @@ impl VariantFilter {
                     };
                     if self.operator == constants::OPERATOR_EQUAL_TO {
                         if attribute_value == filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_LESS_THAN {
                         if attribute_value < filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_LESS_THAN_EQUAL_TO {
                         if attribute_value <= filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_GREATER_THAN {
                         if attribute_value > filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_GREATER_THAN_EQUAL_TO {
                         if attribute_value >= filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
                         if attribute_value != filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else {
                         eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
                         std::process::exit(exitcode::DATAERR);
                     }
                 }
-                Value::Array(filter_value) => {
+                Value::Array(_) => {
                     eprintln!("Filter value cannot be a string array for a numeric attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
-                Value::Bool(filter_value) => {
+                Value::Bool(_) => {
                     eprintln!("Filter value cannot be a boolean for a numeric attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
@@ -230,39 +229,39 @@ impl VariantFilter {
                     let filter_value_f64 = filter_value.as_f64().unwrap();
                     if self.operator == constants::OPERATOR_EQUAL_TO {
                         if attribute_value == filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_LESS_THAN {
                         if attribute_value < filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_LESS_THAN_EQUAL_TO {
                         if attribute_value <= filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_GREATER_THAN {
                         if attribute_value > filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_GREATER_THAN_EQUAL_TO {
                         if attribute_value >= filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else if self.operator == constants::OPERATOR_NOT_EQUAL_TO {
                         if attribute_value != filter_value_f64 {
-                            return true;
+                            true
                         } else {
-                            return false;
+                            false
                         }
                     } else {
                         eprintln!("{}", format!("Unsupported operator for string: {}", self.operator));
@@ -386,15 +385,15 @@ impl VariantFilter {
                 _ => -1.0,
             };
             match &self.value {
-                Value::String(filter_value) => {
+                Value::String(_) => {
                     eprintln!("Filter value cannot be a string for a numeric attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
-                Value::Array(filter_value) => {
+                Value::Array(_) => {
                     eprintln!("Filter value cannot be a string array for a numeric attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }
-                Value::Bool(filter_value) => {
+                Value::Bool(_) => {
                     eprintln!("Filter value cannot be a boolean for a numeric attribute.");
                     std::process::exit(exitcode::DATAERR);
                 }

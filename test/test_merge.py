@@ -19,7 +19,9 @@ def test_merge_1(cutesv_variants_list,
         num_threads=1,
         max_neighbor_distance=10,
         match_all_breakpoints=True,
-        match_variant_types=True
+        match_variant_types=True,
+        min_ins_size_overlap=0.5,
+        min_del_size_overlap=0.5
     )
     print(variants_list.size)
 
@@ -120,9 +122,62 @@ def test_merge_2():
         num_threads=1,
         max_neighbor_distance=1000,
         match_all_breakpoints=True,
-        match_variant_types=True
+        match_variant_types=True,
+        min_ins_size_overlap=0.5,
+        min_del_size_overlap=0.5
     )
     for variant in variants_list.variants:
         if variant.num_variant_calls == 2:
             assert 'variant_call_14' in variant.variant_call_ids
             assert 'variant_call_22' in variant.variant_call_ids
+
+
+
+def test_merge_insertions():
+    variant_call_1 = VariantCall(
+        id='variant_call_1',
+        sample_id='sample1',
+        chromosome_1='chr1',
+        position_1=100,
+        chromosome_2='chr1',
+        position_2=100,
+        variant_type=VariantTypes.INSERTION,
+        reference_allele='T',
+        alternate_allele='TAAA'
+    )
+    variant_call_2 = VariantCall(
+        id='variant_call_2',
+        sample_id='sample1',
+        chromosome_1='chr1',
+        position_1=150,
+        chromosome_2='chr1',
+        position_2=150,
+        variant_type=VariantTypes.INSERTION,
+        reference_allele='A',
+        alternate_allele='AAAA'
+    )
+
+    variant_1 = Variant(id='variant_1')
+    variant_2 = Variant(id='variant_2')
+    variant_1.add_variant_call(variant_call=variant_call_1)
+    variant_2.add_variant_call(variant_call=variant_call_2)
+
+    variants_list_1 = VariantsList()
+    variants_list_2 = VariantsList()
+    variants_list_1.add_variant(variant=variant_1)
+    variants_list_2.add_variant(variant=variant_2)
+
+    variants_list = merge(
+        variants_lists=[variants_list_1, variants_list_2],
+        num_threads=1,
+        max_neighbor_distance=100,
+        match_all_breakpoints=True,
+        match_variant_types=True,
+        min_ins_size_overlap=0.5,
+        min_del_size_overlap=0.5
+    )
+    print(variants_list.variants)
+    # for variant in variants_list.variants:
+    #     if variant.num_variant_calls == 2:
+    #         assert 'variant_call_14' in variant.variant_call_ids
+    #         assert 'variant_call_22' in variant.variant_call_ids

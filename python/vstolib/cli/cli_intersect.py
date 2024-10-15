@@ -18,8 +18,6 @@ and run 'intersect' command.
 
 
 import argparse
-import numpy as np
-import pandas as pd
 import multiprocessing as mp
 import logging
 from ..constants import *
@@ -84,43 +82,61 @@ def add_cli_intersect_arg_parser(
         dest="max_neighbor_distance",
         type=int,
         required=False,
-        default=INTERSECT_MAX_NEIGHBOR_DISTANCE,
+        default=MAX_NEIGHBOR_DISTANCE,
         help="Maximum neighbor distance (default: %i). Two variant calls within "
              "this distance (inclusive) will be identified as the same variant."
-             % INTERSECT_MAX_NEIGHBOR_DISTANCE
+             % MAX_NEIGHBOR_DISTANCE
     )
     parser_optional.add_argument(
         "--match-all-breakpoints",
         dest="match_all_breakpoints",
         type=str2bool,
         required=False,
-        default=INTERSECT_MATCH_ALL_BREAKPOINTS,
+        default=MATCH_ALL_BREAKPOINTS,
         help="If 'yes', two VariantCall objects are considered an intersect "
              "if both pairs of breakpoints match (start1==start2 AND end1==end2). "
              "If 'no', two VariantCall objects are considered an intersect "
              "if one of the breakpoint pairs matches (start1==start2 OR end1==end2). Default: %s"
-             % INTERSECT_MATCH_ALL_BREAKPOINTS
+             % MATCH_ALL_BREAKPOINTS
     )
     parser_optional.add_argument(
         "--match-variant-types",
         dest="match_variant_types",
         type=str2bool,
         required=False,
-        default=INTERSECT_MATCH_VARIANT_TYPES,
+        default=MATCH_VARIANT_TYPES,
         help="If 'yes', two VariantCall objects are considered an intersect "
              "if the (super) variant types are the same. "
              "If 'no', two VariantCall objects are considered an intersect "
              "even if the (super) variant types are different (default: %s)."
-             % INTERSECT_MATCH_VARIANT_TYPES
+             % MATCH_VARIANT_TYPES
+    )
+    parser_optional.add_argument(
+        "--min-ins-size-overlap",
+        dest="min_ins_size_overlap",
+        type=int,
+        required=False,
+        default=MIN_INS_SIZE_OVERLAP,
+        help="Minimum insertion size overlap (default: %f)."
+             % MIN_INS_SIZE_OVERLAP
+    )
+    parser_optional.add_argument(
+        "--min-del-size-overlap",
+        dest="min_del_size_overlap",
+        type=int,
+        required=False,
+        default=MIN_DEL_SIZE_OVERLAP,
+        help="Minimum deletion size overlap (default: %f)."
+             % MIN_DEL_SIZE_OVERLAP
     )
     parser_optional.add_argument(
         "--gzip",
         dest="gzip",
         type=str2bool,
         required=False,
-        default=INTERSECT_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % INTERSECT_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='intersect')
@@ -139,6 +155,8 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
                     max_neighbor_distance
                     match_all_breakpoints
                     match_variant_types
+                    min_ins_size_overlap
+                    min_del_size_overlap
                     gzip
     """
     # Step 1. Load variants lists
@@ -159,7 +177,9 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
         num_threads=args.num_threads,
         max_neighbor_distance=args.max_neighbor_distance,
         match_all_breakpoints=args.match_all_breakpoints,
-        match_variant_types=args.match_variant_types
+        match_variant_types=args.match_variant_types,
+        min_ins_size_overlap=args.min_ins_size_overlap,
+        min_del_size_overlap=args.min_del_size_overlap
     )
     logger.info("Finished intersecting all variants")
     logger.info('%i variants and %i variant calls in intersecting variants list' %

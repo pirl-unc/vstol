@@ -119,46 +119,43 @@ def collapse(
     return variants_list_collapsed
 
 
-def diff(
-        target_variants_list: VariantsList,
-        query_variants_lists: List[VariantsList],
-        max_neighbor_distance: int = DIFF_MAX_NEIGHBOR_DISTANCE,
+def compare(
+        a: VariantsList,
+        b: VariantsList,
         num_threads: int = NUM_THREADS,
-        match_all_breakpoints: bool = DIFF_MATCH_ALL_BREAKPOINTS,
-        match_variant_types: bool = DIFF_MATCH_VARIANT_TYPES
-) -> VariantsList:
+        max_neighbor_distance: int = MAX_NEIGHBOR_DISTANCE,
+        match_all_breakpoints: bool = MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MATCH_VARIANT_TYPES,
+        min_ins_size_overlap: float = MIN_INS_SIZE_OVERLAP,
+        min_del_size_overlap: float = MIN_DEL_SIZE_OVERLAP
+) -> Tuple[VariantsList, VariantsList, VariantsList]:
     """
-    Diff variants lists.
+    Merge VariantsList objects into one.
 
     Parameters:
-        target_variants_list    :   VariantsList object.
-        query_variants_lists    :   List of VariantsList objects.
-        max_neighbor_distance   :   Maximum neighbor distance.
-        num_threads             :   Number of threads.
-        match_all_breakpoints   :   If True, for two VariantCall objects
-                                    to be considered an intersect, both
-                                    pairs of breakpoints must match.
-        match_variant_types     :   If True, for two VariantCall objects
-                                    to be considered an intersect, the
-                                    variant types must match.
+        variants_lists              :   List of VariantsList objects.
+        num_threads                 :   Number of threads.
+        max_neighbor_distance       :   Maximum neighbor distance.
+        match_all_breakpoints       :   If True, for two VariantCall objects to be considered
+                                        intersecting, all breakpoints must match or be near each other.
+        match_variant_types         :   If True, for two VariantCall objects to be considered
+                                        intersecting, their variant types must match.
+        min_ins_size_overlap        :   Minimum insertion size overlap.
+        min_del_size_overlap        :   Minimum deletion size overlap.
 
     Returns:
-        VariantsList (with VariantCalls private to target_variants_list)
+        Tuple[shared VariantsList, a-specific VariantsList, b-specific VariantsList]
     """
-    variants_list_diff = copy.deepcopy(target_variants_list)
-    for variants_list in query_variants_lists:
-        variants_list_diff = variants_list_diff.diff(
-            variants_list=variants_list,
-            num_threads=num_threads,
-            max_neighbor_distance=max_neighbor_distance,
-            match_all_breakpoints=match_all_breakpoints,
-            match_variant_types=match_variant_types
-        )
-    logger.info('%i variants and %i variant calls in the target VariantsList before diff.' %
-                (len(target_variants_list.variants), len(target_variants_list.variant_call_ids)))
-    logger.info('%i variants and %i variant calls in the target VariantsList after diff.' %
-                (len(variants_list_diff.variants), len(variants_list_diff.variant_call_ids)))
-    return variants_list_diff
+    return VariantsList.compare(
+        a=a,
+        b=b,
+        num_threads=num_threads,
+        max_neighbor_distance=max_neighbor_distance,
+        match_all_breakpoints=match_all_breakpoints,
+        match_variant_types=match_variant_types,
+        min_ins_size_overlap=min_ins_size_overlap,
+        min_del_size_overlap=min_del_size_overlap
+    )
 
 
 def filter(
@@ -208,8 +205,7 @@ def filter(
 
 def filter_excluded_regions(
         variants_list: VariantsList,
-        excluded_regions_list: GenomicRangesList = None,
-        excluded_regions_padding: int = FILTER_EXCLUDED_REGION_PADDING,
+        excluded_regions_list: GenomicRangesList,
         num_threads: int = NUM_THREADS
 ) -> Tuple[VariantsList, VariantsList]:
     """
@@ -218,7 +214,6 @@ def filter_excluded_regions(
     Parameters:
         variants_list               :   VariantsList object.
         excluded_regions_list       :   GenomicRangesList object of regions to exclude.
-        excluded_regions_padding    :   Number of bases to pad each region to exclude.
         num_threads                 :   Number of threads.
 
     Returns:
@@ -231,7 +226,6 @@ def filter_excluded_regions(
     rejected_variant_call_ids = set()
     overlapping_variant_call_ids = variants_list.overlap(
         genomic_ranges_list=excluded_regions_list,
-        padding=excluded_regions_padding,
         num_threads=num_threads
     )
     for variant_call_id, genomic_ranges in overlapping_variant_call_ids:
@@ -273,7 +267,7 @@ def filter_excluded_regions(
 def filter_homopolymeric_variants(
         variants_list: VariantsList,
         reference_genome_fasta_file: str,
-        homopolymer_length: int = FILTER_HOMOPOLYMER_LENGTH,
+        homopolymer_length: int = HOMOPOLYMER_LENGTH,
         num_threads: int = NUM_THREADS
 ) -> Tuple[VariantsList, VariantsList]:
     """
@@ -340,21 +334,25 @@ def filter_homopolymeric_variants(
 def intersect(
         variants_lists: List[VariantsList],
         num_threads: int = NUM_THREADS,
-        max_neighbor_distance: int = INTERSECT_MAX_NEIGHBOR_DISTANCE,
-        match_all_breakpoints: bool = MERGE_MATCH_ALL_BREAKPOINTS,
-        match_variant_types: bool = MERGE_MATCH_VARIANT_TYPES
+        max_neighbor_distance: int = MAX_NEIGHBOR_DISTANCE,
+        match_all_breakpoints: bool = MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MATCH_VARIANT_TYPES,
+        min_ins_size_overlap: float = MIN_INS_SIZE_OVERLAP,
+        min_del_size_overlap: float = MIN_DEL_SIZE_OVERLAP
 ) -> VariantsList:
     """
     Return intersecting VariantsList.
 
     Parameters:
-        variants_lists          :   List of VariantsList objects.
-        num_threads             :   Number of threads.
-        max_neighbor_distance   :   Maximum neighbor distance.
+        variants_lists              :   List of VariantsList objects.
+        num_threads                 :   Number of threads.
+        max_neighbor_distance       :   Maximum neighbor distance.
         match_all_breakpoints       :   If True, for two VariantCall objects to be considered
                                         intersecting, all breakpoints must match or be near each other.
         match_variant_types         :   If True, for two VariantCall objects to be considered
                                         intersecting, their variant types must match.
+        min_ins_size_overlap        :   Minimum insertion size overlap.
+        min_del_size_overlap        :   Minimum deletion size overlap.
 
     Returns:
         VariantsList
@@ -364,16 +362,20 @@ def intersect(
         num_threads=num_threads,
         max_neighbor_distance=max_neighbor_distance,
         match_all_breakpoints=match_all_breakpoints,
-        match_variant_types=match_variant_types
+        match_variant_types=match_variant_types,
+        min_ins_size_overlap=min_ins_size_overlap,
+        min_del_size_overlap=min_del_size_overlap
     )
 
 
 def merge(
         variants_lists: List[VariantsList],
         num_threads: int = NUM_THREADS,
-        max_neighbor_distance: int = MERGE_MAX_NEIGHBOR_DISTANCE,
-        match_all_breakpoints: bool = MERGE_MATCH_ALL_BREAKPOINTS,
-        match_variant_types: bool = MERGE_MATCH_VARIANT_TYPES
+        max_neighbor_distance: int = MAX_NEIGHBOR_DISTANCE,
+        match_all_breakpoints: bool = MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MATCH_VARIANT_TYPES,
+        min_ins_size_overlap: float = MIN_INS_SIZE_OVERLAP,
+        min_del_size_overlap: float = MIN_DEL_SIZE_OVERLAP
 ) -> VariantsList:
     """
     Merge VariantsList objects into one.
@@ -386,6 +388,8 @@ def merge(
                                         intersecting, all breakpoints must match or be near each other.
         match_variant_types         :   If True, for two VariantCall objects to be considered
                                         intersecting, their variant types must match.
+        min_ins_size_overlap        :   Minimum insertion size overlap.
+        min_del_size_overlap        :   Minimum deletion size overlap.
 
     Returns:
         VariantsList
@@ -395,14 +399,15 @@ def merge(
         num_threads=num_threads,
         max_neighbor_distance=max_neighbor_distance,
         match_all_breakpoints=match_all_breakpoints,
-        match_variant_types=match_variant_types
+        match_variant_types=match_variant_types,
+        min_ins_size_overlap=min_ins_size_overlap,
+        min_del_size_overlap=min_del_size_overlap
     )
 
 
 def overlap(
         variants_list: VariantsList,
         genomic_ranges_list: GenomicRangesList,
-        padding: int = OVERLAP_PADDING,
         num_threads: int = NUM_THREADS
 ) -> VariantsList:
     """
@@ -411,7 +416,6 @@ def overlap(
     Parameters:
         variants_list:          :   VariantsList object.
         genomic_ranges_list:    :   GenomicRangesList object.
-        padding:                :   Padding (applied to each breakpoint for every variant call).
         num_threads:            :   Number of threads.
 
     Returns:
@@ -420,8 +424,7 @@ def overlap(
     # Step 1. Identify overlapping variants
     overlapping_variant_call_ids = variants_list.overlap(
         genomic_ranges_list=genomic_ranges_list,
-        num_threads=num_threads,
-        padding=padding
+        num_threads=num_threads
     )
     overlapping_variant_call_ids = [i[0] for i in overlapping_variant_call_ids]
 
@@ -444,7 +447,7 @@ def overlap(
 def score(
         variants_list: VariantsList,
         bam_file: str,
-        window: int = SCORE_WINDOW,
+        window: int = WINDOW,
         num_threads: int = NUM_THREADS
 ) -> VariantsList:
     """
@@ -454,6 +457,7 @@ def score(
         variants_list   :   VariantsList object.
         bam_file        :   BAM file.
         window          :   Window (will be applied both upstream and downstream).
+        num_threads     :   Number of threads.
 
     Returns:
         VariantsList
@@ -515,6 +519,54 @@ def score(
                 variant_call.average_alignment_score_window = window
 
     return variants_list
+
+
+def subtract(
+        target_variants_list: VariantsList,
+        query_variants_lists: List[VariantsList],
+        max_neighbor_distance: int = MAX_NEIGHBOR_DISTANCE,
+        num_threads: int = NUM_THREADS,
+        match_all_breakpoints: bool = MATCH_ALL_BREAKPOINTS,
+        match_variant_types: bool = MATCH_VARIANT_TYPES,
+        min_ins_size_overlap: float = MIN_INS_SIZE_OVERLAP,
+        min_del_size_overlap: float = MIN_DEL_SIZE_OVERLAP
+) -> VariantsList:
+    """
+    Subtract variants lists from a target variants list.
+
+    Parameters:
+        target_variants_list    :   VariantsList object.
+        query_variants_lists    :   List of VariantsList objects.
+        max_neighbor_distance   :   Maximum neighbor distance.
+        num_threads             :   Number of threads.
+        match_all_breakpoints   :   If True, for two VariantCall objects
+                                    to be considered an intersect, both
+                                    pairs of breakpoints must match.
+        match_variant_types     :   If True, for two VariantCall objects
+                                    to be considered an intersect, the
+                                    variant types must match.
+        min_ins_size_overlap    :   Minimum insertion size overlap.
+        min_del_size_overlap    :   Minimum deletion size overlap.
+
+    Returns:
+        VariantsList (with VariantCalls private to target_variants_list)
+    """
+    vl_subtracted = copy.deepcopy(target_variants_list)
+    for variants_list in query_variants_lists:
+        vl_subtracted = vl_subtracted.subtract(
+            variants_list=variants_list,
+            num_threads=num_threads,
+            max_neighbor_distance=max_neighbor_distance,
+            match_all_breakpoints=match_all_breakpoints,
+            match_variant_types=match_variant_types,
+            min_ins_size_overlap=min_ins_size_overlap,
+            min_del_size_overlap=min_del_size_overlap
+        )
+    logger.info('%i variants and %i variant calls in the target VariantsList before diff.' %
+                (len(target_variants_list.variants), len(target_variants_list.variant_call_ids)))
+    logger.info('%i variants and %i variant calls in the target VariantsList after diff.' %
+                (len(vl_subtracted.variants), len(vl_subtracted.variant_call_ids)))
+    return vl_subtracted
 
 
 def vcf2tsv(

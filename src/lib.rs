@@ -13,118 +13,28 @@
 
 extern crate chrono;
 extern crate env_logger;
-extern crate exitcode;
-extern crate log;
 extern crate pyo3;
 extern crate serde_json;
+extern crate vstol;
 use chrono::Local;
 use env_logger::{Builder, Env};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use std::collections::HashMap;
 use std::io::Write;
-mod constants;
-mod genomic_range;
-mod genomic_ranges_list;
-mod metrics;
-mod utilities;
-mod variant;
-mod variant_call;
-mod variant_call_annotation;
-mod variant_filter;
-mod variants_list;
-use genomic_range::GenomicRange;
-use genomic_ranges_list::GenomicRangesList;
-use metrics::calculate_average_alignment_scores as calculate_average_alignment_scores_;
-use variant::Variant;
-use variant_call::VariantCall;
-use variant_call_annotation::VariantCallAnnotation;
-use variant_filter::VariantFilter;
-use variants_list::VariantsList;
+use vstol::constants;
+use vstol::metrics::calculate_average_alignment_scores as calculate_average_alignment_scores_;
+use vstol::structs::genomic_range::GenomicRange;
+use vstol::structs::genomic_ranges_list::GenomicRangesList;
+use vstol::structs::variant::Variant;
+use vstol::structs::variant_call::VariantCall;
+use vstol::structs::variant_call_annotation::VariantCallAnnotation;
+use vstol::structs::variant_filter::VariantFilter;
+use vstol::structs::variants_list::VariantsList;
 
+mod interface;
+use crate::interface::*;
 
-/// This function deserializes a serialized GenomicRangesList object.
-///
-/// # Arguments
-/// * `json_str`                        -   serialized GenomicRangesList object.
-///
-/// # Returns
-/// * `deserialize_genomic_ranges_list` -   GenomicRangesList object.
-fn deserialize_genomic_ranges_list(json_str: &str) -> GenomicRangesList {
-    let genomic_ranges_list: Result<GenomicRangesList, serde_json::Error> = serde_json::from_str(json_str);
-    match genomic_ranges_list {
-        Ok(result) => {
-            return result;
-        }
-        Err(e) => {
-            eprintln!("Error deserializing JSON: {}", e);
-            std::process::exit(exitcode::DATAERR);
-        }
-    }
-}
-
-/// This function deserializes a list of serialized VariantsList objects.
-///
-/// # Arguments
-/// * `py_list`         -   list of serialized VariantsList objects.
-///
-/// # Returns
-/// * `variants_list`   -   vector of VariantsList objects.
-fn deserialize_variants_lists(py_list: &PyList) -> Vec<VariantsList> {
-    let mut variants_lists: Vec<VariantsList> = Vec::new();
-    for py_str in py_list.iter() {
-        variants_lists.push(deserialize_variants_list(&py_str.to_string()));
-    }
-    return variants_lists;
-}
-
-/// This function deserializes a VariantsList object.
-///
-/// # Arguments
-/// * `json_str`        -   serialized VariantsList object.
-///
-/// # Returns
-/// * `variants_list`   -   VariantsList object.
-fn deserialize_variants_list(json_str: &str) -> VariantsList {
-    let variants_list: Result<VariantsList, serde_json::Error> = serde_json::from_str(json_str);
-    match variants_list {
-        Ok(result) => {
-            return result;
-        }
-        Err(e) => {
-            eprintln!("Error deserializing JSON: {}", e);
-            std::process::exit(exitcode::DATAERR);
-        }
-    }
-}
-
-/// This function deserializes a list of VariantFilter objects.
-///
-/// # Arguments
-/// * `py_list`             -   a list of serialized VariantsFilter objects.
-///
-/// # Returns
-/// * `variant_filters`     -   a vector of VariantFilter objects.
-fn deserialize_variant_filters(py_list: &PyList) -> Vec<VariantFilter> {
-    let mut variant_filters: Vec<VariantFilter> = Vec::new();
-    for py_str in py_list.iter() {
-        variant_filters.push(deserialize_variant_filter(&py_str.to_string()));
-    }
-    return variant_filters;
-}
-
-fn deserialize_variant_filter(json_str: &str) -> VariantFilter {
-    let variant_filter: Result<VariantFilter, serde_json::Error> = serde_json::from_str(json_str);
-    match variant_filter {
-        Ok(result) => {
-            return result;
-        }
-        Err(e) => {
-            eprintln!("Error deserializing JSON: {}", e);
-            std::process::exit(exitcode::DATAERR);
-        }
-    }
-}
 
 /// Calculates average alignment scores for a given list of regions.
 ///
@@ -149,11 +59,54 @@ fn calculate_average_alignment_scores(
     Ok(scores)
 }
 
+/// This function compares two serialized VariantsList objects and returns three VariantsList objects.
+///
+/// # Arguments
+/// * `py_list`                 -   list of 2 serialized VariantsList objects.
+/// * `num_threads`             -   number of threads.
+///
+/// # Returns
+/// * A serialized list of 3 VariantsList strings.
+#[pyfunction]
+fn compare_variants_lists(
+    py: Python,
+    vl_list: &PyList,
+    num_threads: usize,
+    max_neighbor_distance: isize,
+    match_all_breakpoints: bool,
+    match_variant_types: bool,
+    min_ins_size_overlap: f64,
+    min_del_size_overlap: f64
+) -> PyResult<String> {
+    // Step 1. Deserialize VariantsList objects
+    let variants_lists: Vec<VariantsList> = deserialize_variants_lists(&vl_list);
+
+    assert_eq!(variants_lists.len(), 2);
+
+    // Step 2. Compare VariantsList objects
+    let (vl_shared, vl_a_only, vl_b_only) = VariantsList::compare(
+        &variants_lists[0],
+        &variants_lists[1],
+        num_threads,
+        max_neighbor_distance,
+        match_all_breakpoints,
+        match_variant_types,
+        min_ins_size_overlap,
+        min_del_size_overlap,
+        &constants::VARIANT_TYPES_MAP
+    );
+
+    // Step 3. Serialize VariantsList objects
+    let serialized = serde_json::to_string(&[vl_shared, vl_a_only, vl_b_only]).expect("Serialization of the list of VariantsList objects failed");
+
+    Ok(serialized)
+}
+
 /// This function filters a serialized VariantsList object and returns a filtered VariantsList.
 ///
 /// # Arguments
-/// * `py_str`                  -   serialized VariantsList object.
-/// * `py_list`                 -   list of serialized VariantFilter objects.
+/// * `vl_target`               -   serialized VariantsList object.
+/// * `vl_target`               -   list of serialized VariantFilter objects.
 /// * `num_threads`             -   number of threads.
 ///
 /// # Returns
@@ -161,65 +114,30 @@ fn calculate_average_alignment_scores(
 #[pyfunction]
 fn filter_variants_list(
     py: Python,
-    py_str: String,
-    py_list: &PyList,
-    num_threads: usize) -> PyResult<String> {
+    vl_target: String,
+    filter_list: &PyList,
+    num_threads: usize
+) -> PyResult<String> {
     // Step 1. Deserialize VariantsList object
-    let mut variants_list: VariantsList = deserialize_variants_list(&py_str);
+    let mut variants_list: VariantsList = deserialize_variants_list(&vl_target);
 
     // Step 2. Deserialize VariantFilter objects
-    let variant_filters: Vec<VariantFilter> = deserialize_variant_filters(py_list);
+    let variant_filters: Vec<VariantFilter> = deserialize_variant_filters(filter_list);
 
     // Step 3. Filter VariantsList object
-    let filtered_variants_list: VariantsList = variants_list.filter(variant_filters, num_threads);
+    variants_list.filter(variant_filters, num_threads);
 
     // Step 4. Serialize filtered VariantsList object
-    let serialized = serde_json::to_string(&filtered_variants_list).expect("Serialization of the filtered VariantsList object failed");
+    let serialized = serde_json::to_string(&variants_list).expect("Serialization of the filtered VariantsList object failed");
 
     Ok(serialized)
-}
-
-/// This function identifies overlapping VariantCall objects.
-///
-/// # Arguments
-/// * `variants_list_str`               -   serialized VariantsList object.
-/// * `genomic_ranges_list_str`         -   serialized GenomicRangesList object.
-/// * `num_threads`                     -   number of threads.
-/// * `padding`                         -   padding to apply to GenomicRange start and end.
-///
-/// # Returns
-/// * `overlapping_variant_call_ids`    -   HashMap where key is VariantCall.id and
-///                                         value is a vector of GenomicRange.id
-#[pyfunction]
-fn find_overlapping_variant_calls(
-    py: Python,
-    variants_list_str: String,
-    genomic_ranges_list_str: String,
-    num_threads: usize,
-    padding: isize) -> Py<PyAny> {
-    // Step 1. Deserialize VariantsList object
-    let mut variants_list: VariantsList = deserialize_variants_list(&variants_list_str);
-
-    // Step 2. Deserialize GenomicRangesList objects
-    let genomic_ranges_list: GenomicRangesList = deserialize_genomic_ranges_list(&genomic_ranges_list_str);
-
-    // Step 3. Find overlapping VariantCall IDs
-    let overlapping_variant_call_ids: HashMap<String, Vec<String>> = variants_list.overlap(
-        genomic_ranges_list,
-        num_threads,
-        padding
-    );
-
-    return Python::with_gil(|py| {
-        overlapping_variant_call_ids.to_object(py)
-    });
 }
 
 /// This function identifies intersecting (or nearby) variant calls given
 /// a vector of serialized VariantsList objects.
 ///
 /// # Arguments
-/// * `py_list`                 -   list of serialized VariantsList objects.
+/// * `vl_list`                 -   list of serialized VariantsList objects.
 /// * `num_threads`             -   number of threads.
 /// * `max_neighbor_distance`   -   maximum neighbor distance.
 /// * `match_all_breakpoints`   -   If true, both pairs of breakpoints of two variant calls
@@ -232,22 +150,28 @@ fn find_overlapping_variant_calls(
 /// * A serialized VariantsList object.
 #[pyfunction]
 fn intersect_variants_lists(
-    py: Python, py_list: &PyList,
+    py: Python,
+    vl_list: &PyList,
     num_threads: usize,
     max_neighbor_distance: isize,
     match_all_breakpoints: bool,
-    match_variant_types: bool) -> PyResult<String> {
+    match_variant_types: bool,
+    min_ins_size_overlap: f64,
+    min_del_size_overlap: f64
+) -> PyResult<String> {
     // Step 1. Deserialize VariantsList objects
-    let mut variants_lists: Vec<VariantsList> = deserialize_variants_lists(py_list);
+    let variants_lists: Vec<VariantsList> = deserialize_variants_lists(vl_list);
+    let variants_refs: Vec<&VariantsList> = variants_lists.iter().collect();
 
     // Step 2. Identify intersecting (or nearby) variant calls in VariantsList objects
-    let intersecting_variants_list: VariantsList = VariantsList::merge(
-        variants_lists,
+    let intersecting_variants_list: VariantsList = VariantsList::intersect(
+        &variants_refs,
         num_threads,
         max_neighbor_distance,
         match_all_breakpoints,
         match_variant_types,
-        true,
+        min_ins_size_overlap,
+        min_del_size_overlap,
         &constants::VARIANT_TYPES_MAP
     );
 
@@ -260,7 +184,7 @@ fn intersect_variants_lists(
 /// This function merges a vector of serialized VariantsList objects into one.
 ///
 /// # Arguments
-/// * `py_list`                 -   list of serialized VariantsList objects.
+/// * `vl_list`                 -   list of serialized VariantsList objects.
 /// * `num_threads`             -   number of threads.
 /// * `max_neighbor_distance`   -   maximum neighbor distance.
 ///
@@ -268,27 +192,115 @@ fn intersect_variants_lists(
 /// * A serialized VariantsList object.
 #[pyfunction]
 fn merge_variants_lists(
-    py: Python, py_list: &PyList,
+    py: Python,
+    vl_list: &PyList,
     num_threads: usize,
     max_neighbor_distance: isize,
     match_all_breakpoints: bool,
-    match_variant_types: bool) -> PyResult<String> {
+    match_variant_types: bool,
+    min_ins_size_overlap: f64,
+    min_del_size_overlap: f64) -> PyResult<String> {
     // Step 1. Deserialize VariantsList objects
-    let mut variants_lists: Vec<VariantsList> = deserialize_variants_lists(py_list);
+    let variants_lists: Vec<VariantsList> = deserialize_variants_lists(vl_list);
+    let variants_refs: Vec<&VariantsList> = variants_lists.iter().collect();
 
     // Step 2. Merge VariantsList objects
     let merged_variants_list: VariantsList = VariantsList::merge(
-        variants_lists,
+        &variants_refs,
         num_threads,
         max_neighbor_distance,
         match_all_breakpoints,
         match_variant_types,
-        false,
+        min_ins_size_overlap,
+        min_del_size_overlap,
         &constants::VARIANT_TYPES_MAP
     );
 
     // Step 3. Serialize merged VariantsList object
     let serialized = serde_json::to_string(&merged_variants_list).expect("Serialization of the merged VariantsList object failed");
+
+    Ok(serialized)
+}
+
+/// This function identifies overlapping VariantCall objects.
+///
+/// # Arguments
+/// * `vl_target`                       -   serialized VariantsList object.
+/// * `granges_list`                    -   serialized GenomicRangesList object.
+/// * `num_threads`                     -   number of threads.
+///
+/// # Returns
+/// * `overlapping_variant_call_ids`    -   HashMap where key is VariantCall.id and
+///                                         value is a vector of GenomicRange.id
+#[pyfunction]
+fn overlap_variant_calls(
+    py: Python,
+    vl_target: String,
+    granges_list: String,
+    num_threads: usize
+) -> Py<PyAny> {
+    // Step 1. Deserialize VariantsList object
+    let mut variants_list: VariantsList = deserialize_variants_list(&vl_target);
+
+    // Step 2. Deserialize GenomicRangesList objects
+    let genomic_ranges_list: GenomicRangesList = deserialize_genomic_ranges_list(&granges_list);
+
+    // Step 3. Find overlapping VariantCall IDs
+    let overlapping_variant_call_ids: HashMap<String, Vec<String>> = variants_list.overlap(
+        genomic_ranges_list,
+        num_threads
+    );
+
+    return Python::with_gil(|py| {
+        overlapping_variant_call_ids.to_object(py)
+    });
+}
+
+/// This function merges a vector of serialized VariantsList objects into one.
+///
+/// # Arguments
+///
+/// * `a`                       -   serialized VariantsList object.
+/// * `b`                       -   serialized VariantsList object.
+/// * `num_threads`             -   number of threads.
+/// * `max_neighbor_distance`   -   maximum neighbor distance.
+/// * `match_variant_types`     -   If true, match variant types.
+/// * `match_all_breakpoints`   -   If true, match all breakpoints.
+/// * `min_ins_size_overlap`    -   Minimum insertion size overlap.
+/// * `min_del_size_overlap`    -   Minimum deletion size overlap.
+///
+/// # Returns
+///
+/// * A serialized VariantsList object.
+#[pyfunction]
+fn subtract_variants_list(
+    py: Python,
+    a: String,
+    b: String,
+    num_threads: usize,
+    max_neighbor_distance: isize,
+    match_all_breakpoints: bool,
+    match_variant_types: bool,
+    min_ins_size_overlap: f64,
+    min_del_size_overlap: f64) -> PyResult<String> {
+    // Step 1. Deserialize VariantsList objects
+    let vl_a: VariantsList = deserialize_variants_list(&a);
+    let vl_b: VariantsList = deserialize_variants_list(&b);
+
+    // Step 2. Subtract VariantsList object B from A
+    let vl_subtracted: VariantsList = vl_a.subtract(
+        &vl_b,
+        num_threads,
+        max_neighbor_distance,
+        match_all_breakpoints,
+        match_variant_types,
+        min_ins_size_overlap,
+        min_del_size_overlap,
+        &constants::VARIANT_TYPES_MAP
+    );
+
+    // Step 3. Serialize subtracted VariantsList object
+    let serialized = serde_json::to_string(&vl_subtracted).expect("Serialization of the subtracted VariantsList object failed");
 
     Ok(serialized)
 }
@@ -309,9 +321,11 @@ fn vstolibrs(_py: Python, m: &PyModule) -> PyResult<()> {
     }).init();
 
     m.add_function(wrap_pyfunction!(calculate_average_alignment_scores, m)?);
+    m.add_function(wrap_pyfunction!(compare_variants_lists, m)?);
     m.add_function(wrap_pyfunction!(filter_variants_list, m)?);
-    m.add_function(wrap_pyfunction!(find_overlapping_variant_calls, m)?);
     m.add_function(wrap_pyfunction!(intersect_variants_lists, m)?);
     m.add_function(wrap_pyfunction!(merge_variants_lists, m)?);
+    m.add_function(wrap_pyfunction!(overlap_variant_calls, m)?);
+    m.add_function(wrap_pyfunction!(subtract_variants_list, m)?);
     Ok(())
 }

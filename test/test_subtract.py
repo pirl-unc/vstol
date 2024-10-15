@@ -1,4 +1,4 @@
-from vstolib.main import diff
+from vstolib.main import subtract
 from vstolib.variant import Variant
 from vstolib.variant_call import VariantCall
 from vstolib.variants_list import VariantsList
@@ -10,7 +10,7 @@ def test_diff_1(
         cutesv_variants_list,
         pbsv_variants_list,
         svim_variants_list):
-    sniffles2_variants_list_diff = diff(
+    sniffles2_variants_list_diff = subtract(
         target_variants_list=sniffles2_variants_list,
         query_variants_lists=[
             cutesv_variants_list,
@@ -115,7 +115,7 @@ def test_diff_2():
     variants_list_2.add_variant(variant=variant_21)
     variants_list_2.add_variant(variant=variant_22)
 
-    variants_list = diff(
+    variants_list = subtract(
         target_variants_list=variants_list_1,
         query_variants_lists=[variants_list_2],
         max_neighbor_distance=1000,
@@ -165,7 +165,7 @@ def test_diff_3():
     variants_list_1.add_variant(variant=variant_11)
     variants_list_2.add_variant(variant=variant_21)
 
-    variants_list = diff(
+    variants_list = subtract(
         target_variants_list=variants_list_1,
         query_variants_lists=[variants_list_2],
         max_neighbor_distance=1000,

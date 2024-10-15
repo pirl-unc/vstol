@@ -36,12 +36,13 @@ vstol [-h] [--version] {annotate,diff,filter,intersect,merge,overlap,vcf2tsv,vis
 |-----------|-----------------------------------------------------------------------------------------------------------------------------|
 | annotate  | Annotate variant calls using [pyensembl](https://github.com/openvax/pyensembl) or [gencode](https://www.gencodegenes.org/). |
 | collapse  | Collapse a variants list into unique variants.                                                                              |
-| diff      | Identify variant calls specific to a list.                                                                                  |
+| compare   | Compare two variants lists.                                                                                                 |
 | filter    | Filter variant calls (can be used to identify somatic variants).                                                            |
 | intersect | Identify intersecting variant calls.                                                                                        |
 | merge     | Merge variant calls from various variant callers.                                                                           |
 | overlap   | Identify variants that overlap with a list of genomic ranges.                                                               |
 | score     | Calculates average alignment score for each breakpoint.                                                                     | 
+| subtract  | Identify variant calls specific to a list.                                                                                  |
 | vcf2tsv   | Convert a VCF file (see below for supported variant callers) to a TSV file.                                                 |
 | visualize | Visualize a VSTOL TSV file                                                                                                  |
 

@@ -85,9 +85,9 @@ def add_cli_collapse_arg_parser(
         dest="gzip",
         type=str2bool,
         required=False,
-        default=COLLAPSE_GZIP,
+        default=GZIP,
         help="If 'yes', gzip the output TSV file (default: %s)."
-             % COLLAPSE_GZIP
+             % GZIP
     )
 
     parser.set_defaults(which='collapse')

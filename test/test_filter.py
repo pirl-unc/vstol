@@ -32,7 +32,6 @@ def test_filter_cutesv_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=variants_list_passed,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
@@ -66,7 +65,6 @@ def test_filter_pbsv_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=variants_list_passed,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
@@ -110,7 +108,6 @@ def test_filter_sniffles2_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=sniffles2_variants_list,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
@@ -139,7 +136,6 @@ def test_filter_svim_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=svim_variants_list,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
@@ -168,7 +164,6 @@ def test_filter_deepvariant_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=deepvariant_variants_list,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
@@ -197,7 +192,6 @@ def test_filter_gatk4_mutect2_variants_list(
     variants_list_passed, variants_list_rejected = filter_excluded_regions(
         variants_list=gatk4_mutect2_variants_list,
         excluded_regions_list=hg38_excluded_regions_list,
-        excluded_regions_padding=1000,
         num_threads=1
     )
 
