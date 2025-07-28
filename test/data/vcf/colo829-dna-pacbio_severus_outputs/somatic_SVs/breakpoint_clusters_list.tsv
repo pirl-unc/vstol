@@ -1,0 +1,6 @@
+#cluster_id	type	Junction_type	SVs	SV_count	genome_ids	
+severus_0	complex	Interchr:2 ,HH:2 	BND:2 ,INV:1 ,foldback:1 	4	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_1	complex	HH:1 ,Interchr:3 	foldback:1 ,BND:3 	4	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_2	complex	TT:1 ,HT:1 ,HH:1 	dup_inv_segment:2 ,DEL:1 	3	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_3	complex	HH:1 ,Interchr:1 	foldback:1 ,BND:1 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_4	complex	Interchr:2 	Templated_ins:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	

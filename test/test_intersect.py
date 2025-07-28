@@ -1,124 +1,74 @@
-from .conftest import *
+import pandas as pd
 from vstolib.main import intersect
-from vstolib.variant import Variant
-from vstolib.variant_call import VariantCall
-from vstolib.variants_list import VariantsList
-from vstolib.constants import VariantTypes
 
 
-def test_intersect_1(pbsv_variants_list,
-                     sniffles2_variants_list):
-    variants_list = intersect(
-        variants_lists=[pbsv_variants_list,
-                        sniffles2_variants_list],
-        num_threads=1,
-        max_neighbor_distance=10,
-        match_all_breakpoints=True,
-        match_variant_types=True
+def test_intersect_1():
+    data = {
+        'id': [1],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673800],
+        'operation_1': ['D'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673801],
+        'operation_2': ['U']
+    }
+
+    df_variants_1 = pd.DataFrame(data)
+
+    data = {
+        'id': [100],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673790],
+        'operation_1': ['D'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673791],
+        'operation_2': ['U']
+    }
+
+    df_variants_2 = pd.DataFrame(data)
+
+    df_intersecting = intersect(
+        df_variants_list=[df_variants_1, df_variants_2],
+        match_both_positions=True,
+        max_breakpoint_distance=1000,
+        match_operation_types=True,
+        num_processes=1
     )
-    print(variants_list.size)
+
+    assert len(df_intersecting['group_id'].unique()) == 1
 
 
 def test_intersect_2():
-    variant_call_11 = VariantCall(
-        id='variant_call_11',
-        sample_id='sample1',
-        chromosome_1='chr1',
-        position_1=100,
-        chromosome_2='chr5',
-        position_2=500,
-        variant_type=VariantTypes.TRANSLOCATION,
-        reference_allele='T',
-        alternate_allele=''
-    )
-    variant_call_12 = VariantCall(
-        id='variant_call_12',
-        sample_id='sample1',
-        chromosome_1='chr1',
-        position_1=111,
-        chromosome_2='chr1',
-        position_2=120,
-        variant_type=VariantTypes.DELETION,
-        reference_allele='TACTGATCGA',
-        alternate_allele=''
-    )
-    variant_call_13 = VariantCall(
-        id='variant_call_13',
-        sample_id='sample1',
-        chromosome_1='chr7',
-        position_1=700,
-        chromosome_2='chr8',
-        position_2=800,
-        variant_type=VariantTypes.TRANSLOCATION,
-        reference_allele='A',
-        alternate_allele=''
-    )
-    variant_call_14 = VariantCall(
-        id='variant_call_14',
-        sample_id='sample1',
-        chromosome_1='chr10',
-        position_1=9500,
-        chromosome_2='chr10',
-        position_2=9600,
-        variant_type=VariantTypes.DELETION,
-        reference_allele='',
-        alternate_allele=''
+    data = {
+        'id': [1,2],
+        'chromosome_1': ['chr17', 'chr17'],
+        'position_1': [7673800, 7679800],
+        'operation_1': ['D', 'D'],
+        'chromosome_2': ['chr17', 'chr17'],
+        'position_2': [7673801, 7679801],
+        'operation_2': ['U', 'U']
+    }
+
+    df_variants_1 = pd.DataFrame(data)
+
+    data = {
+        'id': [100],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673790],
+        'operation_1': ['D'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673791],
+        'operation_2': ['U']
+    }
+
+    df_variants_2 = pd.DataFrame(data)
+
+    df_intersecting = intersect(
+        df_variants_list=[df_variants_1, df_variants_2],
+        match_both_positions=True,
+        max_breakpoint_distance=1000,
+        match_operation_types=True,
+        num_processes=1
     )
 
-    variant_call_21 = VariantCall(
-        id='variant_call_21',
-        sample_id='sample2',
-        chromosome_1='chr1',
-        position_1=101,
-        chromosome_2='chr16',
-        position_2=1600,
-        variant_type=VariantTypes.TRANSLOCATION,
-        reference_allele='C',
-        alternate_allele=''
-    )
-    variant_call_22 = VariantCall(
-        id='variant_call_22',
-        sample_id='sample2',
-        chromosome_1='chr10',
-        position_1=1000,
-        chromosome_2='chr10',
-        position_2=10000,
-        variant_type=VariantTypes.DELETION,
-        reference_allele='',
-        alternate_allele=''
-    )
-
-    variants_list_1 = VariantsList()
-    variant_11 = Variant(id='variant_11')
-    variant_12 = Variant(id='variant_12')
-    variant_13 = Variant(id='variant_13')
-    variant_14 = Variant(id='variant_14')
-    variant_11.add_variant_call(variant_call=variant_call_11)
-    variant_12.add_variant_call(variant_call=variant_call_12)
-    variant_13.add_variant_call(variant_call=variant_call_13)
-    variant_14.add_variant_call(variant_call=variant_call_14)
-    variants_list_1.add_variant(variant=variant_11)
-    variants_list_1.add_variant(variant=variant_12)
-    variants_list_1.add_variant(variant=variant_13)
-    variants_list_1.add_variant(variant=variant_14)
-
-    variants_list_2 = VariantsList()
-    variant_21 = Variant(id='variant_21')
-    variant_22 = Variant(id='variant_22')
-    variant_21.add_variant_call(variant_call=variant_call_21)
-    variant_22.add_variant_call(variant_call=variant_call_22)
-    variants_list_2.add_variant(variant=variant_21)
-    variants_list_2.add_variant(variant=variant_22)
-
-    variants_list = intersect(
-        variants_lists=[variants_list_1, variants_list_2],
-        max_neighbor_distance=1000,
-        num_threads=1,
-        match_all_breakpoints=False,
-        match_variant_types=False
-    )
-
-    for variant in variants_list.variants:
-        assert (set(variant.variant_call_ids) == set(['variant_call_14','variant_call_22']) or
-                set(variant.variant_call_ids) == set(['variant_call_11','variant_call_12','variant_call_21']))
-
+    assert len(df_intersecting['group_id'].unique()) == 1

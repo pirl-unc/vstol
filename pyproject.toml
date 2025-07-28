@@ -13,39 +13,46 @@
 
 [build-system]
 requires = [
-    "maturin>=0.14,<0.15",
+    "setuptools==72.1.0",
     "pandas>=2.0.3",
-    "numpy>=1.22.3"
+    "numpy>=1.22.3",
+    "networkx>=3.4.2",
+    "intervaltree>=3.1.0"
 ]
-build-backend = "maturin"
 
 [project]
 name = "vstol"
-version = "0.3.7"
+version = "0.4.0"
 requires-python = ">=3.10"
+readme = "README.md"
 keywords = [
+    "cancer",
+    "dna",
+    "occam's variant grammar",
+    "small variants",
     "somatic variants",
     "structural variants",
-    "small variants",
-    "variant toolkit",
-    "cancer",
     "tumor",
-    "dna"
+    "variant standardization",
+    "variant toolkit",
+    "vcf"
 ]
+
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
-[tool.maturin]
-python-source = "python"
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [project.scripts]
 vstol = "vstolib.cli.cli_main:run"
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-vstolib = ["resources/scripts/*.R"]
+[project.urls]
+"Homepage" = "https://github.com/pirl-unc/vstol"
+"Bug Tracker" = "https://github.com/pirl-unc/vstol"

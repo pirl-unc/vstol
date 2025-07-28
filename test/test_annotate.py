@@ -1,126 +1,97 @@
-from vstolib.ensembl import Ensembl
+import pandas as pd
 from vstolib.gencode import Gencode
 from vstolib.main import annotate
-from python.vstolib.constants import GenomicRegionTypes
 from .data import get_data_path
 
 
-def test_annotate_gencode():
+def test_annotate_1():
     gencode = Gencode(
-        gtf_file=get_data_path(name="gencode.v41.annotations.gtf"),
+        gtf_file=get_data_path(name="gtf/gencode.v41.annotation.chr17-18.gtf.gz"),
         version='v41',
         species='human',
         levels=[1,2],
         types=['protein_coding']
     )
 
-    # 5prime_utr
-    variation_annotations = gencode.annotate_position(
-        chromosome='chr1',
-        position=1324620
+    data = {
+        'id': [1],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673800],
+        'strand_1': ['*'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673801],
+        'strand_2': ['*'],
+    }
+
+    df_variants = pd.DataFrame(data)
+
+    df_annotated = annotate(
+        df_variants=df_variants,
+        annotator=gencode,
+        num_processes=1
     )
-    for v in variation_annotations:
-        assert(v.region == GenomicRegionTypes.FIVE_PRIME_UTR)
 
-    # Exonic
-    variation_annotations = gencode.annotate_position(
-        chromosome='chr1',
-        position=1313820
-    )
-    for v in variation_annotations:
-        assert(v.region == GenomicRegionTypes.EXONIC)
-
-   # Intronic
-    variation_annotations = gencode.annotate_position(
-        chromosome='chr1',
-        position=1313327
-    )
-    for v in variation_annotations:
-        assert(v.region == GenomicRegionTypes.INTRONIC)
-
-    # Intergenic
-    variation_annotations = gencode.annotate_position(
-        chromosome='chr1',
-        position=1329900
-    )
-    for v in variation_annotations:
-        assert(v.region == GenomicRegionTypes.INTERGENIC)
+    assert df_annotated['position_1_exon_id'].values[0] != ''
+    assert df_annotated['position_2_exon_id'].values[0] != ''
 
 
-def test_annotate_ensembl():
-    ensembl = Ensembl(release=95, species='human')
-
-    # UTR
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr8',
-        position=94641250
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.UNTRANSLATED_REGION)
-
-    # Exonic
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr8',
-        position=94641400
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.EXONIC)
-
-    # Intronic
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr8',
-        position=94641600
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.INTRONIC)
-
-    # Intergenic
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr8',
-        position=94640800
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.INTERGENIC)
-
-    # Exonic
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr1',
-        position=12030
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.EXONIC)
-
-    # Intronic
-    variant_annotations = ensembl.annotate_position_using_pyensembl(
-        chromosome='chr1',
-        position=12300
-    )
-    for v in variant_annotations:
-        assert(v.region == GenomicRegionTypes.INTRONIC)
-
-
-def test_annotate_sniffles2_ensembl(sniffles2_variants_list):
-    ensembl = Ensembl(release=95, species='human')
-    variants_list_annotated = annotate(
-        variants_list=sniffles2_variants_list,
-        annotator=ensembl,
-        num_threads=2
-    )
-    print(variants_list_annotated.size)
-
-
-def test_annotate_sniffles2_gencode(sniffles2_variants_list):
-    gtf_file = get_data_path(name='gencode.v41.annotations.gtf')
+def test_annotate_2():
     gencode = Gencode(
-        gtf_file=gtf_file,
+        gtf_file=get_data_path(name="gtf/gencode.v41.annotation.chr17-18.gtf.gz"),
         version='v41',
         species='human',
-        levels=[1],
+        levels=[1,2],
         types=['protein_coding']
     )
-    variants_list_annotated = annotate(
-        variants_list=sniffles2_variants_list,
+
+    data = {
+        'id': [1],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673800],
+        'strand_1': ['-'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673801],
+        'strand_2': ['-'],
+    }
+
+    df_variants = pd.DataFrame(data)
+
+    df_annotated = annotate(
+        df_variants=df_variants,
         annotator=gencode,
-        num_threads=2
+        num_processes=1
     )
-    print(variants_list_annotated.size)
+
+    assert df_annotated['position_1_exon_id'].values[0] != ''
+    assert df_annotated['position_2_exon_id'].values[0] != ''
+
+
+def test_annotate_3():
+    gencode = Gencode(
+        gtf_file=get_data_path(name="gtf/gencode.v41.annotation.chr17-18.gtf.gz"),
+        version='v41',
+        species='human',
+        levels=[1,2],
+        types=['protein_coding']
+    )
+
+    data = {
+        'id': [1],
+        'chromosome_1': ['chr17'],
+        'position_1': [7673800],
+        'strand_1': ['+'],
+        'chromosome_2': ['chr17'],
+        'position_2': [7673801],
+        'strand_2': ['+'],
+    }
+
+    df_variants = pd.DataFrame(data)
+
+    df_annotated = annotate(
+        df_variants=df_variants,
+        annotator=gencode,
+        num_processes=1
+    )
+
+    assert df_annotated['position_1_exon_id'].values[0] == ''
+    assert df_annotated['position_2_exon_id'].values[0] == ''

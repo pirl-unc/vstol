@@ -1,0 +1,18 @@
+#cluster_id	adj_1-tadj_2	read_support	vaf	genotype	sv_type	det_sv_type	direction	bnd	phaseblock	genome_ids
+severus_0	-chr3:26390425|-chr6:26193810	32	0.21052631578947367	hom	BND	None	HH/TT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_0	+chr3:26622431|+chr3:26623008	79	0.37089201877934275	hom	INV	foldback	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_0	+chr11:84105337|-chr6:27888534	3	0.04285714285714286	hom	BND	None	TH	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_0	+chr6:27886735|+chr6:27892912	3	0.04918032786885246	hom	INV	None	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_0	-chr3:26390425|+chr6:26194178	31	0.20394736842105263	hom	BND	None	HT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_1	-chr2:94282241|+chr2_KI270772v1_alt:71208	33	0.3626373626373626	hom	BND	None	HT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_1	-chr2:94282241|+chr2_KI270772v1_alt:56689	22	0.13496932515337423	hom	BND	None	HT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_1	-chr2:94275461|-chr2_KI270772v1_alt:54724	30	0.17857142857142858	hom	BND	None	HH/TT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_1	+chr2:94278255|+chr2:94293015	10	0.13513513513513514	hom	INV	foldback	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_1	-chr2:94278558|-chr2_KI270772v1_alt:56477	11	0.06875	hom	BND	None	HH/TT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_2	+chr9:28034301|-chr9:28157693	21	0.4666666666666667	hom	DEL	None	HT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_2	-chr9:28031864|-chr9:28034468	20	0.46511627906976744	hom	INV	dup_inv_segment	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_2	+chr9:28031837|+chr9:28059142	23	0.48936170212765956	hom	INV	dup_inv_segment	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_3	+chr1:143215686|-chr3:25290092	7	0.0008274231678486998	hom	BND	None	TH	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_3	+chr3:25359111|+chr3:25359568	31	0.124	hom	INV	foldback	HH/TT	intra		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_4	-chr10:7017548|+chr19:17286002	13	0.24074074074074073	hom	BND	Templated_ins	TH	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam
+severus_4	+chr10:7090914|-chr19:17286830	14	0.2978723404255319	hom	BND	Templated_ins	HT	inter		colo829-dna-pacbio_minimap2_mdtagged_sorted.bam

@@ -1,0 +1,29 @@
+#cluster_id	type	Junction_type	SVs	SV_count	genome_ids	
+severus_0	complex	TT:2 ,HH:3 	INV:3 ,foldback:2 	5	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_1	complex	HT:3 	DEL:3 	3	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_2	complex	TT:2 ,HH:1 	INV:3 	3	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_3	complex	HH:2 ,TT:2 	complex_inv:4 	4	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_4	complex	HH:2 ,Interchr:2 	foldback:1 ,BND:2 ,INV:1 	4	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_5	complex	HH:1 ,Interchr:3 	foldback:1 ,BND:3 	4	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_6	complex	HT:1 ,TT:1 ,HH:1 	DEL:1 ,dup_inv_segment:2 	3	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_7	complex	Interchr:3 	BND:3 	3	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_8	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_9	complex	TT:1 ,HH:1 	dup_inv_segment:2 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_10	complex	HH:1 ,TT:1 ,HT:1 	dup_inv_segment:2 ,DEL:1 	3	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_11	complex	TT:1 ,HH:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_12	complex	TT:1 ,HH:1 	dup_inv_segment:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_13	complex	TH:2 	Templated_ins:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_14	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_16	complex	TH:2 	Templated_ins:2 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_18	complex	TH:1 ,HT:1 	Templated_ins:1 ,DEL:1 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_19	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_21	complex	Interchr:1 ,HT:1 	BND:1 ,DEL:1 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam,colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_22	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_24	complex	TH:2 	Templated_ins:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_28	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_29	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_30	complex	TT:1 ,HH:1 	reciprocal_inv_del:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_34	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_36	complex	HH:1 ,TT:1 	foldback:1 ,INV:1 	2	colo829bl-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_37	complex	HH:1 ,Interchr:1 	foldback:1 ,BND:1 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_38	complex	Interchr:2 	Templated_ins:2 	2	colo829-dna-pacbio_minimap2_mdtagged_sorted.bam	

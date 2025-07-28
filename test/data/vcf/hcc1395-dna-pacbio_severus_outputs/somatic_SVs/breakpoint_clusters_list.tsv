@@ -1,0 +1,67 @@
+#cluster_id	type	Junction_type	SVs	SV_count	genome_ids	
+severus_0	complex	TH:3 ,HH:6 ,Interchr:2 ,TT:2 ,HT:1 	Templated_ins:2 ,INV:4 ,BND:2 ,foldback:2 ,complex_inv:1 ,DEL:1 ,tandem_duplication:1 ,Templated_ins_inv:1 	14	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_1	complex	TH:7 ,TT:1 ,Interchr:1 ,HT:4 ,HH:1 	Templated_ins:5 ,INV:1 ,BND:1 ,tandem_duplication:2 ,DEL:4 ,Templated_ins_inv:1 	14	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_2	complex	Interchr:1 ,HT:3 ,TH:5 ,HH:2 ,TT:1 	inv_tra:2 ,DEL:3 ,Templated_ins:4 ,tandem_duplication:1 ,INV:2 	12	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_3	complex	HH:2 ,TT:2 ,HT:4 	complex_inv:3 ,DEL:4 ,foldback:1 	8	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_4	complex	TT:1 ,HT:2 ,Interchr:1 ,HH:1 	INV:2 ,DEL:2 ,BND:1 	5	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_5	complex	TH:1 ,HH:1 ,TT:1 ,Interchr:1 	tandem_duplication:1 ,reciprocal_inv_del:2 ,BND:1 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_6	complex	Interchr:3 ,TT:1 	inv_tra:1 ,BND:1 ,complex_inv:2 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_7	complex	TT:1 ,TH:1 ,Interchr:2 	inv_tra:2 ,Templated_ins:1 ,BND:1 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_8	complex	TH:1 ,TT:1 ,HH:2 	Templated_ins:1 ,INV:1 ,foldback:2 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_9	complex	HT:1 ,TH:1 ,Interchr:2 	DEL:1 ,tandem_duplication:1 ,BND:2 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_10	complex	HT:1 ,TT:1 ,TH:1 ,Interchr:1 	DEL:1 ,inv_tra:2 ,tandem_duplication:1 	4	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_11	complex	Interchr:2 ,TT:1 	BND:2 ,INV:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_12	complex	Interchr:2 ,HH:1 	inv_tra:2 ,BND:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_13	complex	TT:2 ,HH:1 	dup_inv_segment:2 ,INV:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_14	complex	Interchr:2 ,HT:1 	BND:2 ,DEL:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_15	complex	Interchr:3 	BND:3 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_16	complex	Interchr:3 	inv_tra:2 ,BND:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_17	complex	HT:1 ,Interchr:2 	DEL:1 ,BND:2 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_18	complex	HT:1 ,Interchr:2 	DEL:1 ,BND:2 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_19	complex	Interchr:2 ,HH:1 	BND:2 ,INV:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_20	complex	TT:1 ,Interchr:1 ,HH:1 	INV:1 ,BND:1 ,reciprocal_inv_del:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_21	complex	TH:1 ,TT:1 ,Interchr:1 	Templated_ins:1 ,INV:1 ,BND:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_22	complex	HT:1 ,Interchr:2 	DEL:1 ,Reciprocal_tra:2 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_23	complex	HT:2 ,Interchr:1 	DEL:2 ,BND:1 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_24	complex	TH:1 ,HH:1 ,TT:1 	Templated_ins:1 ,reciprocal_inv_del:2 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_25	complex	TH:1 ,TT:1 ,HH:1 	tandem_duplication:1 ,INV:2 	3	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_26	complex	Interchr:2 	Templated_ins:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_27	complex	TH:1 ,Interchr:1 	Templated_ins:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_28	complex	Interchr:2 	BND:1 ,Templated_ins:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_29	complex	Interchr:1 ,HT:1 	BND:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_30	complex	HT:1 ,Interchr:1 	DEL:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_31	complex	Interchr:1 ,HT:1 	Reciprocal_tra:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_32	complex	Interchr:2 	BND:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_33	complex	Interchr:1 ,TH:1 	BND:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_34	complex	HT:1 ,TH:1 	DEL:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_35	complex	Interchr:1 ,TH:1 	BND:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_36	complex	TT:1 ,HH:1 	dup_inv_segment:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_37	complex	Interchr:2 	BND:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_38	complex	Interchr:1 ,TT:1 	BND:1 ,INV:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_39	complex	HH:1 ,TT:1 	complex_inv:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_40	complex	Interchr:2 	Reciprocal_tra:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_41	complex	HH:1 ,TT:1 	dup_inv_segment:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_42	complex	Interchr:1 ,TH:1 	BND:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_44	complex	Interchr:1 ,TH:1 	BND:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_45	complex	TH:1 ,Interchr:1 	tandem_duplication:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_46	complex	TH:1 ,TT:1 	tandem_duplication:1 ,complex_inv:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_47	complex	HH:1 ,TT:1 	foldback:1 ,INV:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_48	complex	TH:1 ,HT:1 	tandem_duplication:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_49	complex	Interchr:2 	Reciprocal_tra:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_50	complex	TH:1 ,Interchr:1 	Templated_ins:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_51	complex	Interchr:1 ,TH:1 	BND:1 ,tandem_duplication:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_52	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_53	complex	Interchr:2 	BND:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_54	complex	Interchr:1 ,HT:1 	Templated_ins:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_55	complex	Interchr:1 ,TH:1 	BND:1 ,Templated_ins:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_56	complex	HH:1 ,TT:1 	reciprocal_inv_del:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_57	complex	TH:1 ,Interchr:1 	tandem_duplication:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_58	complex	Interchr:1 ,HT:1 	BND:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_59	complex	TH:1 ,Interchr:1 	tandem_duplication:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_61	complex	HT:1 ,Interchr:1 	DEL:1 ,BND:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_62	complex	TH:2 	tandem_duplication:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_63	complex	Interchr:1 ,HT:1 	BND:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_64	complex	TH:2 	tandem_duplication:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_65	complex	TH:2 	tandem_duplication:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_66	complex	TH:1 ,HT:1 	tandem_duplication:1 ,DEL:1 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	
+severus_67	complex	TH:2 	tandem_duplication:2 	2	hcc1395-dna-pacbio_minimap2_mdtagged_sorted.bam	

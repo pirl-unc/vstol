@@ -35,27 +35,16 @@ jobs:
         conda config --add channels bioconda
         conda config --add channels conda-forge
         conda install pandas==2.1.4
-        conda install maturin
-        conda install rust
+        conda install numpy==1.26.2
+        conda install -c anaconda networkx==3.4.2
+        conda install -c conda-forge intervaltree==3.1.0
         conda install pylint
         conda install coveralls
         conda install pytest
         conda install pytest-cov
-        conda install pysam==0.22.1
-        conda install numpy==1.26.2
-        conda install r-base==4.4.1
-        Rscript -e 'install.packages("dplyr", repos="https://cloud.r-project.org/")'
-        Rscript -e 'install.packages("ggplot2", repos="https://cloud.r-project.org/")'
-        Rscript -e 'install.packages("optparse", repos="https://cloud.r-project.org/")'
-        pip install pyensembl
   
         # Install vstol
         pip install . --verbose
-
-    - name: Download ensembl data
-      shell: bash -l {0}
-      run: |
-        pyensembl install --release 95 --species human
 
     - name: Run linter
       shell: bash -l {0}

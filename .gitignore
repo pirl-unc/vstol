@@ -8,8 +8,5 @@ __pycache__/
 .pytest_cache/
 **/.DS_Store
 .coverage
-playground/
 target/
-Cargo.lock
-test/data/hg38.fa
-test/data/hg38.fa.fai
+src/vstol.egg-info/
