@@ -9,7 +9,7 @@ TSV files. It also supports list operations (*annotate*, *diff*, *intersect*, *m
 ## 01. Installation
 
 ```
-pip install . --verbose
+pip install vstol
 ```
 
 ## 02. Dependencies
