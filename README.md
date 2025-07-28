@@ -8,6 +8,7 @@ TSV files. It also supports list operations (*annotate*, *diff*, *intersect*, *m
 
 ## 01. Installation
 
+`vstol` is available on [pypi](https://pypi.org/project/vstol/):
 ```
 pip install vstol
 ```

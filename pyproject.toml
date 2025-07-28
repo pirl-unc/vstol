@@ -22,7 +22,7 @@ requires = [
 
 [project]
 name = "vstol"
-version = "0.4.0"
+version = "0.4.1"
 requires-python = ">=3.10"
 readme = "README.md"
 keywords = [
