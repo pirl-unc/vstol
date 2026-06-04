@@ -22,9 +22,8 @@ jobs:
 
       - name: Run linter
         run: |
-          # ``pip install .`` pulls vstol's runtime deps (declared in pyproject),
-          # which ``pylint --errors-only`` needs to resolve the source's imports.
-          pip install . pylint==3.3.5
+          pip install pylint==3.3.5 pytest
+          pip install .
           chmod +x lint.sh
           bash lint.sh
 
