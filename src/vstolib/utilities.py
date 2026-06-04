@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 def get_typed_value(
         value: Any,
         default_value: Any,
-        type: Literal[int,float,str,bool]
+        type: Literal[int, float, str, bool]
 ) -> Any:
     """
     Safely converts a value from a VCF row.
@@ -63,7 +63,7 @@ def retrieve_from_dict(
         dct: Dict,
         key: str,
         default_value: Any,
-        type: Literal[int,float,str,bool]
+        type: Literal[int, float, str, bool]
 ) -> Any:
     """
     Safely retrieves a value from a dictionary.

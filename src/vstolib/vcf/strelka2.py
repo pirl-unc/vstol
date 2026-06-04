@@ -25,42 +25,13 @@ from ..utilities import retrieve_from_dict
 logger = get_logger(__name__)
 
 
-def parse_strelka2_vcf(
+def parse_strelka2_somatic_vcf(
         df_vcf: pd.DataFrame,
         source_id: str,
         platform: str
 ) -> pd.DataFrame:
     """
     Parse a Strelka2 VCF DataFrame and return a Pandas DataFrame.
-
-    Parameters:
-        df_vcf      :   Pandas DataFrame of rows from a Strelka2 VCF file.
-
-    Returns:
-        Pandas DataFrame with the following columns:
-        'id'
-        'source_id'
-        'sample_id'
-        'platform'
-        'method'
-        'chromosome_1'
-        'position_1'
-        'strand_1'
-        'operation_1'
-        'chromosome_2'
-        'position_2'
-        'strand_2'
-        'operation_2'
-        'sequence'
-        'quality'
-        'filter'
-        'size'
-        'read_count_reference_allele'
-        'read_count_alternate_allele'
-        'read_count_total'
-        'alternate_allele_fraction'
-        'info'
-        'format'
     """
     # Step 1. Get a template dictionary
     data = get_template_dict()
@@ -85,7 +56,7 @@ def parse_strelka2_vcf(
         info_dict = {}
         for curr_info in info:
             if '=' in curr_info:
-                curr_info_elements = curr_info.split('=')
+                curr_info_elements = curr_info.split('=', 1)
                 curr_key = curr_info_elements[0]
                 info_dict[curr_key] = str(curr_info_elements[1])
             else:
@@ -98,10 +69,10 @@ def parse_strelka2_vcf(
                 format_curr_sample = str(row[sample_id]).split(':')
                 for curr_format in format:
                     curr_key = curr_format
-                    format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)])
+                    format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)]) if format.index(curr_format) < len(format_curr_sample) else '.'
 
                 # Store meta data
-                data['id'].append(variant_id)
+                data['variant_id'].append(variant_id)
                 data['source_id'].append(source_id)
                 data['sample_id'].append(sample_id)
                 data['platform'].append(platform)
@@ -121,7 +92,7 @@ def parse_strelka2_vcf(
                     data['position_1'].append(position - 1)
                     data['position_2'].append(position + 1)
                     data['sequence'].append(alternate_allele)
-                    data['size'].append(len(alternate_allele))
+                    data['variant_size'].append(len(alternate_allele))
                     if len(alternate_allele) == 1:
                         data['variant_type'].append(VariantType.SINGLE_NUCLEOTIDE_VARIANT)
                         variant_type = VariantType.SINGLE_NUCLEOTIDE_VARIANT
@@ -135,7 +106,7 @@ def parse_strelka2_vcf(
                     data['position_1'].append(deletion_start - 1)
                     data['position_2'].append(deletion_end + 1)
                     data['sequence'].append('')
-                    data['size'].append(deletion_end - deletion_start + 1)
+                    data['variant_size'].append(deletion_end - deletion_start + 1)
                     data['variant_type'].append(VariantType.DELETION)
                     variant_type = VariantType.DELETION
                 elif (len(reference_allele) < len(alternate_allele)) and len(reference_allele) == 1:
@@ -143,7 +114,7 @@ def parse_strelka2_vcf(
                     data['position_1'].append(position)
                     data['position_2'].append(position + 1)
                     data['sequence'].append(alternate_allele[1:])
-                    data['size'].append(len(alternate_allele[1:]))
+                    data['variant_size'].append(len(alternate_allele[1:]))
                     data['variant_type'].append(VariantType.INSERTION)
                     variant_type = VariantType.INSERTION
                 else:
@@ -212,6 +183,203 @@ def parse_strelka2_vcf(
             variant_id += 1
 
     df_variants = pd.DataFrame(data)
-    logger.info('Converted %i Strelka2 variants.' % len(df_variants['id'].unique()))
+    logger.info('Converted %i Strelka2 variants.' % len(df_variants['variant_id'].unique()))
+    return df_variants
+
+
+def parse_strelka2_germline_vcf(
+        df_vcf: pd.DataFrame,
+        source_id: str,
+        platform: str
+) -> pd.DataFrame:
+    """
+    Parse a Strelka2 VCF DataFrame and return a Pandas DataFrame.
+
+    Parameters:
+        df_vcf      :   Pandas DataFrame of rows from a Strelka2 VCF file.
+
+    Returns:
+        Pandas DataFrame with the following columns:
+        'variant_id'
+        'source_id'
+        'sample_id'
+        'platform'
+        'method'
+        'chromosome_1'
+        'position_1'
+        'strand_1'
+        'operation_1'
+        'chromosome_2'
+        'position_2'
+        'strand_2'
+        'operation_2'
+        'sequence'
+        'quality'
+        'filter'
+        'variant_size'
+        'read_count_reference_allele'
+        'read_count_alternate_allele'
+        'read_count_total'
+        'alternate_allele_fraction'
+        'info'
+        'format'
+    """
+    # Step 1. Get a template dictionary
+    data = get_template_dict()
+
+    # Step 2. Get all sample IDs
+    sample_ids = df_vcf.columns.values.tolist()[9:]
+
+    # Step 3. Record variant calls
+    variant_id = 1
+    for row in df_vcf.to_dict('records'):
+        # Get VCF column values
+        chromosome = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
+        position = retrieve_from_dict(dct=row, key='POS', default_value='', type=int)
+        reference_allele = retrieve_from_dict(dct=row, key='REF', default_value='', type=str)
+        alternate_allele_ = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
+        quality = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
+        filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
+        info = str(row['INFO']).split(';')
+        format = str(row['FORMAT']).split(':')
+
+        # Get INFO
+        info_dict = {}
+        for curr_info in info:
+            if '=' in curr_info:
+                curr_info_elements = curr_info.split('=', 1)
+                curr_key = curr_info_elements[0]
+                info_dict[curr_key] = str(curr_info_elements[1])
+            else:
+                info_dict[curr_info] = True
+
+        for i, alternate_allele in enumerate(alternate_allele_.split(',')):
+            for sample_id in sample_ids:
+                # Get FORMAT
+                format_dict = {}
+                format_curr_sample = str(row[sample_id]).split(':')
+                for curr_format in format:
+                    curr_key = curr_format
+                    format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)]) if format.index(curr_format) < len(format_curr_sample) else '.'
+
+                # Store meta data
+                data['variant_id'].append(variant_id)
+                data['source_id'].append(source_id)
+                data['sample_id'].append(sample_id)
+                data['platform'].append(platform)
+                data['method'].append(VariantCallingMethod.STRELKA2_GERMLINE)
+                data['quality'].append(quality)
+                data['filter'].append(filter)
+
+                # Store variant information
+                data['chromosome_1'].append(chromosome)
+                data['chromosome_2'].append(chromosome)
+                data['strand_1'].append(Strand.UNKNOWN)
+                data['strand_2'].append(Strand.UNKNOWN)
+                data['operation_1'].append(OperationType.DOWNSTREAM)
+                data['operation_2'].append(OperationType.UPSTREAM)
+                if len(reference_allele) == len(alternate_allele):
+                    # SNV or MNV
+                    data['position_1'].append(position - 1)
+                    data['position_2'].append(position + 1)
+                    data['sequence'].append(alternate_allele)
+                    data['variant_size'].append(len(alternate_allele))
+                    if len(alternate_allele) == 1:
+                        data['variant_type'].append(VariantType.SINGLE_NUCLEOTIDE_VARIANT)
+                        variant_type = VariantType.SINGLE_NUCLEOTIDE_VARIANT
+                    else:
+                        data['variant_type'].append(VariantType.MULTI_NUCLEOTIDE_VARIANT)
+                        variant_type = VariantType.MULTI_NUCLEOTIDE_VARIANT
+                elif (len(reference_allele) > len(alternate_allele)) and len(alternate_allele) == 1:
+                    # Deletion
+                    deletion_start = position + 1
+                    deletion_end = position + len(reference_allele) - 1
+                    data['position_1'].append(deletion_start - 1)
+                    data['position_2'].append(deletion_end + 1)
+                    data['sequence'].append('')
+                    data['variant_size'].append(deletion_end - deletion_start + 1)
+                    data['variant_type'].append(VariantType.DELETION)
+                    variant_type = VariantType.DELETION
+                elif (len(reference_allele) < len(alternate_allele)) and len(reference_allele) == 1:
+                    # Insertion
+                    data['position_1'].append(position)
+                    data['position_2'].append(position + 1)
+                    data['sequence'].append(alternate_allele[1:])
+                    data['variant_size'].append(len(alternate_allele[1:]))
+                    data['variant_type'].append(VariantType.INSERTION)
+                    variant_type = VariantType.INSERTION
+                else:
+                    if len(reference_allele) > len(alternate_allele):
+                        # Multi-allelic deletion
+                        start = position + 1
+                        end = position + len(reference_allele) - 1
+                        data['position_1'].append(start - 1)
+                        data['position_2'].append(end + 1)
+                        data['sequence'].append(alternate_allele[1:])
+                        data['variant_size'].append(end - start + 1)
+                        data['variant_type'].append(VariantType.DELETION)
+                        variant_type = VariantType.DELETION
+                    else:
+                        # Multi-allelic insertion
+                        start = position + 1
+                        end = position + len(reference_allele) - 1
+                        data['position_1'].append(start - 1)
+                        data['position_2'].append(end + 1)
+                        data['sequence'].append(alternate_allele[1:])
+                        data['variant_size'].append(end - start + 1)
+                        data['variant_type'].append(VariantType.INSERTION)
+                        variant_type = VariantType.INSERTION
+
+                # Store INFO
+                info_key_value_pairs = []
+                for key, val in info_dict.items():
+                    info_key_value_pairs.append('%s=%s' % (str(key), str(val)))
+                data['info'].append(';'.join(info_key_value_pairs))
+
+                # Store FORMAT
+                format_key_value_pairs = []
+                for key, val in format_dict.items():
+                    format_key_value_pairs.append('%s=%s' % (str(key), str(val)))
+                data['format'].append(';'.join(format_key_value_pairs))
+
+                # Store optional values
+                if 'AD' in format_dict:
+                    position_1_read_count_reference_allele = int(format_dict['AD'].split(',')[0])
+                    position_2_read_count_reference_allele = int(format_dict['AD'].split(',')[0])
+                    position_1_read_count_alternate_allele = int(format_dict['AD'].split(',')[i + 1])
+                    position_2_read_count_alternate_allele = int(format_dict['AD'].split(',')[i + 1])
+                else:
+                    position_1_read_count_reference_allele = -1
+                    position_2_read_count_reference_allele = -1
+                    position_1_read_count_alternate_allele = -1
+                    position_2_read_count_alternate_allele = -1
+                if 'DP' in format_dict:
+                    position_1_read_count_total = int(format_dict['DP'])
+                    position_2_read_count_total = int(format_dict['DP'])
+                else:
+                    position_1_read_count_total = -1
+                    position_2_read_count_total = -1
+                if position_1_read_count_alternate_allele != -1 and position_1_read_count_total != -1:
+                    position_1_alternate_allele_fraction = float(position_1_read_count_alternate_allele) / float(position_1_read_count_total)
+                else:
+                    position_1_alternate_allele_fraction = -1
+                if position_2_read_count_alternate_allele != -1 and position_2_read_count_total != -1:
+                    position_2_alternate_allele_fraction = float(position_2_read_count_alternate_allele) / float(position_2_read_count_total)
+                else:
+                    position_2_alternate_allele_fraction = -1
+
+                data['position_1_read_count_reference_allele'].append(position_1_read_count_reference_allele)
+                data['position_2_read_count_reference_allele'].append(position_2_read_count_reference_allele)
+                data['position_1_read_count_alternate_allele'].append(position_1_read_count_alternate_allele)
+                data['position_2_read_count_alternate_allele'].append(position_2_read_count_alternate_allele)
+                data['position_1_read_count_total'].append(position_1_read_count_total)
+                data['position_2_read_count_total'].append(position_2_read_count_total)
+                data['position_1_alternate_allele_fraction'].append(position_1_alternate_allele_fraction)
+                data['position_2_alternate_allele_fraction'].append(position_2_alternate_allele_fraction)
+                data['read_ids_alternate_allele'].append('')
+            variant_id += 1
+
+    df_variants = pd.DataFrame(data)
+    logger.info('Converted %i Strelka2 variants.' % len(df_variants['variant_id'].unique()))
     return df_variants
 

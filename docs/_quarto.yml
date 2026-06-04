@@ -1,0 +1,40 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "VSTOL"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: cli/index.qmd
+        text: Commands
+      - href: variant-callers.qmd
+        text: Variant Callers
+      - href: faq.qmd
+        text: FAQ
+    right:
+      - icon: github
+        href: https://github.com/pirl-unc/vstol
+  sidebar:
+    style: docked
+    contents:
+      - text: Home
+        href: index.qmd
+      - section: Commands
+        contents:
+          - cli/index.qmd
+          - auto: cli/*.qmd
+      - text: Variant Callers
+        href: variant-callers.qmd
+      - text: FAQ
+        href: faq.qmd
+
+format:
+  html:
+    theme: [cosmo, custom.scss]
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap

@@ -13,18 +13,20 @@
 
 [build-system]
 requires = [
-    "setuptools==72.1.0",
-    "pandas>=2.0.3",
-    "numpy>=1.22.3",
-    "networkx>=3.4.2",
-    "intervaltree>=3.1.0"
+    "setuptools==72.1.0"
 ]
 
 [project]
 name = "vstol"
-version = "0.4.1"
+version = "0.4.2a1"
 requires-python = ">=3.10"
 readme = "README.md"
+dependencies = [
+    "pandas>=2.0.3",
+    "numpy>=1.22.3",
+    "networkx>=3.4.2",
+    "intervaltree>=3.1.0",
+]
 keywords = [
     "cancer",
     "dna",

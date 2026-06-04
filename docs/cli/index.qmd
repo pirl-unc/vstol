@@ -1,0 +1,21 @@
+---
+title: "Commands"
+---
+
+Reference for every `vstol` command. Most workflows begin with
+[`vcf2tsv`](vcf2tsv.qmd) to standardize a caller's VCF into the Occam's Variant
+Grammar TSV, then apply the operations below to the resulting lists.
+
+## Available Commands
+
+| Command | Description |
+|:--------|:------------|
+| [`annotate`](annotate.qmd) | Annotate variants with gene-level context. |
+| [`collapse`](collapse.qmd) | Collapse a merged list into one row per group, applying somatic filters. |
+| [`diff`](diff.qmd) | Output the variants specific to a target list. |
+| [`intersect`](intersect.qmd) | Identify variants shared across variant lists. |
+| [`merge`](merge.qmd) | Merge multiple variant lists into one. |
+| [`overlap`](overlap.qmd) | Identify variants overlapping genomic regions. |
+| [`vcf2tsv`](vcf2tsv.qmd) | Convert a VCF file to the Occam's Variant Grammar TSV. |
+
+: {.striped .hover}

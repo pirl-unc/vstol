@@ -1,0 +1,73 @@
+---
+title: "FAQ"
+---
+
+Frequently asked questions. If your question isn't answered here, please
+[open an issue](https://github.com/pirl-unc/vstol/issues).
+
+<script>
+function faqExpandAll() {
+  document.querySelectorAll('#faq-list .callout-collapse:not(.show)').forEach(c => {
+    bootstrap.Collapse.getOrCreateInstance(c, {toggle: false}).show();
+  });
+  document.querySelectorAll('#faq-list details').forEach(d => { d.open = true; });
+}
+function faqCollapseAll() {
+  document.querySelectorAll('#faq-list .callout-collapse.show').forEach(c => {
+    bootstrap.Collapse.getOrCreateInstance(c, {toggle: false}).hide();
+  });
+  document.querySelectorAll('#faq-list details').forEach(d => { d.open = false; });
+}
+</script>
+
+<div class="d-flex gap-2 my-3">
+  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="faqExpandAll()">Expand all</button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="faqCollapseAll()">Collapse all</button>
+</div>
+
+<div id="faq-list">
+
+**Getting started**
+
+::: {.callout-note collapse="true" icon="false"}
+## What is the Occam's Variant Grammar?
+
+It's a standardized, tab-separated representation of small and structural DNA
+variants as well as RNA variants that VSTOL converts every supported caller's VCF into, so that variants
+from different callers can be compared and combined. Each variant is described by
+two breakpoints (`chromosome_1`/`position_1` and `chromosome_2`/`position_2`)
+with strands and operations. See the
+[introduction](https://pirlblog.substack.com/p/variant-standardization) for the
+full rationale.
+:::
+
+::: {.callout-note collapse="true" icon="false"}
+## Which variant callers does `vcf2tsv` support?
+
+A wide range of small-variant and structural-variant callers (Clair3, ClairS,
+cuteSV, DeepVariant, DeepSomatic, Delly2, Dysgu, GRIDSS2, HaplotypeCaller,
+Longshot, Lumpy, Manta, Mutect2, NanoCaller, Nanomonsv, NanoVar, PBSV, Savana,
+Severus, Sniffles2, Strelka2, SVIM, SVision-pro, and more). Pass the caller via
+`--method`; run `vstol vcf2tsv --help` for the current list, or see the
+[README](https://github.com/pirl-unc/vstol) for tested versions.
+:::
+
+**Operations**
+
+::: {.callout-note collapse="true" icon="false"}
+## How does VSTOL decide that two variants are "the same"?
+
+The matching commands (`diff`, `intersect`, `merge`) share three options:
+
+- `--max-breakpoint-distance` — two breakpoints within this distance (inclusive)
+  are treated as the same position.
+- `--match-both-positions` — whether *both* breakpoint pairs must match, or just
+  one.
+- `--match-operation-types` — whether the operation types must also match.
+
+Small variants (SNVs, MNVs, small indels up to `--max-small-var-size`) must match
+positions exactly and ignore `--max-breakpoint-distance`, so distinct nearby
+point mutations are not clustered together.
+:::
+
+</div>

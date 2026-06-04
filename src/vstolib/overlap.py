@@ -35,8 +35,17 @@ def overlap_variant_list(
     overlapping_indices = set()
     for i in range(0, len(df_variants)):
         row = df_variants.iloc[i]
-        matches_1 = tree_dict[row['chromosome_1']][row['position_1']]
-        matches_2 = tree_dict[row['chromosome_2']][row['position_2']]
+        # Guard chromosome membership: a variant on a contig with no genomic range
+        # (the ranges file need not cover every contig) previously raised KeyError and
+        # aborted the whole command. Treat a missing chromosome as zero overlaps.
+        if row['chromosome_1'] in tree_dict:
+            matches_1 = tree_dict[row['chromosome_1']][row['position_1']]
+        else:
+            matches_1 = set()
+        if row['chromosome_2'] in tree_dict:
+            matches_2 = tree_dict[row['chromosome_2']][row['position_2']]
+        else:
+            matches_2 = set()
         if len(matches_1) > 0 or len(matches_2) > 0:
             overlapping_indices.add(i)
 

@@ -20,13 +20,12 @@ to handling VCF files.
 import gzip
 import pandas as pd
 import re
-from typing import Dict
-from ..constants import OperationType, Strand, VariantCallingMethod
+from ..constants import OperationType, Strand
 
 
 def get_template_dict() -> dict:
     data = {
-        'id': [],
+        'variant_id': [],
         'source_id': [],
         'sample_id': [],
         'platform': [],
@@ -42,7 +41,7 @@ def get_template_dict() -> dict:
         'sequence': [],
         'quality': [],
         'filter': [],
-        'size': [],
+        'variant_size': [],
         'variant_type': [],
         'position_1_read_count_reference_allele': [],
         'position_2_read_count_reference_allele': [],
@@ -76,40 +75,35 @@ def read_vcf_file(
         Pandas DataFrame
     """
     vcf_names = []
-    is_gzipped = False
-    if vcf_file.endswith(".gz"):
-        is_gzipped = True
-        with gzip.open(vcf_file, 'rt') as f:
-            for line in f:
-                if line.startswith("#CHROM"):
-                    vcf_names = line.split('\t')
-                    break
-    else:
-        with open(vcf_file, 'r') as f:
-            for line in f:
-                if line.startswith("#CHROM"):
-                    vcf_names = line.split('\t')
-                    break
+    num_header_lines = 0
+    is_gzipped = vcf_file.endswith(".gz") or vcf_file.endswith(".bgz")
+    open_func = gzip.open if is_gzipped else open
+    with open_func(vcf_file, 'rt') as f:
+        for line in f:
+            num_header_lines += 1
+            if line.startswith("#CHROM"):
+                vcf_names = line.split('\t')
+                break
 
     vcf_names = [i.replace('\n', '') for i in vcf_names]
     vcf_names = ['CHROM' if i == '#CHROM' else i for i in vcf_names]
+
+    # Do NOT pass comment='#' to read_csv: pandas treats '#' anywhere in a line as a
+    # comment, so a '#' inside a data row (INFO/FORMAT/read-name fields) would silently
+    # truncate the row and drop its remaining columns. Skip exactly the header block
+    # (meta lines + the #CHROM line) via skiprows instead.
+    read_csv_kwargs = dict(
+        sep='\t',
+        header=None,
+        skiprows=num_header_lines,
+        low_memory=low_memory,
+        memory_map=memory_map,
+        names=vcf_names,
+    )
     if is_gzipped:
-        return pd.read_csv(vcf_file,
-                           compression='gzip',
-                           comment='#',
-                           sep='\s+',
-                           header=None,
-                           low_memory=low_memory,
-                           memory_map=memory_map,
-                           names=vcf_names)
+        return pd.read_csv(vcf_file, compression='gzip', **read_csv_kwargs)
     else:
-        return pd.read_csv(vcf_file,
-                           comment='#',
-                           sep='\s+',
-                           header=None,
-                           low_memory=low_memory,
-                           memory_map=memory_map,
-                           names=vcf_names)
+        return pd.read_csv(vcf_file, **read_csv_kwargs)
 
 
 def parse_alt_breakpoints(
@@ -133,13 +127,49 @@ def parse_alt_breakpoints(
           'sequence': <value>
         }
     """
+    # Single breakend (no brackets, dot at beginning or end)
+    # Examples: "G." or ".A"
+    has_brackets = ("[" in alternate_allele) or ("]" in alternate_allele)
+    if not has_brackets and "." in alternate_allele:
+        if alternate_allele.endswith("."):
+            full = alternate_allele[:-1]
+            sequence = full[1:] if len(full) > 1 else ""
+            return {
+                "chromosome_1": chromosome_1,
+                "position_1": int(position_1),
+                "strand_1": Strand.FORWARD,
+                "operation_1": OperationType.DOWNSTREAM,
+                "chromosome_2": "", # Unknown
+                "position_2": -1,   # Unknown
+                "strand_2": Strand.UNKNOWN,
+                "operation_2": OperationType.UNKNOWN,
+                "sequence": sequence
+            }
+        if alternate_allele.startswith("."):
+            full = alternate_allele[1:]
+            sequence = full[:-1] if len(full) > 1 else ""
+            return {
+                "chromosome_1": "",
+                "position_1": -1,
+                "strand_1": Strand.UNKNOWN,
+                "operation_1": OperationType.UNKNOWN,
+                "chromosome_2": chromosome_1,
+                "position_2": int(position_1),
+                "strand_2": Strand.FORWARD,
+                "operation_2": OperationType.UPSTREAM,
+                "sequence": sequence
+            }
+        raise Exception("Dot in an unexpected place: %s" % alternate_allele)
+
+    # Standard BND with brackets
     pattern = re.compile(
         r"""
-        (?P<prefix>[ACGTacgtNn]*)                   # optional prefix base (t)
-        (?P<left_bracket>[\[\]])?                   # optional left bracket
-        (?P<chromosome_2>\w+):(?P<position_2>\d+)   # mate location chrom:pos
-        (?P<right_bracket>[\[\]])?                  # optional right bracket
-        (?P<suffix>[ACGTacgtNn]*)                   # optional suffix base (t)
+        (?P<prefix>[ACGTNacgtn]*)              # optional prefix bases
+        (?P<left_bracket>[\[\]])               # [ or ]
+        (?P<chromosome_2>[^:\[\]]+)            # anything up to the colon (no colon/brackets)
+        :(?P<position_2>\d+)                   # position
+        (?P<right_bracket>[\[\]])              # [ or ]
+        (?P<suffix>[ACGTNacgtn]*)              # optional suffix bases
         """,
         re.VERBOSE
     )
@@ -207,7 +237,18 @@ def parse_alt_breakpoints(
         else:
             sequence = ''
     else:
-        raise Exception('Unknown ALT format to parse breakpoint: %s' % alternate_allele)
+        chromosome_1 = chromosome_1
+        position_1 = position_1
+        strand_1 = Strand.FORWARD
+        operation_1 = OperationType.UNKNOWN
+        chromosome_2 = groups['chromosome_2']
+        position_2 = groups['position_2']
+        strand_2 = Strand.REVERSE
+        operation_2 = OperationType.UNKNOWN
+        if len(groups['suffix']) > 1:
+            sequence = groups['suffix'][:-1]
+        else:
+            sequence = ''
 
     return {
         'chromosome_1': chromosome_1,

@@ -1,0 +1,49 @@
+---
+title: "Variant Callers"
+description: "Variant callers supported by vstol vcf2tsv and the versions tested."
+---
+
+`vstol vcf2tsv` converts the VCF output of the variant callers below into the
+[Occam's Variant Grammar](https://pirlblog.substack.com/p/variant-standardization)
+TSV. Select the caller with the `--method` value shown in the table.
+
+::: {.callout-note}
+The "Version Tested" column records the release each converter was validated
+against; other versions of the same caller usually work but are not guaranteed.
+Run `vstol vcf2tsv --help` for the authoritative list of accepted `--method`
+values.
+:::
+
+## DNA Variant Callers
+
+| Variant Caller | `--method` | Version Tested |
+|:---|:---|:---|
+| [Clair3](https://github.com/HKU-BAL/Clair3) | `clair3` | 1.2.0 |
+| [ClairS](https://github.com/HKU-BAL/ClairS) | `clairs` | 0.3.0 |
+| [CuteSV](https://github.com/tjiangHIT/cuteSV) | `cutesv` | 2.1.1 |
+| [dbSNP](https://www.ncbi.nlm.nih.gov/snp/) | `dbsnp` | 146 |
+| [DeepSomatic](https://github.com/google/deepsomatic) | `deepsomatic` | 1.9.0 |
+| [DeepVariant](https://github.com/google/deepvariant) | `deepvariant` | 1.9.0 |
+| [Delly2](https://github.com/dellytools/delly) | `delly2` | 1.2.6 |
+| [Dysgu](https://github.com/kcleal/dysgu) | `dysgu` | 1.8.5 |
+| [GRIDSS2](https://github.com/PapenfussLab/gridss) | `gridss2` | 2.13.2 |
+| [HaplotypeCaller](https://gatk.broadinstitute.org/hc/en-us/articles/360037225632-HaplotypeCaller) | `haplotypecaller` | 4.4.0.0 (GATK4) |
+| [Longshot](https://github.com/pjedge/longshot) | `longshot` | 1.0.0 |
+| [Lumpy](https://github.com/arq5x/lumpy-sv) | `lumpy` | 0.3.1 |
+| [Manta](https://github.com/Illumina/manta) | `manta` | 1.6.0 |
+| [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360035531132--How-to-Call-somatic-mutations-using-GATK4-Mutect2) | `mutect2` | 4.4.0.0 (GATK4) |
+| [NanoCaller](https://github.com/WGLab/NanoCaller) | `nanocaller` | 3.6.2 |
+| [Nanomonsv](https://github.com/friend1ws/nanomonsv) | `nanomonsv` | 0.8.0 |
+| [NanoVar](https://github.com/benoukraflab/NanoVar) | `nanovar` | 1.8.3 |
+| [Octopus](https://github.com/luntergroup/octopus) | `octopus` | 0.7.4 |
+| [PBSV](https://github.com/PacificBiosciences/pbsv) | `pbsv` | 2.9.0 |
+| [Savana](https://github.com/cortes-ciriano-lab/savana) | `savana` | 1.3.5 |
+| [Severus](https://github.com/KolmogorovLab/Severus) | `severus` | 1.1 |
+| [Sniffles2](https://github.com/fritzsedlazeck/Sniffles) | `sniffles2` | 2.3.3 |
+| [Strelka2](https://github.com/Illumina/strelka) | `strelka2-germline` | 2.9.10 |
+| [Strelka2](https://github.com/Illumina/strelka) | `strelka2-somatic` | 2.9.10 |
+| [SvABA](https://github.com/walaj/svaba) | `svaba` | 1.2.0 |
+| [Svim](https://github.com/eldariont/svim) | `svim` | 2.0.0 |
+| [SVision-pro](https://github.com/songbowang125/SVision-pro) | `svisionpro` | 1.8 |
+
+: {.striped .hover tbl-colwidths="[45, 30, 25]"}

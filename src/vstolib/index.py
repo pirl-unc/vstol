@@ -23,7 +23,10 @@ def index_genomic_ranges_list(df: pd.DataFrame, buffer: int) -> Dict[str, Interv
         if row['chromosome'] not in tree:
             tree[row['chromosome']] = IntervalTree()
         start = row['start'] - buffer
-        end = row['end'] + buffer
+        # +1 so the interval is inclusive of the upper bound (intervaltree is half-open).
+        # This keeps the candidate set a superset of the inclusive precise check and avoids
+        # a null interval when buffer == 0 and start == end.
+        end = row['end'] + buffer + 1
         tree[row['chromosome']][start:end] = i
 
     return tree
@@ -36,13 +39,17 @@ def index_variants_list(df: pd.DataFrame, buffer: int) -> Dict[str, IntervalTree
         if row['chromosome_1'] not in tree:
             tree[row['chromosome_1']] = IntervalTree()
         start = row['position_1'] - buffer
-        end = row['position_1'] + buffer
+        # +1: inclusive upper bound (intervaltree is half-open). Without it a candidate
+        # exactly `buffer` away was excluded from the tree yet passed the inclusive precise
+        # check in intersect_variant_lists (an order-dependent false negative); it also made
+        # buffer == 0 a null interval, crashing intervaltree.
+        end = row['position_1'] + buffer + 1
         tree[row['chromosome_1']][start:end] = i
 
         if row['chromosome_2'] not in tree:
             tree[row['chromosome_2']] = IntervalTree()
         start = row['position_2'] - buffer
-        end = row['position_2'] + buffer
+        end = row['position_2'] + buffer + 1
         tree[row['chromosome_2']][start:end] = i
 
     return tree

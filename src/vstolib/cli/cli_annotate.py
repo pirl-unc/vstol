@@ -40,7 +40,7 @@ def add_cli_annotate_arg_parser(
     # Required arguments
     parser_required = parser.add_argument_group('required arguments')
     parser_required.add_argument(
-        "--tsv-file", '-i',
+        "--tsv-file",
         dest="tsv_file",
         type=str,
         required=True,
@@ -49,7 +49,7 @@ def add_cli_annotate_arg_parser(
              "'chromosome_2', 'position_2'"
     )
     parser_required.add_argument(
-        "--annotator", '-a',
+        "--annotator",
         dest="annotator",
         type=str,
         choices=Annotator.ALL,
@@ -58,7 +58,7 @@ def add_cli_annotate_arg_parser(
              % (', '.join(f"'{item}'" for item in Annotator.ALL))
     )
     parser_required.add_argument(
-        "--output-tsv-file", '-o',
+        "--output-tsv-file",
         dest="output_tsv_file",
         type=str,
         required=True,
@@ -136,20 +136,6 @@ def add_cli_annotate_arg_parser(
 
 
 def run_cli_annotate_from_parsed_args(args: argparse.Namespace):
-    """
-    Run 'annotate' command using parameters from parsed arguments.
-
-    Parameters:
-        args    :   argparse.Namespace object with the following variables:
-                    tsv_file
-                    annotator
-                    output_tsv_file
-                    gencode_gtf_file
-                    gencode_levels
-                    gencode_types
-                    gencode_version
-                    gencode_species
-    """
     if args.annotator == Annotator.GENCODE:
         assert args.gencode_gtf_file is not None
         assert args.gencode_version is not None

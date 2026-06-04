@@ -42,24 +42,24 @@ def add_cli_overlap_arg_parser(
     # Required arguments
     parser_required = parser.add_argument_group('required arguments')
     parser_required.add_argument(
-        "--tsv-file", '-i',
+        "--tsv-file",
         dest="tsv_file",
         type=str,
         required=True,
-        help="Variant list TSV file. Expected columns: 'id', 'chromosome_1', position_1', 'operation_1', 'chromosome_2', 'position_2', 'operation_2'."
+        help="Variant list TSV file. Expected columns: 'variant_id', 'chromosome_1', position_1', 'operation_1', 'chromosome_2', 'position_2', 'operation_2'."
     )
     parser_required.add_argument(
-        "--regions-tsv-file", '-r',
+        "--regions-tsv-file",
         dest="regions_tsv_file",
         type=str,
-        required=False,
+        required=True,
         help="TSV file of genomic regions. "
              "Variants with any variant calls where breakpoints are near or within the regions "
              "in this file will be considered an overlap. "
              "Expected headers: 'chromosome', 'start', 'end'."
     )
     parser_required.add_argument(
-        "--output-tsv-file", '-o',
+        "--output-tsv-file",
         dest="output_tsv_file",
         type=str,
         required=True,
@@ -82,16 +82,6 @@ def add_cli_overlap_arg_parser(
 
 
 def run_cli_overlap_from_parsed_args(args: argparse.Namespace):
-    """
-    Run 'overlap' command using parameters from parsed arguments.
-
-    Parameters:
-        args    :   argparse.Namespace object with the following variables:
-                    tsv_file
-                    ranges_tsv_file
-                    output_tsv_file
-                    buffer
-    """
     df_variants = pd.read_csv(args.tsv_file, sep='\t', low_memory=False, memory_map=True)
     df_genomic_ranges = pd.read_csv(args.regions_tsv_file, sep='\t', low_memory=False, memory_map=True)
     df_variants_overlapping = overlap(

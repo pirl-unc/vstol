@@ -18,6 +18,8 @@ The purpose of this python3 script is to define VSTOL default parameters.
 
 MATCH_BOTH_POSITIONS = 'yes'
 MAX_BREAKPOINT_DISTANCE = 100
+MAX_SMALL_VAR_SIZE = 30
 MATCH_OPERATION_TYPES = 'yes'
+MIN_METHODS = 1
 BUFFER = 100000
 NUM_PROCESSES = 4

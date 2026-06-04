@@ -441,7 +441,13 @@ class Gencode(Annotator):
                     data['utr_start'].append(curr_utr_start)
                     data['utr_end'].append(curr_utr_end)
                     data['level'].append(curr_level)
-                    if int(curr_metadata_dict['exon_number']) == 1:
+
+                    # exon_number may be absent or non-numeric
+                    try:
+                        is_first_exon = int(curr_metadata_dict.get('exon_number', '')) == 1
+                    except (ValueError, TypeError):
+                        is_first_exon = False
+                    if is_first_exon:
                         data['utr_type'].append(GenomicRegionTypes.FIVE_PRIME_UTR)
                     else:
                         data['utr_type'].append(GenomicRegionTypes.THREE_PRIME_UTR)
@@ -464,21 +470,15 @@ class Gencode(Annotator):
         Returns:
             List[PositionAnnotation]
         """
-        if strand == Strand.FORWARD or strand == Strand.REVERSE:
-            df_genes_matched = self.df_genes[
-                (self.df_genes['chromosome'] == chromosome) &
-                (self.df_genes['start'] <= position) &
-                (self.df_genes['end'] >= position) &
-                (self.df_genes['strand'] == strand)
-            ]
-        elif strand == Strand.BOTH or strand == Strand.UNKNOWN or pd.isna(strand):
-            df_genes_matched = self.df_genes[
-                (self.df_genes['chromosome'] == chromosome) &
-                (self.df_genes['start'] <= position) &
-                (self.df_genes['end'] >= position)
-            ]
-        else:
-            raise Exception('Unknown strand: %s' % strand)
+        # Match every gene overlapping this locus regardless of the variant's strand.
+        # SNV/indel parsers synthesize strand_1 = strand_2 = '+', so filtering genes by
+        # `strand == variant_strand` silently hid every minus-strand gene from point-variant
+        # annotation. A variant's strand is not the gene's strand, so it must not gate the match.
+        df_genes_matched = self.df_genes[
+            (self.df_genes['chromosome'] == chromosome) &
+            (self.df_genes['start'] <= position) &
+            (self.df_genes['end'] >= position)
+        ]
 
         if len(df_genes_matched) == 0:
             position_annotation = PositionAnnotation(
@@ -528,7 +528,9 @@ class Gencode(Annotator):
                     if len(df_exons_matched) == 0:
                         region = GenomicRegionTypes.INTRONIC
                     else:
-                        assert len(df_exons_matched) == 1
+                        # Overlapping/duplicate exon records can yield >1 match in real GTFs;
+                        # take the first deterministically rather than asserting (the assert
+                        # crashed mid-run by default, or silently mis-annotated under `python -O`).
                         exon_id = df_exons_matched['exon_id'].values[0]
                         exon_id_stable = df_exons_matched['exon_id_stable'].values[0]
                         region = GenomicRegionTypes.EXONIC
@@ -554,7 +556,7 @@ class Gencode(Annotator):
                     )
                     position_annotations.append(position_annotation)
                 else:
-                    assert len(df_utrs_matched) == 1
+                    # Take the first match deterministically (see exon note above).
                     region = df_utrs_matched['utr_type'].values[0]
                     position_annotation = PositionAnnotation(
                         annotator=Annotator.GENCODE,
@@ -600,7 +602,7 @@ class Gencode(Annotator):
             strand=row['strand_2']
         )
 
-        return str(row['id']), position_annotations_1, position_annotations_2
+        return str(row['variant_id']), position_annotations_1, position_annotations_2
 
     def annotate(self, df_variants: pd.DataFrame, num_processes: int) -> pd.DataFrame:
         """
@@ -608,7 +610,7 @@ class Gencode(Annotator):
 
         Args:
             df_variants             :   Pandas DataFrame with the following columns:
-                                        'id',
+                                        'variant_id',
                                         'chromosome_1',
                                         'position_1',
                                         'strand_1',
@@ -643,14 +645,14 @@ class Gencode(Annotator):
         assert 'position_1' in df_variants.columns
         assert 'position_2' in df_variants.columns
 
-        df_variants['id'] = df_variants['id'].astype(str)
+        df_variants['variant_id'] = df_variants['variant_id'].astype(str)
 
         # Parallel annotation
         with mp.Pool(num_processes) as pool:
             results = pool.map(self.annotate_row, [row for _, row in df_variants.iterrows()])
 
         # Initialize annotation fields
-        data = { 'id': [] }
+        data = { 'variant_id': [] }
         for f in fields(PositionAnnotation):
             data['position_1_%s' % f.name] = []
             data['position_2_%s' % f.name] = []
@@ -667,11 +669,14 @@ class Gencode(Annotator):
                     position_annotations_2_dict[key].append(value)
             position_annotations_1_data = { 'position_1_%s' % key: ';'.join(value) for key, value in position_annotations_1_dict.items()}
             position_annotations_2_data = { 'position_2_%s' % key: ';'.join(value) for key, value in position_annotations_2_dict.items()}
-            data['id'].append(variant_id)
+            data['variant_id'].append(variant_id)
             for key, value in {**position_annotations_1_data, **position_annotations_2_data}.items():
                 data[key].append(value)
-        df_annotations = pd.DataFrame(data)
 
-        df_variants_annotated = df_variants.merge(df_annotations, on='id', how='left')
+        df_annotations = pd.DataFrame(data).drop(columns=['variant_id'])
+        df_variants_annotated = pd.concat(
+            [df_variants.reset_index(drop=True), df_annotations.reset_index(drop=True)],
+            axis=1
+        )
 
         return df_variants_annotated

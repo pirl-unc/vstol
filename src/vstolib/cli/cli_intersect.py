@@ -47,10 +47,10 @@ def add_cli_intersect_arg_parser(
         dest="tsv_files",
         nargs='+',
         required=True,
-        help="Variants list TSV files. Expected columns: 'id', 'chromosome_1', position_1', 'operation_1', 'chromosome_2', 'position_2', 'operation_2'."
+        help="Variants list TSV files. Expected columns: 'variant_id', 'chromosome_1', position_1', 'operation_1', 'chromosome_2', 'position_2', 'operation_2'."
     )
     parser_required.add_argument(
-        "--output-tsv-file", '-o',
+        "--output-tsv-file",
         dest="output_tsv_file",
         type=str,
         required=True,
@@ -90,6 +90,18 @@ def add_cli_intersect_arg_parser(
              % MAX_BREAKPOINT_DISTANCE
     )
     parser_optional.add_argument(
+        "--max-small-var-size",
+        dest="max_small_var_size",
+        type=int,
+        required=False,
+        default=MAX_SMALL_VAR_SIZE,
+        help="Maximum size (bp) of a 'small' variant (default: %i). Variants "
+             "with 0 < size <= this value (e.g. SNVs, MNVs, small indels) must "
+             "match positions exactly and ignore --max-breakpoint-distance, "
+             "preventing distinct nearby point mutations from being clustered."
+             % MAX_SMALL_VAR_SIZE
+    )
+    parser_optional.add_argument(
         "--match-operation-types",
         dest="match_operation_types",
         type=str2bool,
@@ -105,18 +117,6 @@ def add_cli_intersect_arg_parser(
 
 
 def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
-    """
-    Run 'intersect' command using parameters from parsed arguments.
-
-    Parameters:
-        args    :   argparse.Namespace object with the following variables:
-                    tsv_files
-                    output_tsv_file
-                    num_processes
-                    match_both_positions
-                    max_breakpoint_distance
-                    match_operation_types
-    """
     # Step 1. Load variants lists
     df_variants_list = []
     for tsv_file in args.tsv_files:
@@ -127,6 +127,7 @@ def run_cli_intersect_from_parsed_args(args: argparse.Namespace):
         df_variants_list=df_variants_list,
         match_both_positions=args.match_both_positions,
         max_breakpoint_distance=args.max_breakpoint_distance,
+        max_small_var_size=args.max_small_var_size,
         match_operation_types=args.match_operation_types,
         num_processes=args.num_processes
     )

@@ -36,14 +36,14 @@ def add_cli_diff_arg_parser(
     """
     parser = sub_parsers.add_parser(
         'diff',
-        help='Diff variants (outputs a variants list with variants specific to the target variants list.'
+        help='Diff variants (outputs a variants list with variants specific to the target variants list).'
     )
     parser._action_groups.pop()
 
     # Required arguments
     parser_required = parser.add_argument_group('required arguments')
     parser_required.add_argument(
-        "--target-tsv-file", '-i',
+        "--target-tsv-file",
         dest="target_tsv_file",
         required=True,
         help="Target variants list TSV file. "
@@ -51,7 +51,7 @@ def add_cli_diff_arg_parser(
              "work properly."
     )
     parser_required.add_argument(
-        "--query-tsv-file", '-q',
+        "--query-tsv-file",
         dest="query_tsv_files",
         nargs='+',
         required=True,
@@ -60,7 +60,7 @@ def add_cli_diff_arg_parser(
              "work properly."
     )
     parser_required.add_argument(
-        "--output-tsv-file", '-o',
+        "--output-tsv-file",
         dest="output_tsv_file",
         type=str,
         required=True,
@@ -100,6 +100,18 @@ def add_cli_diff_arg_parser(
              % MAX_BREAKPOINT_DISTANCE
     )
     parser_optional.add_argument(
+        "--max-small-var-size",
+        dest="max_small_var_size",
+        type=int,
+        required=False,
+        default=MAX_SMALL_VAR_SIZE,
+        help="Maximum size (bp) of a 'small' variant (default: %i). Variants "
+             "with 0 < size <= this value (e.g. SNVs, MNVs, small indels) must "
+             "match positions exactly and ignore --max-breakpoint-distance, "
+             "preventing distinct nearby point mutations from being clustered."
+             % MAX_SMALL_VAR_SIZE
+    )
+    parser_optional.add_argument(
         "--match-operation-types",
         dest="match_operation_types",
         type=str2bool,
@@ -115,19 +127,6 @@ def add_cli_diff_arg_parser(
 
 
 def run_cli_diff_from_parsed_args(args: argparse.Namespace):
-    """
-    Run 'diff' command using parameters from parsed arguments.
-
-    Parameters:
-        args    :   argparse.Namespace object with the following variables:
-                    target_tsv_file
-                    query_tsv_file
-                    output_tsv_file
-                    num_processes
-                    match_both_positions
-                    max_breakpoint_distance
-                    match_operation_types
-    """
     # Step 1. Load variants lists
     df_variants = pd.read_csv(args.target_tsv_file, sep='\t', low_memory=False, memory_map=True)
     df_variants_list = []
@@ -140,6 +139,7 @@ def run_cli_diff_from_parsed_args(args: argparse.Namespace):
         df_variants_list=df_variants_list,
         match_both_positions=args.match_both_positions,
         max_breakpoint_distance=args.max_breakpoint_distance,
+        max_small_var_size=args.max_small_var_size,
         match_operation_types=args.match_operation_types,
         num_processes=args.num_processes
     )

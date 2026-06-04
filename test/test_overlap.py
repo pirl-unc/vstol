@@ -5,7 +5,7 @@ from .data import get_data_path
 
 def test_overlap_1():
     data = {
-        'id': [1, 2],
+        'variant_id': [1, 2],
         'chromosome_1': ['chr17', 'chr17'],
         'position_1': [7673800, 7679800],
         'operation_1': ['D', 'D'],

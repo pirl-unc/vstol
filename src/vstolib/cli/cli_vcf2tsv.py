@@ -39,14 +39,14 @@ def add_cli_vcf2tsv_arg_parser(
     # Required arguments
     parser_required = parser.add_argument_group('required arguments')
     parser_required.add_argument(
-        "--vcf-file", '-i',
+        "--vcf-file",
         dest="vcf_file",
         type=str,
         required=True,
         help="Input VCF file."
     )
     parser_required.add_argument(
-        "--method", '-m',
+        "--method",
         dest="method",
         type=str,
         required=True,
@@ -56,21 +56,21 @@ def add_cli_vcf2tsv_arg_parser(
              % (', '.join(VariantCallingMethod.ALL))
     )
     parser_required.add_argument(
-        "--platform", '-p',
+        "--platform",
         dest="platform",
         type=str,
         required=True,
         help="Sequencing platform."
     )
     parser_required.add_argument(
-        "--source-id", '-s',
+        "--source-id",
         dest="source_id",
         type=str,
         required=True,
         help="Source ID (e.g. patient ID or cell line ID)."
     )
     parser_required.add_argument(
-        "--output-tsv-file", '-o',
+        "--output-tsv-file",
         dest="output_tsv_file",
         type=str,
         required=True,
@@ -82,17 +82,6 @@ def add_cli_vcf2tsv_arg_parser(
 
 
 def run_cli_vcf2tsv_from_parsed_args(args: argparse.Namespace):
-    """
-    Run 'vcf2tsv' command using parameters from parsed arguments.
-
-    Parameters:
-        args    :   argparse.Namespace object with the following variables:
-                    vcf_file
-                    method
-                    platform
-                    source_id
-                    output_tsv_file
-    """
     df_vcf = read_vcf_file(vcf_file=args.vcf_file)
     df_variants = vcf2tsv(
         df_vcf=df_vcf,

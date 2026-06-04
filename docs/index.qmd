@@ -1,0 +1,77 @@
+---
+title: "VSTOL"
+subtitle: "Variant Standardization, Tabulation, and Operations Library"
+---
+
+VSTOL standardizes small and structural DNA variants from VCF files into the
+[Occam's Variant Grammar](https://pirlblog.substack.com/p/variant-standardization)
+TSV format, then runs list operations — annotate, diff, intersect, merge,
+collapse, and overlap — on the standardized variant lists.
+
+## Quick Start
+
+### 1. Install
+
+`vstol` is available on [PyPI](https://pypi.org/project/vstol/):
+
+```bash
+pip install vstol
+```
+
+### 2. See What's Available
+
+```bash
+vstol --help
+```
+
+Or browse the [Commands](cli/index.qmd) reference for every subcommand and its
+options.
+
+### 3. Standardize, then operate
+
+Convert each caller's VCF to the Occam's Variant Grammar TSV with
+[`vcf2tsv`](cli/vcf2tsv.qmd), then compose the set operations over the resulting
+lists.
+
+## How VSTOL is Organized
+
+::: {.grid}
+
+::: {.g-col-6}
+### Standardization
+[`vcf2tsv`](cli/vcf2tsv.qmd) converts a variant caller's VCF into the Occam's
+Variant Grammar TSV — the common format every other command consumes.
+:::
+
+::: {.g-col-6}
+### Set operations
+[`diff`](cli/diff.qmd), [`intersect`](cli/intersect.qmd),
+[`merge`](cli/merge.qmd), and [`collapse`](cli/collapse.qmd) compare and combine
+variant lists across samples, callers, or runs.
+:::
+
+::: {.g-col-6}
+### Annotation
+[`annotate`](cli/annotate.qmd) adds gene-level context (e.g. GENCODE) to a
+standardized variant list.
+:::
+
+::: {.g-col-6}
+### Region overlap
+[`overlap`](cli/overlap.qmd) selects variants whose breakpoints fall within (or
+near) a list of genomic regions.
+:::
+
+:::
+
+## Dependencies
+
+* python (>=3.10)
+* pandas (>=2.0.3)
+* numpy (>=1.22.3)
+* networkx (>=3.4.2)
+* intervaltree (>=3.1.0)
+
+## License
+
+Licensed under the [Apache License, Version 2.0](https://opensource.org/licenses/Apache-2.0).

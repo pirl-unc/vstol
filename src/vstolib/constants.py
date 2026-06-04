@@ -60,35 +60,59 @@ class Strand:
 
 
 class VariantCallingMethod:
+    CLAIR3 = 'clair3'
     CLAIRS = 'clairs'
     CUTESV = 'cutesv'
     DBSNP = 'dbsnp'
+    DEEPSOMATIC = 'deepsomatic'
     DEEPVARIANT = 'deepvariant'
-    DELLY2_SOMATIC = 'delly2-somatic'
-    GATK4_MUTECT2 = 'gatk4-mutect2'
-    LUMPY_SOMATIC = 'lumpy-somatic'
-    MANTA_SOMATIC = 'manta-somatic'
+    DELLY2 = 'delly2'
+    DYSGU = 'dysgu'
+    GRIDSS2 = 'gridss2'
+    HAPLOTYPECALLER = 'haplotypecaller'
+    LONGSHOT = 'longshot'
+    LUMPY = 'lumpy'
+    MANTA = 'manta'
+    MUTECT2 = 'mutect2'
+    NANOCALLER = 'nanocaller'
+    NANOMONSV = 'nanomonsv'
+    NANOVAR = 'nanovar'
     PBSV = 'pbsv'
+    OCTOPUS = 'octopus'
     SAVANA = 'savana'
     SEVERUS = 'severus'
     SNIFFLES2 = 'sniffles2'
+    STRELKA2_GERMLINE = 'strelka2-germline'
     STRELKA2_SOMATIC = 'strelka2-somatic'
+    SVABA = 'svaba'
     SVIM = 'svim'
     SVISIONPRO = 'svisionpro'
     ALL = [
+        CLAIR3,
         CLAIRS,
         CUTESV,
         DBSNP,
+        DEEPSOMATIC,
         DEEPVARIANT,
-        DELLY2_SOMATIC,
-        GATK4_MUTECT2,
-        LUMPY_SOMATIC,
-        MANTA_SOMATIC,
+        DELLY2,
+        DYSGU,
+        GRIDSS2,
+        HAPLOTYPECALLER,
+        LONGSHOT,
+        LUMPY,
+        MANTA,
+        MUTECT2,
+        NANOCALLER,
+        NANOMONSV,
+        NANOVAR,
+        OCTOPUS,
         PBSV,
         SAVANA,
         SEVERUS,
         SNIFFLES2,
+        STRELKA2_GERMLINE,
         STRELKA2_SOMATIC,
+        SVABA,
         SVIM,
         SVISIONPRO
     ]

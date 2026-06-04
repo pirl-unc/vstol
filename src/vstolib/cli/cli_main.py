@@ -19,6 +19,7 @@ The purpose of this python3 script is to implement the primary VSTOL command.
 import vstolib
 from typing import Tuple
 from .cli_annotate import *
+from .cli_collapse import *
 from .cli_intersect import *
 from .cli_merge import *
 from .cli_overlap import *
@@ -31,12 +32,6 @@ logger = get_logger(__name__)
 
 
 def init_arg_parser() -> Tuple[argparse.ArgumentParser, argparse._SubParsersAction]:
-    """
-    Initialize the input argument parser.
-
-    Returns:
-        Tuple[argparse.ArgumentParser,argparse.ArgumentParser subparsers]
-    """
     arg_parser = argparse.ArgumentParser(
         description="VSTOL: Variant Selection, Tabulation, and Operations Library."
     )
@@ -53,6 +48,7 @@ def run():
     # Step 1. Initialize argument parser
     arg_parser, sub_parsers = init_arg_parser()
     sub_parsers = add_cli_annotate_arg_parser(sub_parsers=sub_parsers)     # annotate
+    sub_parsers = add_cli_collapse_arg_parser(sub_parsers=sub_parsers)     # collapse
     sub_parsers = add_cli_diff_arg_parser(sub_parsers=sub_parsers)         # diff
     sub_parsers = add_cli_intersect_arg_parser(sub_parsers=sub_parsers)    # intersect
     sub_parsers = add_cli_merge_arg_parser(sub_parsers=sub_parsers)        # merge
@@ -64,6 +60,8 @@ def run():
     # Step 2. Execute function based on CLI arguments
     if args.which == 'annotate':
         run_cli_annotate_from_parsed_args(args=args)
+    elif args.which == 'collapse':
+        run_cli_collapse_from_parsed_args(args=args)
     elif args.which == 'diff':
         run_cli_diff_from_parsed_args(args=args)
     elif args.which == 'intersect':

@@ -16,6 +16,21 @@ from typing import  List, Tuple
 from .index import index_variants_list
 
 
+def _is_small_variant(row, max_small_var_size: int) -> bool:
+    """
+    A variant is "small" iff its size is known and at most
+    `max_small_var_size` bp. For such variants two distinct events can lie
+    within the SV breakpoint slop, so applying that slop would incorrectly
+    cluster them — we require exact position matching instead.
+
+    This subsumes SNVs (size 1), MNVs, and small indels. Variants with
+    unknown size (size == -1, e.g. translocations and single-end breakends)
+    are treated as structural events and keep the slop.
+    """
+    size = row['variant_size']
+    return 0 < size <= max_small_var_size
+
+
 def intersect_variant_lists(
     i: int,
     j: int,
@@ -23,7 +38,8 @@ def intersect_variant_lists(
     df2: pd.DataFrame,
     match_both_positions: bool,
     match_operation_types: bool,
-    max_breakpoint_distance: int
+    max_breakpoint_distance: int,
+    max_small_var_size: int
 ) -> List[Tuple[str, str]]:
     """
     Find intersections.
@@ -35,7 +51,10 @@ def intersect_variant_lists(
         df2                         :   Pandas DataFrame 2.
         match_both_positions        :   If True, for two rows to be considered intersecting,
                                         both breakpoint positions must match or be near each other (max_breakpoint_distance).
-        max_breakpoint_distance     :   Maximum breakpoint distance.
+        max_breakpoint_distance     :   Maximum breakpoint distance (applied to SVs).
+        max_small_var_size          :   Variants with `0 < size <= max_small_var_size` are
+                                        treated as small variants and must match positions exactly,
+                                        regardless of `max_breakpoint_distance`.
         match_operation_types       :   If True, operation_1 and operation_2 must match.
 
     Returns:
@@ -57,81 +76,90 @@ def intersect_variant_lists(
             row2 = df2.iloc[match.data]
             id1 = f"{i}:{index}"
             id2 = f"{j}:{match.data}"
+            # Per-pair effective distance: small variants (size <=
+            # max_small_var_size) must match exactly, otherwise distinct
+            # events of that size could be falsely clustered. The interval
+            # tree was still built with the full buffer so candidates are
+            # found; the precise check below tightens to 0 for those pairs.
+            if (_is_small_variant(row, max_small_var_size) or _is_small_variant(row2, max_small_var_size)):
+                effective_distance = 0
+            else:
+                effective_distance = max_breakpoint_distance
             if match_both_positions and match_operation_types:
                 intersects = (
                      (row2['chromosome_1'] == row['chromosome_1']) &
-                     (row2['position_1'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_1'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_1'] - effective_distance) &
+                     (row2['position_1'] <= row['position_1'] + effective_distance) &
                      (row2['operation_1'] == row['operation_1']) &
                      (row2['chromosome_2'] == row['chromosome_2']) &
-                     (row2['position_2'] <= row['position_2'] + max_breakpoint_distance) &
-                     (row2['position_2'] >= row['position_2'] - max_breakpoint_distance) &
+                     (row2['position_2'] <= row['position_2'] + effective_distance) &
+                     (row2['position_2'] >= row['position_2'] - effective_distance) &
                      (row2['operation_2'] == row['operation_2'])
                 ) or (
                      (row2['chromosome_1'] == row['chromosome_2']) &
-                     (row2['position_1'] >= row['position_2'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_2'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_2'] - effective_distance) &
+                     (row2['position_1'] <= row['position_2'] + effective_distance) &
                      (row2['operation_1'] == row['operation_2']) &
                      (row2['chromosome_2'] == row['chromosome_1']) &
-                     (row2['position_2'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_2'] <= row['position_1'] + max_breakpoint_distance) &
+                     (row2['position_2'] >= row['position_1'] - effective_distance) &
+                     (row2['position_2'] <= row['position_1'] + effective_distance) &
                      (row2['operation_2'] == row['operation_1'])
                 )
             elif match_both_positions == False and match_operation_types:
                 intersects = (
                      (row2['chromosome_1'] == row['chromosome_1']) &
-                     (row2['position_1'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_1'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_1'] - effective_distance) &
+                     (row2['position_1'] <= row['position_1'] + effective_distance) &
                      (row2['operation_1'] == row['operation_1'])
                 ) or (
                      (row2['chromosome_2'] == row['chromosome_2']) &
-                     (row2['position_2'] <= row['position_2'] + max_breakpoint_distance) &
-                     (row2['position_2'] >= row['position_2'] - max_breakpoint_distance) &
+                     (row2['position_2'] <= row['position_2'] + effective_distance) &
+                     (row2['position_2'] >= row['position_2'] - effective_distance) &
                      (row2['operation_2'] == row['operation_2'])
                 ) or (
                      (row2['chromosome_1'] == row['chromosome_2']) &
-                     (row2['position_1'] >= row['position_2'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_2'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_2'] - effective_distance) &
+                     (row2['position_1'] <= row['position_2'] + effective_distance) &
                      (row2['operation_1'] == row['operation_2'])
                 ) or (
                      (row2['chromosome_2'] == row['chromosome_1']) &
-                     (row2['position_2'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_2'] <= row['position_1'] + max_breakpoint_distance) &
+                     (row2['position_2'] >= row['position_1'] - effective_distance) &
+                     (row2['position_2'] <= row['position_1'] + effective_distance) &
                      (row2['operation_2'] == row['operation_1'])
                 )
             elif match_both_positions and match_operation_types == False:
                 intersects = (
                      (row2['chromosome_1'] == row['chromosome_1']) &
-                     (row2['position_1'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_1'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_1'] - effective_distance) &
+                     (row2['position_1'] <= row['position_1'] + effective_distance) &
                      (row2['chromosome_2'] == row['chromosome_2']) &
-                     (row2['position_2'] <= row['position_2'] + max_breakpoint_distance) &
-                     (row2['position_2'] >= row['position_2'] - max_breakpoint_distance)
+                     (row2['position_2'] <= row['position_2'] + effective_distance) &
+                     (row2['position_2'] >= row['position_2'] - effective_distance)
                 ) or (
                      (row2['chromosome_1'] == row['chromosome_2']) &
-                     (row2['position_1'] >= row['position_2'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_2'] + max_breakpoint_distance) &
+                     (row2['position_1'] >= row['position_2'] - effective_distance) &
+                     (row2['position_1'] <= row['position_2'] + effective_distance) &
                      (row2['chromosome_2'] == row['chromosome_1']) &
-                     (row2['position_2'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_2'] <= row['position_1'] + max_breakpoint_distance)
+                     (row2['position_2'] >= row['position_1'] - effective_distance) &
+                     (row2['position_2'] <= row['position_1'] + effective_distance)
                 )
             else:
                 intersects = (
                      (row2['chromosome_1'] == row['chromosome_1']) &
-                     (row2['position_1'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_1'] + max_breakpoint_distance)
+                     (row2['position_1'] >= row['position_1'] - effective_distance) &
+                     (row2['position_1'] <= row['position_1'] + effective_distance)
                 ) or (
                      (row2['chromosome_2'] == row['chromosome_2']) &
-                     (row2['position_2'] <= row['position_2'] + max_breakpoint_distance) &
-                     (row2['position_2'] >= row['position_2'] - max_breakpoint_distance)
+                     (row2['position_2'] <= row['position_2'] + effective_distance) &
+                     (row2['position_2'] >= row['position_2'] - effective_distance)
                 ) or (
                      (row2['chromosome_1'] == row['chromosome_2']) &
-                     (row2['position_1'] >= row['position_2'] - max_breakpoint_distance) &
-                     (row2['position_1'] <= row['position_2'] + max_breakpoint_distance)
+                     (row2['position_1'] >= row['position_2'] - effective_distance) &
+                     (row2['position_1'] <= row['position_2'] + effective_distance)
                 ) or (
                      (row2['chromosome_2'] == row['chromosome_1']) &
-                     (row2['position_2'] >= row['position_1'] - max_breakpoint_distance) &
-                     (row2['position_2'] <= row['position_1'] + max_breakpoint_distance)
+                     (row2['position_2'] >= row['position_1'] - effective_distance) &
+                     (row2['position_2'] <= row['position_1'] + effective_distance)
                 )
             if intersects:
                 matches.append((id1, id2))

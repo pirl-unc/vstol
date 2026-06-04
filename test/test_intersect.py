@@ -4,25 +4,27 @@ from vstolib.main import intersect
 
 def test_intersect_1():
     data = {
-        'id': [1],
+        'variant_id': [1],
         'chromosome_1': ['chr17'],
         'position_1': [7673800],
         'operation_1': ['D'],
         'chromosome_2': ['chr17'],
         'position_2': [7673801],
-        'operation_2': ['U']
+        'operation_2': ['U'],
+        'variant_size': [1000]
     }
 
     df_variants_1 = pd.DataFrame(data)
 
     data = {
-        'id': [100],
+        'variant_id': [100],
         'chromosome_1': ['chr17'],
         'position_1': [7673790],
         'operation_1': ['D'],
         'chromosome_2': ['chr17'],
         'position_2': [7673791],
-        'operation_2': ['U']
+        'operation_2': ['U'],
+        'variant_size': [1000]
     }
 
     df_variants_2 = pd.DataFrame(data)
@@ -31,6 +33,7 @@ def test_intersect_1():
         df_variants_list=[df_variants_1, df_variants_2],
         match_both_positions=True,
         max_breakpoint_distance=1000,
+        max_small_var_size=30,
         match_operation_types=True,
         num_processes=1
     )
@@ -40,25 +43,27 @@ def test_intersect_1():
 
 def test_intersect_2():
     data = {
-        'id': [1,2],
+        'variant_id': [1,2],
         'chromosome_1': ['chr17', 'chr17'],
         'position_1': [7673800, 7679800],
         'operation_1': ['D', 'D'],
         'chromosome_2': ['chr17', 'chr17'],
         'position_2': [7673801, 7679801],
-        'operation_2': ['U', 'U']
+        'operation_2': ['U', 'U'],
+        'variant_size': [1000, 1000]
     }
 
     df_variants_1 = pd.DataFrame(data)
 
     data = {
-        'id': [100],
+        'variant_id': [100],
         'chromosome_1': ['chr17'],
         'position_1': [7673790],
         'operation_1': ['D'],
         'chromosome_2': ['chr17'],
         'position_2': [7673791],
-        'operation_2': ['U']
+        'operation_2': ['U'],
+        'variant_size': [1000]
     }
 
     df_variants_2 = pd.DataFrame(data)
@@ -67,6 +72,7 @@ def test_intersect_2():
         df_variants_list=[df_variants_1, df_variants_2],
         match_both_positions=True,
         max_breakpoint_distance=1000,
+        max_small_var_size=30,
         match_operation_types=True,
         num_processes=1
     )

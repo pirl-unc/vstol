@@ -14,7 +14,7 @@ def test_annotate_1():
     )
 
     data = {
-        'id': [1],
+        'variant_id': [1],
         'chromosome_1': ['chr17'],
         'position_1': [7673800],
         'strand_1': ['*'],
@@ -45,7 +45,7 @@ def test_annotate_2():
     )
 
     data = {
-        'id': [1],
+        'variant_id': [1],
         'chromosome_1': ['chr17'],
         'position_1': [7673800],
         'strand_1': ['-'],
@@ -76,7 +76,7 @@ def test_annotate_3():
     )
 
     data = {
-        'id': [1],
+        'variant_id': [1],
         'chromosome_1': ['chr17'],
         'position_1': [7673800],
         'strand_1': ['+'],
@@ -93,5 +93,10 @@ def test_annotate_3():
         num_processes=1
     )
 
-    assert df_annotated['position_1_exon_id'].values[0] == ''
-    assert df_annotated['position_2_exon_id'].values[0] == ''
+    # chr17:7673800 is an exonic position in TP53, a MINUS-strand gene. Gene annotation is
+    # strand-independent — a variant's strand (synthesized as '+' by SNV/indel parsers) is
+    # not the gene's strand — so a '+'-labeled variant here is annotated to TP53's exon, the
+    # same as test_annotate_1 ('*') and test_annotate_2 ('-'). This previously asserted '',
+    # codifying a bug where the gene filter required strand match and hid minus-strand genes.
+    assert df_annotated['position_1_exon_id'].values[0] != ''
+    assert df_annotated['position_2_exon_id'].values[0] != ''

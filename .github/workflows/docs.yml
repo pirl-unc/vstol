@@ -1,0 +1,67 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
+          activate-environment: docs-env
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          conda config --add channels defaults
+          conda config --add channels bioconda
+          conda config --add channels conda-forge
+          conda install -y pandas==2.1.4
+          conda install -y numpy==1.26.2
+          conda install -y -c anaconda networkx==3.4.2
+          conda install -y -c conda-forge intervaltree==3.1.0
+          python -m pip install . --verbose
+
+      - name: Verify install
+        run: python -c "import vstolib; print('vstolib OK:', vstolib.__version__)"
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Generate CLI docs
+        run: python scripts/docs/generate_docs.py
+
+      - name: Render site
+        run: cd docs && quarto render
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

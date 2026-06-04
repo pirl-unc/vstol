@@ -33,35 +33,6 @@ def parse_pbsv_vcf(
 ) -> pd.DataFrame:
     """
     Parse a PBSV VCF DataFrame and return a Pandas DataFrame.
-
-    Parameters:
-        df_vcf      :   Pandas DataFrame of rows from a CuteSV VCF file.
-
-    Returns:
-        Pandas DataFrame with the following columns:
-        'id'
-        'source_id'
-        'sample_id'
-        'platform'
-        'method'
-        'chromosome_1'
-        'position_1'
-        'strand_1'
-        'operation_1'
-        'chromosome_2'
-        'position_2'
-        'strand_2'
-        'operation_2'
-        'sequence'
-        'quality'
-        'filter'
-        'size'
-        'read_count_reference_allele'
-        'read_count_alternate_allele'
-        'read_count_total'
-        'alternate_allele_fraction'
-        'info'
-        'format'
     """
     # Step 1. Get a template dictionary
     data = get_template_dict()
@@ -77,6 +48,7 @@ def parse_pbsv_vcf(
         chromosome = retrieve_from_dict(dct=row, key='CHROM', default_value='', type=str)
         position = retrieve_from_dict(dct=row, key='POS', default_value='', type=int)
         reference_allele = retrieve_from_dict(dct=row, key='REF', default_value='', type=str)
+        id = retrieve_from_dict(dct=row, key='ID', default_value='', type=str)
         alternate_allele = retrieve_from_dict(dct=row, key='ALT', default_value='', type=str)
         quality = retrieve_from_dict(dct=row, key='QUAL', default_value=-1.0, type=float)
         filter = retrieve_from_dict(dct=row, key='FILTER', default_value='', type=str)
@@ -87,7 +59,7 @@ def parse_pbsv_vcf(
         info_dict = {}
         for curr_info in info:
             if '=' in curr_info:
-                curr_info_elements = curr_info.split('=')
+                curr_info_elements = curr_info.split('=', 1)
                 curr_key = curr_info_elements[0]
                 info_dict[curr_key] = str(curr_info_elements[1])
             else:
@@ -105,7 +77,7 @@ def parse_pbsv_vcf(
             format_curr_sample = str(row[sample_id]).split(':')
             for curr_format in format:
                 curr_key = curr_format
-                format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)])
+                format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)]) if format.index(curr_format) < len(format_curr_sample) else '.'
 
             # Read counts and allele fractions
             ad_0 = int(format_dict['AD'].split(',')[0]) if format_dict.get('AD', '.,.') != '.,.' else -1
@@ -126,7 +98,7 @@ def parse_pbsv_vcf(
                     size,
                     variant_type
             ):
-                data['id'].append(variant_id)
+                data['variant_id'].append(variant_id)
                 data['source_id'].append(source_id)
                 data['sample_id'].append(sample_id)
                 data['platform'].append(platform)
@@ -142,7 +114,7 @@ def parse_pbsv_vcf(
                 data['strand_2'].append(strand_2)
                 data['operation_2'].append(operation_2)
                 data['sequence'].append(sequence)
-                data['size'].append(size)
+                data['variant_size'].append(size)
                 data['variant_type'].append(variant_type)
                 data['info'].append(';'.join('%s=%s' % (k, v) for k, v in info_dict.items()))
                 data['format'].append(';'.join('%s=%s' % (k, v) for k, v in format_dict.items()))
@@ -264,6 +236,6 @@ def parse_pbsv_vcf(
         variant_id += 1
 
     df_variants = pd.DataFrame(data)
-    logger.info('Converted %i PBSV variants.' % len(df_variants['id'].unique()))
+    logger.info('Converted %i PBSV variants.' % len(df_variants['variant_id'].unique()))
     return df_variants
 

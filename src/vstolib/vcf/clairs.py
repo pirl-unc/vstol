@@ -33,35 +33,6 @@ def parse_clairs_vcf(
 ) -> pd.DataFrame:
     """
     Parse a ClairS VCF DataFrame and return a Pandas DataFrame.
-
-    Parameters:
-        df_vcf      :   Pandas DataFrame of rows from a ClairS VCF file.
-
-    Returns:
-        Pandas DataFrame with the following columns:
-        'id'
-        'source_id'
-        'sample_id'
-        'platform'
-        'method'
-        'chromosome_1'
-        'position_1'
-        'strand_1'
-        'operation_1'
-        'chromosome_2'
-        'position_2'
-        'strand_2'
-        'operation_2'
-        'sequence'
-        'quality'
-        'filter'
-        'size'
-        'read_count_reference_allele'
-        'read_count_alternate_allele'
-        'read_count_total'
-        'alternate_allele_fraction'
-        'info'
-        'format'
     """
     # Step 1. Get a template dictionary
     data = get_template_dict()
@@ -86,7 +57,7 @@ def parse_clairs_vcf(
         info_dict = {}
         for curr_info in info:
             if '=' in curr_info:
-                curr_info_elements = curr_info.split('=')
+                curr_info_elements = curr_info.split('=', 1)
                 curr_key = curr_info_elements[0]
                 info_dict[curr_key] = str(curr_info_elements[1])
             else:
@@ -98,10 +69,10 @@ def parse_clairs_vcf(
             format_curr_sample = str(row[sample_id]).split(':')
             for curr_format in format:
                 curr_key = curr_format
-                format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)])
+                format_dict[curr_key] = str(format_curr_sample[format.index(curr_format)]) if format.index(curr_format) < len(format_curr_sample) else '.'
 
             # Store meta data
-            data['id'].append(variant_id)
+            data['variant_id'].append(variant_id)
             data['source_id'].append(source_id)
             data['sample_id'].append(sample_id)
             data['platform'].append(platform)
@@ -112,8 +83,8 @@ def parse_clairs_vcf(
             # Store variant information
             data['chromosome_1'].append(chromosome)
             data['chromosome_2'].append(chromosome)
-            data['strand_1'].append(Strand.UNKNOWN)
-            data['strand_2'].append(Strand.UNKNOWN)
+            data['strand_1'].append(Strand.FORWARD)
+            data['strand_2'].append(Strand.FORWARD)
             data['operation_1'].append(OperationType.DOWNSTREAM)
             data['operation_2'].append(OperationType.UPSTREAM)
             if len(reference_allele) == len(alternate_allele):
@@ -121,7 +92,7 @@ def parse_clairs_vcf(
                 data['position_1'].append(position - 1)
                 data['position_2'].append(position + 1)
                 data['sequence'].append(alternate_allele)
-                data['size'].append(len(alternate_allele))
+                data['variant_size'].append(len(alternate_allele))
                 if len(alternate_allele) == 1:
                     data['variant_type'].append(VariantType.SINGLE_NUCLEOTIDE_VARIANT)
                 else:
@@ -133,14 +104,14 @@ def parse_clairs_vcf(
                 data['position_1'].append(deletion_start - 1)
                 data['position_2'].append(deletion_end + 1)
                 data['sequence'].append('')
-                data['size'].append(deletion_end - deletion_start + 1)
+                data['variant_size'].append(deletion_end - deletion_start + 1)
                 data['variant_type'].append(VariantType.DELETION)
             elif (len(reference_allele) < len(alternate_allele)) and len(reference_allele) == 1:
                 # Insertion
                 data['position_1'].append(position)
                 data['position_2'].append(position + 1)
                 data['sequence'].append(alternate_allele[1:])
-                data['size'].append(len(alternate_allele[1:]))
+                data['variant_size'].append(len(alternate_allele[1:]))
                 data['variant_type'].append(VariantType.INSERTION)
             else:
                 raise Exception('Unexpected case. REF: %s. ALT: %s.' % (reference_allele, alternate_allele))
@@ -190,5 +161,5 @@ def parse_clairs_vcf(
         variant_id += 1
 
     df_variants = pd.DataFrame(data)
-    logger.info('Converted %i ClairS variants.' % len(df_variants['id'].unique()))
+    logger.info('Converted %i ClairS variants.' % len(df_variants['variant_id'].unique()))
     return df_variants
